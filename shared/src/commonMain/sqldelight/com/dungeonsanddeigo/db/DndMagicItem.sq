@@ -1,0 +1,30 @@
+CREATE TABLE DndMagicItem (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    needSynch INTEGER NOT NULL DEFAULT 0,
+    isSynched INTEGER NOT NULL DEFAULT 0,
+    effect TEXT NOT NULL DEFAULT '',
+    weight REAL NOT NULL DEFAULT 0.0,
+    price INTEGER NOT NULL DEFAULT 0,
+    priceCurrency TEXT NOT NULL DEFAULT 'pg',
+    tags TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndMagicItem WHERE characterId = ?;
+
+insert:
+INSERT INTO DndMagicItem(characterId, name, needSynch, isSynched, effect, weight, price, priceCurrency, tags)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+update:
+UPDATE DndMagicItem SET name = ?, needSynch = ?, isSynched = ?, effect = ?, weight = ?, price = ?, priceCurrency = ?, tags = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM DndMagicItem WHERE id = ?;

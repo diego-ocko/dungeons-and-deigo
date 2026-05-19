@@ -1,0 +1,26 @@
+CREATE TABLE DndMainInfo (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    mainClass TEXT,
+    mainSubClass TEXT,
+    mainClassLevel INTEGER,
+    secondaryClass TEXT,
+    secondarySubClass TEXT,
+    secondaryClassLevel INTEGER,
+    race TEXT,
+    subRace TEXT,
+    origin TEXT,
+    alignment TEXT,
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndMainInfo WHERE characterId = ?;
+
+insert:
+INSERT INTO DndMainInfo(characterId, mainClass, mainSubClass, mainClassLevel, secondaryClass, secondarySubClass, secondaryClassLevel, race, subRace, origin, alignment)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE DndMainInfo SET mainClass = ?, mainSubClass = ?, mainClassLevel = ?, secondaryClass = ?, secondarySubClass = ?, secondaryClassLevel = ?, race = ?, subRace = ?, origin = ?, alignment = ?
+WHERE characterId = ?;

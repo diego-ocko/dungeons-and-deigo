@@ -1,0 +1,20 @@
+CREATE TABLE DndMoney (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    copper INTEGER NOT NULL DEFAULT 0,
+    silver INTEGER NOT NULL DEFAULT 0,
+    electrum INTEGER NOT NULL DEFAULT 0,
+    gold INTEGER NOT NULL DEFAULT 0,
+    platinum INTEGER NOT NULL DEFAULT 0,
+    lifestyle TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndMoney WHERE characterId = ?;
+
+insert:
+INSERT INTO DndMoney(characterId, copper, silver, electrum, gold, platinum, lifestyle) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE DndMoney SET copper = ?, silver = ?, electrum = ?, gold = ?, platinum = ?, lifestyle = ? WHERE characterId = ?;

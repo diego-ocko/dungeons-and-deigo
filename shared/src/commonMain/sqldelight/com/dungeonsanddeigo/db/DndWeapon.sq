@@ -1,0 +1,49 @@
+CREATE TABLE DndWeapon (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    weaponType TEXT NOT NULL,
+    damageDice TEXT NOT NULL DEFAULT '',
+    damageType TEXT NOT NULL DEFAULT '',
+    ammunition INTEGER NOT NULL DEFAULT 0,
+    finesse INTEGER NOT NULL DEFAULT 0,
+    heavy INTEGER NOT NULL DEFAULT 0,
+    light INTEGER NOT NULL DEFAULT 0,
+    loading INTEGER NOT NULL DEFAULT 0,
+    range INTEGER NOT NULL DEFAULT 0,
+    rangeDistance INTEGER NOT NULL DEFAULT 0,
+    rangeLongDistance INTEGER NOT NULL DEFAULT 0,
+    reach INTEGER NOT NULL DEFAULT 0,
+    special INTEGER NOT NULL DEFAULT 0,
+    specialDescription TEXT NOT NULL DEFAULT '',
+    thrown INTEGER NOT NULL DEFAULT 0,
+    twoHanded INTEGER NOT NULL DEFAULT 0,
+    versatile INTEGER NOT NULL DEFAULT 0,
+    versatileDice TEXT NOT NULL DEFAULT '',
+    silver INTEGER NOT NULL DEFAULT 0,
+    additionalFeatures TEXT NOT NULL DEFAULT '',
+    weight REAL NOT NULL DEFAULT 0.0,
+    price INTEGER NOT NULL DEFAULT 0,
+    priceCurrency TEXT NOT NULL DEFAULT 'pg',
+    tags TEXT NOT NULL DEFAULT '',
+    isEquipped INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndWeapon WHERE characterId = ?;
+
+insert:
+INSERT INTO DndWeapon(characterId, name, category, weaponType, damageDice, damageType, ammunition, finesse, heavy, light, loading, range, rangeDistance, rangeLongDistance, reach, special, specialDescription, thrown, twoHanded, versatile, versatileDice, silver, additionalFeatures, weight, price, priceCurrency, tags, isEquipped)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+update:
+UPDATE DndWeapon SET name = ?, category = ?, weaponType = ?, damageDice = ?, damageType = ?, ammunition = ?, finesse = ?, heavy = ?, light = ?, loading = ?, range = ?, rangeDistance = ?, rangeLongDistance = ?, reach = ?, special = ?, specialDescription = ?, thrown = ?, twoHanded = ?, versatile = ?, versatileDice = ?, silver = ?, additionalFeatures = ?, weight = ?, price = ?, priceCurrency = ?, tags = ?, isEquipped = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM DndWeapon WHERE id = ?;

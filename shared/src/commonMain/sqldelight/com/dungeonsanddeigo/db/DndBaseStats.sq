@@ -1,0 +1,40 @@
+CREATE TABLE DndBaseStats (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    strValue INTEGER,
+    strMod INTEGER,
+    dexValue INTEGER,
+    dexMod INTEGER,
+    conValue INTEGER,
+    conMod INTEGER,
+    intValue INTEGER,
+    intMod INTEGER,
+    wisValue INTEGER,
+    wisMod INTEGER,
+    chaValue INTEGER,
+    chaMod INTEGER,
+    proficiency INTEGER,
+    maxLife INTEGER,
+    vision INTEGER,
+    hasDarkVision INTEGER NOT NULL DEFAULT 0,
+    speed INTEGER,
+    hasStrRes INTEGER NOT NULL DEFAULT 0,
+    hasDexRes INTEGER NOT NULL DEFAULT 0,
+    hasConRes INTEGER NOT NULL DEFAULT 0,
+    hasIntRes INTEGER NOT NULL DEFAULT 0,
+    hasWisRes INTEGER NOT NULL DEFAULT 0,
+    hasChaRes INTEGER NOT NULL DEFAULT 0,
+    emptyArmorClass INTEGER,
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndBaseStats WHERE characterId = ?;
+
+insert:
+INSERT INTO DndBaseStats(characterId, strValue, strMod, dexValue, dexMod, conValue, conMod, intValue, intMod, wisValue, wisMod, chaValue, chaMod, proficiency, maxLife, vision, hasDarkVision, speed, hasStrRes, hasDexRes, hasConRes, hasIntRes, hasWisRes, hasChaRes, emptyArmorClass)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE DndBaseStats SET strValue = ?, strMod = ?, dexValue = ?, dexMod = ?, conValue = ?, conMod = ?, intValue = ?, intMod = ?, wisValue = ?, wisMod = ?, chaValue = ?, chaMod = ?, proficiency = ?, maxLife = ?, vision = ?, hasDarkVision = ?, speed = ?, hasStrRes = ?, hasDexRes = ?, hasConRes = ?, hasIntRes = ?, hasWisRes = ?, hasChaRes = ?, emptyArmorClass = ?
+WHERE characterId = ?;

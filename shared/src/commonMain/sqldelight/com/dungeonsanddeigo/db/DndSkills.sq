@@ -1,0 +1,15 @@
+CREATE TABLE DndSkills (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    skillsJson TEXT NOT NULL,
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndSkills WHERE characterId = ?;
+
+insert:
+INSERT INTO DndSkills(characterId, skillsJson) VALUES (?, ?);
+
+update:
+UPDATE DndSkills SET skillsJson = ? WHERE characterId = ?;

@@ -1,0 +1,34 @@
+CREATE TABLE DndArmor (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    baseAC INTEGER NOT NULL DEFAULT 10,
+    acModifier TEXT NOT NULL DEFAULT 'none',
+    minimumStrength INTEGER NOT NULL DEFAULT 0,
+    hasSneakDisadvantage INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 0.0,
+    price INTEGER NOT NULL DEFAULT 0,
+    priceCurrency TEXT NOT NULL DEFAULT 'pg',
+    isEquipped INTEGER NOT NULL DEFAULT 0,
+    tags TEXT NOT NULL DEFAULT '',
+    additionalFeatures TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterId:
+SELECT * FROM DndArmor WHERE characterId = ?;
+
+insert:
+INSERT INTO DndArmor(characterId, name, type, baseAC, acModifier, minimumStrength, hasSneakDisadvantage, weight, price, priceCurrency, isEquipped, tags, additionalFeatures)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+update:
+UPDATE DndArmor SET name = ?, type = ?, baseAC = ?, acModifier = ?, minimumStrength = ?, hasSneakDisadvantage = ?, weight = ?, price = ?, priceCurrency = ?, isEquipped = ?, tags = ?, additionalFeatures = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM DndArmor WHERE id = ?;

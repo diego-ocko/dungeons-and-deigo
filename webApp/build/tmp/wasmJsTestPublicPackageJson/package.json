@@ -1,0 +1,10 @@
+{
+  "name": "dungeons-and-deigo-webApp-test",
+  "version": "0.0.0-unspecified",
+  "main": "dungeons-and-deigo-webApp-test.mjs",
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": []
+}

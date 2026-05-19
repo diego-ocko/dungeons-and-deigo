@@ -1,0 +1,10 @@
+{
+  "name": "dungeons-and-deigo-shared",
+  "version": "0.0.0-unspecified",
+  "main": "kotlin/dungeons-and-deigo-shared.mjs",
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": []
+}

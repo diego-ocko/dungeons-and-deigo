@@ -1,0 +1,10 @@
+{
+  "name": "dungeons-and-deigo-webApp",
+  "version": "0.0.0-unspecified",
+  "main": "kotlin/dungeons-and-deigo-webApp.mjs",
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": []
+}

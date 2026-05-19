@@ -1,0 +1,10 @@
+{
+  "name": "dungeons-and-deigo-shared-test",
+  "version": "0.0.0-unspecified",
+  "main": "dungeons-and-deigo-shared-test.mjs",
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": []
+}

@@ -1,0 +1,28 @@
+CREATE TABLE DndInventoryItem (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    characterId INTEGER NOT NULL,
+    category TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    quantity INTEGER NOT NULL DEFAULT 1,
+    equipped INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (characterId) REFERENCES CharacterEntity(id)
+);
+
+selectByCharacterIdAndCategory:
+SELECT * FROM DndInventoryItem WHERE characterId = ? AND category = ?;
+
+selectByCharacterId:
+SELECT * FROM DndInventoryItem WHERE characterId = ?;
+
+insert:
+INSERT INTO DndInventoryItem(characterId, category, name, description, quantity, equipped) VALUES (?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+update:
+UPDATE DndInventoryItem SET name = ?, description = ?, quantity = ?, equipped = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM DndInventoryItem WHERE id = ?;
