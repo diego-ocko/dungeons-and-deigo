@@ -32,9 +32,137 @@ import com.dungeonsanddeigo.repository.WasmDndMoneyRepository
 import com.dungeonsanddeigo.repository.WasmDndSkillsRepository
 import kotlinx.browser.window
 import kotlinx.browser.document
+import com.dungeonsanddeigo.i18n.I18n
+import com.dungeonsanddeigo.i18n.Locale
+import com.dungeonsanddeigo.i18n.t
+import com.dungeonsanddeigo.i18n.tDnd
+import com.dungeonsanddeigo.i18n.tStat
+import com.dungeonsanddeigo.i18n.tIdiom
+import com.dungeonsanddeigo.i18n.tTool
+import com.dungeonsanddeigo.i18n.tWeapon
+import com.dungeonsanddeigo.i18n.tStatus
 import kotlinx.browser.localStorage
 import org.w3c.dom.*
 import org.w3c.files.FileReader
+
+private fun tFeatureType(type: String): String = when (type) {
+    "Idiom" -> t("features.idiom")
+    "Tool Proficiency" -> t("features.toolProf")
+    "Weapon/Armor Proficiency" -> t("features.weaponArmorProf")
+    "Feature" -> t("features.feature")
+    "Rechargable Feature" -> t("features.rechargable")
+    else -> type
+}
+
+private fun tSource(source: String): String = when (source) {
+    "Class" -> t("features.source.class")
+    "Origin" -> t("features.source.origin")
+    "Race" -> t("features.source.race")
+    "Custom" -> t("features.source.custom")
+    else -> source
+}
+
+private fun tReloadRule(rule: String): String = when (rule) {
+    "Unlimited" -> t("features.reload.unlimited")
+    "Short Rest" -> t("features.reload.shortRest")
+    "Long Rest" -> t("features.reload.longRest")
+    "Day" -> t("features.reload.day")
+    else -> rule
+}
+
+private fun tSection(section: String): String = when (section) {
+    "Armor" -> t("inventory.armor")
+    "Weapons" -> t("inventory.weapons")
+    "Magic Items" -> t("inventory.magicItems")
+    "Money" -> t("inventory.money")
+    "Potions Ammo and Ration" -> t("inventory.potions")
+    "Key Items, Loot and others" -> t("inventory.other")
+    else -> section
+}
+
+private fun tArmorType(type: String): String = when (type) {
+    "Light Armor" -> t("inv.lightArmor")
+    "Medium Armor" -> t("inv.mediumArmor")
+    "Heavy Armor" -> t("inv.heavyArmor")
+    "Shield" -> t("inv.shield")
+    "Clothes" -> t("inv.clothes")
+    else -> type
+}
+
+private fun tAcModifier(mod: String): String = when (mod) {
+    "none" -> t("inv.acMod.none")
+    "Dex" -> t("inv.acMod.dex")
+    "Dex (Max: 2)" -> t("inv.acMod.dexMax2")
+    else -> mod
+}
+
+private fun tCurrency(abbr: String): String = when (abbr) {
+    "pc" -> t("coin.copper.abbr")
+    "ps" -> t("coin.silver.abbr")
+    "pe" -> t("coin.electrum.abbr")
+    "pg" -> t("coin.gold.abbr")
+    "pp" -> t("coin.platinum.abbr")
+    else -> abbr
+}
+
+private fun tLifestyle(ls: String): String = when (ls) {
+    "Wretched" -> t("inv.lifestyle.wretched")
+    "Squalid" -> t("inv.lifestyle.squalid")
+    "Poor" -> t("inv.lifestyle.poor")
+    "Modest" -> t("inv.lifestyle.modest")
+    "Comfortable" -> t("inv.lifestyle.comfortable")
+    "Wealthy" -> t("inv.lifestyle.wealthy")
+    "Aristocratic" -> t("inv.lifestyle.aristocratic")
+    else -> ls
+}
+
+private fun tSchool(school: String): String = when (school) {
+    "Abjuration" -> t("magic.school.abjuration")
+    "Conjuration" -> t("magic.school.conjuration")
+    "Divination" -> t("magic.school.divination")
+    "Enchantment" -> t("magic.school.enchantment")
+    "Evocation" -> t("magic.school.evocation")
+    "Illusion" -> t("magic.school.illusion")
+    "Necromancy" -> t("magic.school.necromancy")
+    "Transmutation" -> t("magic.school.transmutation")
+    else -> school
+}
+
+private fun tSpellDamageType(dmg: String): String = when (dmg) {
+    "Acid" -> t("magic.dmg.acid")
+    "Bludgeoning" -> t("magic.dmg.bludgeoning")
+    "Cold" -> t("magic.dmg.cold")
+    "Fire" -> t("magic.dmg.fire")
+    "Force" -> t("magic.dmg.force")
+    "Lightning" -> t("magic.dmg.lightning")
+    "Necrotic" -> t("magic.dmg.necrotic")
+    "Piercing" -> t("magic.dmg.piercing")
+    "Poison" -> t("magic.dmg.poison")
+    "Psychic" -> t("magic.dmg.psychic")
+    "Radiant" -> t("magic.dmg.radiant")
+    "Slashing" -> t("magic.dmg.slashing")
+    "Thunder" -> t("magic.dmg.thunder")
+    else -> dmg
+}
+
+private fun tCircle(circle: String): String = when (circle) {
+    "Cantrip" -> t("magic.cantrip")
+    "Circle 1" -> t("magic.circle1")
+    "Circle 2" -> t("magic.circle2")
+    "Circle 3" -> t("magic.circle3")
+    "Circle 4" -> t("magic.circle4")
+    "Circle 5" -> t("magic.circle5")
+    "Circle 6" -> t("magic.circle6")
+    "Circle 7" -> t("magic.circle7")
+    "Circle 8" -> t("magic.circle8")
+    "Circle 9" -> t("magic.circle9")
+    else -> circle
+}
+
+private fun tOriginLevel(level: String): String = when (level) {
+    "Learned by Scroll" -> t("magic.learnedByScroll")
+    else -> level
+}
 
 private val repo = WasmCharacterRepository()
 private val dndMainInfoRepo = WasmDndMainInfoRepository()
@@ -61,6 +189,9 @@ private val app by lazy {
 private fun currentTimestamp(): String = js("new Date().toLocaleString()")
 
 fun main() {
+    // Load saved locale
+    val savedLocale = localStorage.getItem("app_locale")
+    if (savedLocale == "PT_BR") I18n.current = Locale.PT_BR
     showListScreen()
 }
 
@@ -142,7 +273,7 @@ private fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
 
         // Stat name
         val lbl = document.createElement("span") as HTMLSpanElement
-        lbl.textContent = stat.label
+        lbl.textContent = tStat(stat.label)
         lbl.style.fontWeight = "bold"
         lbl.style.fontSize = "14px"
         col.appendChild(lbl)
@@ -233,17 +364,17 @@ private fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
         return input
     }
 
-    val proficiencyLabel = addExtraLabel("Proficiency", proficiency)
-    val maxLifeInput = addExtraNumber("Max Life", stats.maxLife)
-    val visionInput = addExtraNumber("Vision", stats.vision)
-    val darkVisionInput = addExtraCheckbox("Dark Vision", stats.hasDarkVision)
-    val speedInput = addExtraNumber("Speed", stats.speed)
-    val emptyArmorClassInput = addExtraNumber("No Armor AC", stats.emptyArmorClass)
+    val proficiencyLabel = addExtraLabel(t("stats.proficiency"), proficiency)
+    val maxLifeInput = addExtraNumber(t("stats.maxLife"), stats.maxLife)
+    val visionInput = addExtraNumber(t("stats.vision"), stats.vision)
+    val darkVisionInput = addExtraCheckbox(t("stats.darkVision"), stats.hasDarkVision)
+    val speedInput = addExtraNumber(t("stats.speed"), stats.speed)
+    val emptyArmorClassInput = addExtraNumber(t("stats.noArmorAC"), stats.emptyArmorClass)
 
     // Disarmed Attack Dice
     val disarmedCol = document.createElement("div") as HTMLDivElement
     val disarmedLbl = document.createElement("label") as HTMLLabelElement
-    disarmedLbl.textContent = "Disarmed Dice"
+    disarmedLbl.textContent = t("combat.disarmedDice")
     disarmedLbl.style.fontWeight = "bold"
     disarmedLbl.style.fontSize = "14px"
     disarmedCol.appendChild(disarmedLbl)
@@ -260,7 +391,7 @@ private fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
 
     // Initiative (read-only, equals Dex modifier)
     val dexMod = stats.dexValue?.let { calcModifier(it) }
-    val initiativeLabel = addExtraLabel("Initiative", dexMod)
+    val initiativeLabel = addExtraLabel(t("stats.initiative"), dexMod)
     // Update initiative when Dex value changes
     valueInputs[1].addEventListener("input", {
         val v = valueInputs[1].value.toIntOrNull()
@@ -279,7 +410,7 @@ private fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     resBox.style.maxWidth = "300px"
 
     val resTitle = document.createElement("h3") as HTMLHeadingElement
-    resTitle.textContent = "Resistance Tests"
+    resTitle.textContent = t("stats.resistanceTests")
     resTitle.style.marginTop = "0"
     resBox.appendChild(resTitle)
 
@@ -310,7 +441,7 @@ private fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
         line.appendChild(cb)
 
         val name = document.createElement("span") as HTMLSpanElement
-        name.textContent = r.label
+        name.textContent = tStat(r.label)
         name.style.width = "30px"
         name.style.fontWeight = "bold"
         line.appendChild(name)
@@ -431,7 +562,7 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
     box.style.maxWidth = "650px"
 
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Skills"
+    title.textContent = t("stats.skills")
     title.style.marginTop = "0"
     box.appendChild(title)
 
@@ -464,7 +595,7 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
 
         // Skill name
         val nameSpan = document.createElement("span") as HTMLSpanElement
-        nameSpan.textContent = skillName
+        nameSpan.textContent = t("skill.$skillName")
         nameSpan.style.width = "130px"
         nameSpan.style.fontWeight = "bold"
         nameSpan.style.fontSize = "13px"
@@ -476,7 +607,7 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         statAbbreviations.forEach { abbr ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = abbr
-            opt.textContent = abbr
+            opt.textContent = tStat(abbr)
             modSelect.appendChild(opt)
         }
         modSelect.value = currentMod
@@ -583,10 +714,10 @@ private fun featureSourceSortOrder(f: DndFeature): Int = when (f.source) {
 }
 
 private fun featureSourceLabel(f: DndFeature): String = when (f.source) {
-    "Class" -> "${f.sourceClass ?: ""} Lv.${f.sourceClassLevel ?: "?"}"
-    "Origin" -> f.sourceOrigin ?: "Origin"
-    "Race" -> listOfNotNull(f.sourceRace, f.sourceSubRace).joinToString(" / ").ifEmpty { "Race" }
-    "Custom" -> f.sourceCustom ?: "Custom"
+    "Class" -> "${tDnd("class", f.sourceClass ?: "")} Lv.${f.sourceClassLevel ?: "?"}"
+    "Origin" -> f.sourceOrigin ?: t("main.origin")
+    "Race" -> listOfNotNull(f.sourceRace?.let { tDnd("race", it) }, f.sourceSubRace?.let { tDnd("subrace", it) }).joinToString(" / ").ifEmpty { t("main.race") }
+    "Custom" -> f.sourceCustom ?: t("features.source.custom")
     else -> f.source
 }
 
@@ -650,7 +781,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     val mainAbility = DungeonsAndDragons.spellcastingAbilityFor(mainClass, mainInfo?.mainSubClass)
     if (mainAbility != null && mainClass != null) {
         val mainSubClass = mainInfo?.mainSubClass
-        val mainDisplayName = if (mainSubClass != null && mainSubClass in DungeonsAndDragons.subclassSpellcasting) "$mainClass ($mainSubClass)" else mainClass
+        val mainDisplayName = if (mainSubClass != null && mainSubClass in DungeonsAndDragons.subclassSpellcasting) "${tDnd("class", mainClass)} (${tDnd("subclass", mainSubClass)})" else tDnd("class", mainClass)
         val abilityMod = when (mainAbility) {
             "Cha" -> stats.chaValue?.let { calcModifier(it) } ?: 0
             "Int" -> stats.intValue?.let { calcModifier(it) } ?: 0
@@ -662,7 +793,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             rawClassName = mainClass,
             subClassName = mainSubClass,
             level = mainInfo?.mainClassLevel ?: 1,
-            ability = when (mainAbility) { "Cha" -> "Charisma"; "Int" -> "Intelligence"; "Wis" -> "Wisdom"; else -> mainAbility },
+            ability = when (mainAbility) { "Cha" -> tStat("Charisma"); "Int" -> tStat("Intelligence"); "Wis" -> tStat("Wisdom"); else -> mainAbility },
             abilityMod = abilityMod,
             spellMod = abilityMod + proficiency,
             spellDC = abilityMod + proficiency + 8,
@@ -675,7 +806,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     val secAbility = DungeonsAndDragons.spellcastingAbilityFor(secClass, mainInfo?.secondarySubClass)
     if (secAbility != null && secClass != null) {
         val secSubClass = mainInfo?.secondarySubClass
-        val secDisplayName = if (secSubClass != null && secSubClass in DungeonsAndDragons.subclassSpellcasting) "$secClass ($secSubClass)" else secClass
+        val secDisplayName = if (secSubClass != null && secSubClass in DungeonsAndDragons.subclassSpellcasting) "${tDnd("class", secClass)} (${tDnd("subclass", secSubClass)})" else tDnd("class", secClass)
         val abilityMod = when (secAbility) {
             "Cha" -> stats.chaValue?.let { calcModifier(it) } ?: 0
             "Int" -> stats.intValue?.let { calcModifier(it) } ?: 0
@@ -687,7 +818,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             rawClassName = secClass,
             subClassName = secSubClass,
             level = mainInfo?.secondaryClassLevel ?: 1,
-            ability = when (secAbility) { "Cha" -> "Charisma"; "Int" -> "Intelligence"; "Wis" -> "Wisdom"; else -> secAbility },
+            ability = when (secAbility) { "Cha" -> tStat("Charisma"); "Int" -> tStat("Intelligence"); "Wis" -> tStat("Wisdom"); else -> secAbility },
             abilityMod = abilityMod,
             spellMod = abilityMod + proficiency,
             spellDC = abilityMod + proficiency + 8,
@@ -774,14 +905,14 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         selectorBox.style.marginBottom = "16px"
 
         val lbl = document.createElement("label") as HTMLLabelElement
-        lbl.textContent = "$className - Select Spellcasting Ability:"
+        lbl.textContent = "$className - ${t("magic.selectAbility")}:"
         lbl.style.fontWeight = "bold"; lbl.style.marginRight = "8px"
         selectorBox.appendChild(lbl)
 
         val sel = document.createElement("select") as HTMLSelectElement
         sel.style.padding = "4px"
         val emptyOpt = document.createElement("option") as HTMLOptionElement
-        emptyOpt.value = ""; emptyOpt.textContent = "-- Select --"
+        emptyOpt.value = ""; emptyOpt.textContent = t("magic.select")
         sel.appendChild(emptyOpt)
         listOf("Str", "Dex", "Con", "Int", "Wis", "Cha").forEach { ab ->
             val opt = document.createElement("option") as HTMLOptionElement
@@ -791,7 +922,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         selectorBox.appendChild(sel)
 
         val noneOpt = document.createElement("option") as HTMLOptionElement
-        noneOpt.value = "__none__"; noneOpt.textContent = "No Spellcasting"
+        noneOpt.value = "__none__"; noneOpt.textContent = t("magic.noSpellcastingOpt")
         sel.appendChild(noneOpt)
 
         sel.addEventListener("change", {
@@ -818,13 +949,13 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
     if (casters.isEmpty() && customClassesNeedingAbility.isEmpty()) {
         val noMagic = document.createElement("p") as HTMLParagraphElement
-        noMagic.textContent = "Your class does not have spellcasting ability."
+        noMagic.textContent = t("magic.noSpellcasting")
         noMagic.style.color = "#999"
         container.appendChild(noMagic)
 
         customClassesWithNone.forEach { className ->
             val changeBtn = document.createElement("button") as HTMLButtonElement
-            changeBtn.textContent = "\u270E Change Ability ($className)"
+            changeBtn.textContent = "\u270E ${t("magic.changeAbility")} ($className)"
             changeBtn.style.fontSize = "11px"
             changeBtn.style.marginTop = "8px"
             changeBtn.style.display = "block"
@@ -854,13 +985,13 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         titleRow.style.marginBottom = "10px"
 
         val titleEl = document.createElement("h4") as HTMLHeadingElement
-        titleEl.textContent = "${caster.className} - Spellcasting"
+        titleEl.textContent = "${caster.className} - ${t("magic.spellcasting")}"
         titleEl.style.margin = "0"
         titleRow.appendChild(titleEl)
 
         if (caster.isCustom) {
             val changeBtn = document.createElement("button") as HTMLButtonElement
-            changeBtn.textContent = "\u270E Change Ability"
+            changeBtn.textContent = "\u270E " + t("magic.changeAbility")
             changeBtn.style.fontSize = "11px"
             changeBtn.addEventListener("click", {
                 localStorage.removeItem("dnd_custom_spell_ability_${character.id}_${caster.className}")
@@ -874,7 +1005,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
         if (caster.ritualOnly) {
             val ritualMsg = document.createElement("p") as HTMLParagraphElement
-            ritualMsg.textContent = "\u26A0\uFE0F Only cast magics as rituals"
+            ritualMsg.textContent = "\u26A0\uFE0F " + t("magic.ritualOnly")
             ritualMsg.style.color = "#c00"
             ritualMsg.style.fontSize = "13px"
             ritualMsg.style.margin = "0 0 10px 0"
@@ -900,19 +1031,19 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             grid.appendChild(col)
         }
 
-        addStat("Ability", caster.ability)
-        addStat("Spell Modifier", if (caster.spellMod >= 0) "+${caster.spellMod}" else "${caster.spellMod}")
-        addStat("Spell DC", caster.spellDC.toString())
+        addStat(t("magic.ability"), caster.ability)
+        addStat(t("magic.spellMod"), if (caster.spellMod >= 0) "+${caster.spellMod}" else "${caster.spellMod}")
+        addStat(t("magic.spellDC"), caster.spellDC.toString())
 
         val casterSpells = dndSpellRepo.getByCharacterId(character.id).filter { it.originClass == caster.className }
         val cantripsCount = casterSpells.count { it.circle == "Cantrip" }
         val spellsCount = casterSpells.count { it.circle != "Cantrip" }
         val preparedCount = casterSpells.count { it.isPrepared && it.circle != "Cantrip" }
 
-        addStat("Cantrips Known", cantripsCount.toString())
-        addStat("Spells Known", spellsCount.toString())
+        addStat(t("magic.cantripsKnown"), cantripsCount.toString())
+        addStat(t("magic.spellsKnown"), spellsCount.toString())
         if (caster.needsPreparation) {
-            addStat("Prepared", preparedCount.toString())
+            addStat(t("magic.prepared"), preparedCount.toString())
         }
 
         box.appendChild(grid)
@@ -956,7 +1087,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
     // Add Spell button
     val addSpellBtn = document.createElement("button") as HTMLButtonElement
-    addSpellBtn.textContent = "\u2728 Add Spell"
+    addSpellBtn.textContent = "\u2728 " + t("magic.addSpell")
     addSpellBtn.style.marginBottom = "16px"
     addSpellBtn.addEventListener("click", {
         showSpellModal(character, null) {
@@ -985,7 +1116,7 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         col.style.padding = "10px"
 
         val colTitle = document.createElement("h5") as HTMLHeadingElement
-        colTitle.textContent = if (circle == "Cantrip") "Cantrips" else circle
+        colTitle.textContent = if (circle == "Cantrip") t("magic.cantrips") else tCircle(circle)
         colTitle.style.margin = "0 0 8px 0"
         col.appendChild(colTitle)
 
@@ -1054,10 +1185,10 @@ private fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             line2.style.color = "#666"
             line2.style.fontSize = "11px"
             line2.style.marginTop = "2px"
-            val originStr = "${spell.originClass} (${spell.originLevel})"
+            val originStr = "${tDnd("class", spell.originClass)} (${tOriginLevel(spell.originLevel)})"
             val rangeStr = if (spell.range.isNotEmpty()) "${spell.range}m" else ""
-            val ritualStr = if (spell.canBeRitual) " | \uD83D\uDD2E Ritual" else ""
-            val concStr = if (spell.needsConcentration) " | \uD83C\uDFAF Conc." else ""
+            val ritualStr = if (spell.canBeRitual) " | \uD83D\uDD2E ${t("magic.ritualShort")}" else ""
+            val concStr = if (spell.needsConcentration) " | \uD83C\uDFAF ${t("magic.concShort")}" else ""
             line2.textContent = "$originStr | ${spell.castingTime} | ${spell.duration} | $rangeStr$ritualStr$concStr"
             row.appendChild(line2)
 
@@ -1087,7 +1218,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     modal.style.maxHeight = "85vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Spell" else "Add Spell"
+    titleEl.textContent = if (existing != null) t("magic.editSpell") else t("magic.addSpell")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -1115,23 +1246,23 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
         return input
     }
 
-    fun labeledSelect(parent: HTMLDivElement, label: String, options: List<String>, value: String): HTMLSelectElement {
+    fun labeledSelect(parent: HTMLDivElement, label: String, options: List<String>, value: String, translator: ((String) -> String)? = null): HTMLSelectElement {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label; lbl.style.fontWeight = "bold"; lbl.style.fontSize = "11px"; lbl.style.display = "block"
         col.appendChild(lbl)
         val sel = document.createElement("select") as HTMLSelectElement
         sel.style.width = "100%"; sel.style.padding = "4px"
-        options.forEach { o -> val opt = document.createElement("option") as HTMLOptionElement; opt.value = o; opt.textContent = o; sel.appendChild(opt) }
+        options.forEach { o -> val opt = document.createElement("option") as HTMLOptionElement; opt.value = o; opt.textContent = translator?.invoke(o) ?: o; sel.appendChild(opt) }
         sel.value = value
         col.appendChild(sel)
         parent.appendChild(col)
         return sel
     }
 
-    val nameInput = labeledInput(row1, "Name", existing?.name ?: "")
-    val originClassSel = labeledSelect(row1, "Origin Class", classes.ifEmpty { listOf("") }, existing?.originClass ?: classes.firstOrNull() ?: "")
-    val originLevelSel = labeledSelect(row1, "Origin Level", com.dungeonsanddeigo.model.DndSpell.originLevels, existing?.originLevel ?: "1")
+    val nameInput = labeledInput(row1, t("label.name"), existing?.name ?: "")
+    val originClassSel = labeledSelect(row1, t("magic.originClass"), classes.ifEmpty { listOf("") }, existing?.originClass ?: classes.firstOrNull() ?: "") { tDnd("class", it) }
+    val originLevelSel = labeledSelect(row1, t("magic.originLevel"), com.dungeonsanddeigo.model.DndSpell.originLevels, existing?.originLevel ?: "1") { tOriginLevel(it) }
     form.appendChild(row1)
 
     // Row 2: Circle, School, Prepared
@@ -1140,12 +1271,12 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     row2.style.setProperty("grid-template-columns", "1fr 1fr 1fr")
     row2.style.setProperty("gap", "8px")
 
-    val circleSel = labeledSelect(row2, "Circle", com.dungeonsanddeigo.model.DndSpell.circles, existing?.circle ?: "Cantrip")
-    val schoolSel = labeledSelect(row2, "School", com.dungeonsanddeigo.model.DndSpell.schools, existing?.school ?: com.dungeonsanddeigo.model.DndSpell.schools.first())
+    val circleSel = labeledSelect(row2, t("magic.circle"), com.dungeonsanddeigo.model.DndSpell.circles, existing?.circle ?: "Cantrip") { tCircle(it) }
+    val schoolSel = labeledSelect(row2, t("magic.school"), com.dungeonsanddeigo.model.DndSpell.schools, existing?.school ?: com.dungeonsanddeigo.model.DndSpell.schools.first()) { tSchool(it) }
 
     val prepCol = document.createElement("div") as HTMLDivElement
     val prepLbl = document.createElement("label") as HTMLLabelElement
-    prepLbl.textContent = "Prepared"; prepLbl.style.fontWeight = "bold"; prepLbl.style.fontSize = "11px"; prepLbl.style.display = "block"
+    prepLbl.textContent = t("magic.prepared"); prepLbl.style.fontWeight = "bold"; prepLbl.style.fontSize = "11px"; prepLbl.style.display = "block"
     prepCol.appendChild(prepLbl)
     val preparedCb = document.createElement("input") as HTMLInputElement
     preparedCb.type = "checkbox"; preparedCb.checked = existing?.isPrepared ?: false
@@ -1172,13 +1303,13 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     row3.style.setProperty("gap", "8px")
     row3.style.alignItems = "end"
 
-    val castingTimeInput = labeledInput(row3, "Casting Time", existing?.castingTime ?: "")
-    val durationInput = labeledInput(row3, "Duration", existing?.duration ?: "")
+    val castingTimeInput = labeledInput(row3, t("magic.castingTime"), existing?.castingTime ?: "")
+    val durationInput = labeledInput(row3, t("magic.duration"), existing?.duration ?: "")
 
     // Range with m suffix
     val rangeCol = document.createElement("div") as HTMLDivElement
     val rangeLbl = document.createElement("label") as HTMLLabelElement
-    rangeLbl.textContent = "Range"; rangeLbl.style.fontWeight = "bold"; rangeLbl.style.fontSize = "11px"; rangeLbl.style.display = "block"
+    rangeLbl.textContent = t("magic.range"); rangeLbl.style.fontWeight = "bold"; rangeLbl.style.fontSize = "11px"; rangeLbl.style.display = "block"
     rangeCol.appendChild(rangeLbl)
     val rangeRow = document.createElement("div") as HTMLDivElement
     rangeRow.style.display = "flex"; rangeRow.style.alignItems = "center"; rangeRow.style.setProperty("gap", "2px")
@@ -1199,7 +1330,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     val ritualCb = document.createElement("input") as HTMLInputElement
     ritualCb.type = "checkbox"; ritualCb.checked = existing?.canBeRitual ?: false
     ritualCb.style.marginRight = "4px"
-    ritualLbl.appendChild(ritualCb); ritualLbl.append("Ritual")
+    ritualLbl.appendChild(ritualCb); ritualLbl.append(t("magic.ritual"))
     ritualLbl.style.fontSize = "12px"
     ritualCol.appendChild(ritualLbl)
     row3.appendChild(ritualCol)
@@ -1222,14 +1353,14 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
         return cb
     }
 
-    val concentrationCb = inlineCb(row4, "Concentration", existing?.needsConcentration ?: false)
+    val concentrationCb = inlineCb(row4, t("magic.concentration"), existing?.needsConcentration ?: false)
     val verbalCb = inlineCb(row4, "V", existing?.hasVerbal ?: false)
     val somaticCb = inlineCb(row4, "S", existing?.hasSomatic ?: false)
     val materialCb = inlineCb(row4, "M", existing?.hasMaterial ?: false)
 
     val materialInput = document.createElement("input") as HTMLInputElement
     materialInput.value = existing?.materialComponents ?: ""
-    materialInput.placeholder = "Material components..."
+    materialInput.placeholder = t("magic.materialComponents")
     materialInput.style.padding = "4px"; materialInput.style.width = "100%"
     materialInput.style.display = if (existing?.hasMaterial == true) "" else "none"
     row4.appendChild(materialInput)
@@ -1242,7 +1373,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
 
     // Description
     val descLbl = document.createElement("label") as HTMLLabelElement
-    descLbl.textContent = "Description"; descLbl.style.fontWeight = "bold"; descLbl.style.fontSize = "11px"
+    descLbl.textContent = t("label.description"); descLbl.style.fontWeight = "bold"; descLbl.style.fontSize = "11px"
     form.appendChild(descLbl)
     val descInput = document.createElement("textarea") as HTMLTextAreaElement
     descInput.value = existing?.description ?: ""; descInput.rows = 4; descInput.style.width = "100%"
@@ -1250,7 +1381,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
 
     // Higher Circles
     val higherLbl = document.createElement("label") as HTMLLabelElement
-    higherLbl.textContent = "At Higher Circles"; higherLbl.style.fontWeight = "bold"; higherLbl.style.fontSize = "11px"
+    higherLbl.textContent = t("magic.higherCircles"); higherLbl.style.fontWeight = "bold"; higherLbl.style.fontSize = "11px"
     form.appendChild(higherLbl)
     val higherInput = document.createElement("textarea") as HTMLTextAreaElement
     higherInput.value = existing?.higherCircles ?: ""; higherInput.rows = 2; higherInput.style.width = "100%"
@@ -1262,13 +1393,13 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     val attackLbl = document.createElement("label") as HTMLLabelElement
     val attackCb = document.createElement("input") as HTMLInputElement
     attackCb.type = "checkbox"; attackCb.checked = existing?.isAttack ?: false; attackCb.style.marginRight = "4px"
-    attackLbl.appendChild(attackCb); attackLbl.append("This is an Attack"); attackLbl.style.fontWeight = "bold"; attackLbl.style.fontSize = "12px"
+    attackLbl.appendChild(attackCb); attackLbl.append(t("magic.isAttack")); attackLbl.style.fontWeight = "bold"; attackLbl.style.fontSize = "12px"
     attackRow.appendChild(attackLbl)
 
     val savingThrowLbl = document.createElement("label") as HTMLLabelElement
     val savingThrowCb = document.createElement("input") as HTMLInputElement
     savingThrowCb.type = "checkbox"; savingThrowCb.checked = existing?.needsSavingThrow ?: false; savingThrowCb.style.marginRight = "4px"
-    savingThrowLbl.appendChild(savingThrowCb); savingThrowLbl.append("Need Saving Throw"); savingThrowLbl.style.fontWeight = "bold"; savingThrowLbl.style.fontSize = "12px"
+    savingThrowLbl.appendChild(savingThrowCb); savingThrowLbl.append(t("magic.needSavingThrow")); savingThrowLbl.style.fontWeight = "bold"; savingThrowLbl.style.fontSize = "12px"
     attackRow.appendChild(savingThrowLbl)
     form.appendChild(attackRow)
 
@@ -1279,8 +1410,8 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     atkDetailsRow.style.setProperty("gap", "8px")
     atkDetailsRow.style.display = if (existing?.isAttack == true) "grid" else "none"
 
-    val diceInput = labeledInput(atkDetailsRow, "Damage Dice", existing?.attackDamageDice ?: "")
-    val dmgTypeSel = labeledSelect(atkDetailsRow, "Damage Type", com.dungeonsanddeigo.model.DndSpell.damageTypes, existing?.attackDamageType ?: "Fire")
+    val diceInput = labeledInput(atkDetailsRow, t("inv.damageDice"), existing?.attackDamageDice ?: "")
+    val dmgTypeSel = labeledSelect(atkDetailsRow, t("inv.damageType"), com.dungeonsanddeigo.model.DndSpell.damageTypes, existing?.attackDamageType ?: "Fire") { tSpellDamageType(it) }
     form.appendChild(atkDetailsRow)
 
     // Saving Throw details (Save Ability)
@@ -1291,7 +1422,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     saveDetailsRow.style.maxWidth = "200px"
     saveDetailsRow.style.display = if (existing?.needsSavingThrow == true) "grid" else "none"
 
-    val saveSel = labeledSelect(saveDetailsRow, "Save Ability", com.dungeonsanddeigo.model.DndSpell.savingThrowAbilities, existing?.savingThrowAbility ?: "Dex")
+    val saveSel = labeledSelect(saveDetailsRow, t("magic.saveAbility"), com.dungeonsanddeigo.model.DndSpell.savingThrowAbilities, existing?.savingThrowAbility ?: "Dex") { tStat(it) }
     form.appendChild(saveDetailsRow)
 
     // Independent toggles: both can be enabled
@@ -1306,7 +1437,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     val selectedTags = mutableListOf<String>()
     if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"; tagsLbl.style.fontSize = "11px"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"; tagsLbl.style.fontSize = "11px"
     form.appendChild(tagsLbl)
     val tagBadges = document.createElement("div") as HTMLDivElement
     tagBadges.style.display = "flex"; tagBadges.style.setProperty("flex-wrap", "wrap"); tagBadges.style.setProperty("gap", "4px"); tagBadges.style.marginBottom = "6px"
@@ -1328,7 +1459,7 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val t = tagInput.value.trim()
         if (t.isNotEmpty() && t !in selectedTags) { selectedTags.add(t); refreshSpellTags() }
@@ -1345,12 +1476,12 @@ private fun showSpellModal(character: Character, existing: com.dungeonsanddeigo.
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val spell = com.dungeonsanddeigo.model.DndSpell(
             id = existing?.id ?: 0,
@@ -1400,7 +1531,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
     appearanceBox.style.setProperty("flex", "1")
 
     val appearanceTitle = document.createElement("h4") as HTMLHeadingElement
-    appearanceTitle.textContent = "Appearance"
+    appearanceTitle.textContent = t("background.appearance")
     appearanceTitle.style.margin = "0 0 12px 0"
     appearanceBox.appendChild(appearanceTitle)
 
@@ -1438,7 +1569,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
 
     // Change picture button
     val changeImgBtn = document.createElement("button") as HTMLButtonElement
-    changeImgBtn.textContent = "\uD83D\uDCF7 Change"
+    changeImgBtn.textContent = "\uD83D\uDCF7 " + t("bg.change")
     changeImgBtn.style.fontSize = "11px"
     changeImgBtn.style.marginTop = "8px"
     changeImgBtn.style.display = "block"
@@ -1481,7 +1612,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
     // Character name (editable with autosave)
     val nameDiv = document.createElement("div") as HTMLDivElement
     val nameLabel = document.createElement("div") as HTMLDivElement
-    nameLabel.textContent = "Name"
+    nameLabel.textContent = t("label.name")
     nameLabel.style.fontSize = "12px"
     nameLabel.style.color = "#666"
     nameLabel.style.marginBottom = "4px"
@@ -1571,7 +1702,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
         row.appendChild(colorPicker)
 
         val colorLabel = document.createElement("span") as HTMLSpanElement
-        colorLabel.textContent = value.ifEmpty { "Pick a color" }
+        colorLabel.textContent = value.ifEmpty { t("bg.pickColor") }
         colorLabel.style.fontSize = "14px"
         row.appendChild(colorLabel)
 
@@ -1596,18 +1727,18 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
         return input
     }
 
-    val ageInput = addDetailField("Age", appearance.age)
-    val heightInput = addDetailField("Height", appearance.height)
-    val weightInput = addDetailField("Weight", appearance.weight)
-    val eyeColorInput = addColorField("Eye Color", appearance.eyeColor)
-    val skinColorInput = addColorField("Skin Color", appearance.skinColor)
-    val hairColorInput = addColorField("Hair Color", appearance.hairColor)
+    val ageInput = addDetailField(t("bg.age"), appearance.age)
+    val heightInput = addDetailField(t("bg.height"), appearance.height)
+    val weightInput = addDetailField(t("bg.weight"), appearance.weight)
+    val eyeColorInput = addColorField(t("bg.eyeColor"), appearance.eyeColor)
+    val skinColorInput = addColorField(t("bg.skinColor"), appearance.skinColor)
+    val hairColorInput = addColorField(t("bg.hairColor"), appearance.hairColor)
 
     appearanceBox.appendChild(detailsForm)
 
     // Description textarea
     val descLabel = document.createElement("label") as HTMLLabelElement
-    descLabel.textContent = "Appearance Description"
+    descLabel.textContent = t("bg.appearanceDesc")
     descLabel.style.fontWeight = "bold"; descLabel.style.fontSize = "12px"
     descLabel.style.display = "block"; descLabel.style.marginTop = "12px"; descLabel.style.marginBottom = "4px"
     appearanceBox.appendChild(descLabel)
@@ -1661,7 +1792,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
     backstoryBox.style.setProperty("flex", "1")
 
     val backstoryTitle = document.createElement("h4") as HTMLHeadingElement
-    backstoryTitle.textContent = "Backstory"
+    backstoryTitle.textContent = t("background.backstory")
     backstoryTitle.style.margin = "0 0 12px 0"
     backstoryBox.appendChild(backstoryTitle)
 
@@ -1687,11 +1818,11 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
         return ta
     }
 
-    val traitsInput = addTextArea(personalityGrid, "Personality Traits", backstory.personalityTraits)
-    val idealsInput = addTextArea(personalityGrid, "Ideals", backstory.ideals)
-    val bondsInput = addTextArea(personalityGrid, "Bonds", backstory.bonds)
-    val defectsInput = addTextArea(personalityGrid, "Defects", backstory.defects)
-    val habitsInput = addTextArea(personalityGrid, "Habits", backstory.habits)
+    val traitsInput = addTextArea(personalityGrid, t("bg.personalityTraits"), backstory.personalityTraits)
+    val idealsInput = addTextArea(personalityGrid, t("bg.ideals"), backstory.ideals)
+    val bondsInput = addTextArea(personalityGrid, t("bg.bonds"), backstory.bonds)
+    val defectsInput = addTextArea(personalityGrid, t("bg.defects"), backstory.defects)
+    val habitsInput = addTextArea(personalityGrid, t("bg.habits"), backstory.habits)
 
     backstoryBox.appendChild(personalityGrid)
 
@@ -1707,7 +1838,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
     factionCb.type = "checkbox"; factionCb.checked = backstory.hasFaction
     factionCb.style.marginRight = "6px"
     factionCheckLabel.appendChild(factionCb)
-    factionCheckLabel.append("Has Faction?")
+    factionCheckLabel.append(t("bg.hasFaction"))
     factionSection.appendChild(factionCheckLabel)
 
     val factionDetails = document.createElement("div") as HTMLDivElement
@@ -1716,7 +1847,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
 
     // Faction Name
     val factionNameLbl = document.createElement("label") as HTMLLabelElement
-    factionNameLbl.textContent = "Faction Name"; factionNameLbl.style.fontWeight = "bold"; factionNameLbl.style.fontSize = "12px"
+    factionNameLbl.textContent = t("bg.factionName"); factionNameLbl.style.fontWeight = "bold"; factionNameLbl.style.fontSize = "12px"
     factionNameLbl.style.display = "block"; factionNameLbl.style.marginBottom = "4px"
     factionDetails.appendChild(factionNameLbl)
     val factionNameInput = document.createElement("input") as HTMLInputElement
@@ -1726,7 +1857,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
 
     // Faction Symbol
     val factionSymbolLbl = document.createElement("label") as HTMLLabelElement
-    factionSymbolLbl.textContent = "Faction Symbol"; factionSymbolLbl.style.fontWeight = "bold"; factionSymbolLbl.style.fontSize = "12px"
+    factionSymbolLbl.textContent = t("bg.factionSymbol"); factionSymbolLbl.style.fontWeight = "bold"; factionSymbolLbl.style.fontSize = "12px"
     factionSymbolLbl.style.display = "block"; factionSymbolLbl.style.marginBottom = "4px"
     factionDetails.appendChild(factionSymbolLbl)
 
@@ -1764,7 +1895,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
     })
 
     // Faction Backstory
-    val factionBackstoryInput = addTextArea(factionDetails, "Faction Backstory", backstory.factionBackstory)
+    val factionBackstoryInput = addTextArea(factionDetails, t("bg.factionBackstory"), backstory.factionBackstory)
 
     factionCb.addEventListener("change", {
         factionDetails.style.display = if (factionCb.checked) "block" else "none"
@@ -1775,7 +1906,7 @@ private fun renderDndBackgroundTab(character: Character, container: HTMLDivEleme
 
     // Character Backstory
     val charBackstoryLbl = document.createElement("label") as HTMLLabelElement
-    charBackstoryLbl.textContent = "Character Backstory"; charBackstoryLbl.style.fontWeight = "bold"; charBackstoryLbl.style.fontSize = "12px"
+    charBackstoryLbl.textContent = t("bg.charBackstory"); charBackstoryLbl.style.fontWeight = "bold"; charBackstoryLbl.style.fontSize = "12px"
     charBackstoryLbl.style.display = "block"; charBackstoryLbl.style.marginBottom = "4px"
     charBackstoryLbl.style.borderTop = "1px solid #eee"; charBackstoryLbl.style.paddingTop = "12px"
     backstoryBox.appendChild(charBackstoryLbl)
@@ -1827,7 +1958,7 @@ private fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
         container.innerHTML = ""
 
         val addBtn = document.createElement("button") as HTMLButtonElement
-        addBtn.textContent = "\uD83D\uDCDD Add Note"
+        addBtn.textContent = "\uD83D\uDCDD " + t("notes.addNote")
         addBtn.style.marginBottom = "16px"
         addBtn.addEventListener("click", {
             showNoteModal(character, null) { refresh() }
@@ -1838,7 +1969,7 @@ private fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
 
         if (notes.isEmpty()) {
             val empty = document.createElement("p") as HTMLParagraphElement
-            empty.textContent = "No notes yet."
+            empty.textContent = t("notes.noNotes")
             empty.style.color = "#999"
             container.appendChild(empty)
             return
@@ -1869,7 +2000,7 @@ private fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
             metaDiv.style.textAlign = "right"
             if (note.session.isNotEmpty()) {
                 val sessionSpan = document.createElement("div") as HTMLDivElement
-                sessionSpan.textContent = "Session: ${note.session}"
+                sessionSpan.textContent = "${t("notes.sessionLabel")}: ${note.session}"
                 metaDiv.appendChild(sessionSpan)
             }
             val timeSpan = document.createElement("div") as HTMLDivElement
@@ -1912,13 +2043,13 @@ private fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
             actions.style.setProperty("gap", "8px")
 
             val editBtn = document.createElement("button") as HTMLButtonElement
-            editBtn.textContent = "Edit"
+            editBtn.textContent = t("btn.edit")
             editBtn.style.fontSize = "11px"
             editBtn.addEventListener("click", { showNoteModal(character, note) { refresh() } })
             actions.appendChild(editBtn)
 
             val deleteBtn = document.createElement("button") as HTMLButtonElement
-            deleteBtn.textContent = "Delete"
+            deleteBtn.textContent = t("btn.delete")
             deleteBtn.style.fontSize = "11px"; deleteBtn.style.color = "red"
             deleteBtn.addEventListener("click", {
                 dndNoteRepo.delete(character.id, note.id)
@@ -1951,7 +2082,7 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Note" else "Add Note"
+    titleEl.textContent = if (existing != null) t("notes.editNote") else t("notes.addNote")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -1960,7 +2091,7 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
 
     // Title
     val titleLbl = document.createElement("label") as HTMLLabelElement
-    titleLbl.textContent = "Title"; titleLbl.style.fontWeight = "bold"
+    titleLbl.textContent = t("notes.title"); titleLbl.style.fontWeight = "bold"
     form.appendChild(titleLbl)
     val titleInput = document.createElement("input") as HTMLInputElement
     titleInput.value = existing?.title ?: ""
@@ -1969,7 +2100,7 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
 
     // Session
     val sessionLbl = document.createElement("label") as HTMLLabelElement
-    sessionLbl.textContent = "Session"; sessionLbl.style.fontWeight = "bold"
+    sessionLbl.textContent = t("notes.session"); sessionLbl.style.fontWeight = "bold"
     form.appendChild(sessionLbl)
     val sessionInput = document.createElement("input") as HTMLInputElement
     sessionInput.value = existing?.session ?: ""
@@ -1979,7 +2110,7 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
 
     // Note
     val noteLbl = document.createElement("label") as HTMLLabelElement
-    noteLbl.textContent = "Note"; noteLbl.style.fontWeight = "bold"
+    noteLbl.textContent = t("notes.note"); noteLbl.style.fontWeight = "bold"
     form.appendChild(noteLbl)
     val noteInput = document.createElement("textarea") as HTMLTextAreaElement
     noteInput.value = existing?.note ?: ""
@@ -1991,7 +2122,7 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
     if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
 
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
     form.appendChild(tagsLbl)
 
     val tagBadgesDiv = document.createElement("div") as HTMLDivElement
@@ -2024,7 +2155,7 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshNoteTags() }
@@ -2041,12 +2172,12 @@ private fun showNoteModal(character: Character, existing: com.dungeonsanddeigo.m
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val now = currentTimestamp()
         val note = com.dungeonsanddeigo.model.DndNote(
@@ -2094,13 +2225,13 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
             header.style.marginBottom = "8px"
 
             val title = document.createElement("h4") as HTMLHeadingElement
-            title.textContent = section
+            title.textContent = tSection(section)
             title.style.margin = "0"
             header.appendChild(title)
 
             if (section != "Money") {
                 val addBtn = document.createElement("button") as HTMLButtonElement
-                addBtn.textContent = "+ Add"
+                addBtn.textContent = t("inv.add")
                 addBtn.style.fontSize = "12px"
                 addBtn.addEventListener("click", {
                     when (section) {
@@ -2149,15 +2280,15 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                     return input
                 }
 
-                val cpInput = addCoinField("Copper", "pc", money.copper)
-                val spInput = addCoinField("Silver", "ps", money.silver)
-                val epInput = addCoinField("Electrum", "pe", money.electrum)
-                val gpInput = addCoinField("Gold", "pg", money.gold)
-                val ppInput = addCoinField("Platinum", "pp", money.platinum)
+                val cpInput = addCoinField(t("coin.copper"), t("coin.copper.abbr"), money.copper)
+                val spInput = addCoinField(t("coin.silver"), t("coin.silver.abbr"), money.silver)
+                val epInput = addCoinField(t("coin.electrum"), t("coin.electrum.abbr"), money.electrum)
+                val gpInput = addCoinField(t("coin.gold"), t("coin.gold.abbr"), money.gold)
+                val ppInput = addCoinField(t("coin.platinum"), t("coin.platinum.abbr"), money.platinum)
 
                 // Lifestyle
                 val lifeLbl = document.createElement("label") as HTMLLabelElement
-                lifeLbl.textContent = "Lifestyle"; lifeLbl.style.fontWeight = "bold"
+                lifeLbl.textContent = t("inv.lifestyle"); lifeLbl.style.fontWeight = "bold"
                 coinsGrid.appendChild(lifeLbl)
                 val lifeSelect = document.createElement("select") as HTMLSelectElement
                 lifeSelect.style.width = "100%"
@@ -2166,7 +2297,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 lifeSelect.appendChild(emptyOpt)
                 DndMoney.lifestyles.forEach { ls ->
                     val opt = document.createElement("option") as HTMLOptionElement
-                    opt.value = ls; opt.textContent = ls
+                    opt.value = ls; opt.textContent = tLifestyle(ls)
                     lifeSelect.appendChild(opt)
                 }
                 lifeSelect.value = money.lifestyle
@@ -2180,19 +2311,19 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 costLabel.style.marginTop = "4px"
 
                 fun lifestyleCost(ls: String): String = when (ls) {
-                    "Wretched" -> "No Cost"
-                    "Squalid" -> "1 ps / day"
-                    "Poor" -> "2 ps / day"
-                    "Modest" -> "1 pg / day"
-                    "Comfortable" -> "2 pg / day"
-                    "Wealthy" -> "4 pg / day"
-                    "Aristocratic" -> "10 pg / day"
+                    "Wretched" -> t("inv.noCost")
+                    "Squalid" -> "1 ${t("coin.silver.abbr")} / ${t("inv.perDay")}"
+                    "Poor" -> "2 ${t("coin.silver.abbr")} / ${t("inv.perDay")}"
+                    "Modest" -> "1 ${t("coin.gold.abbr")} / ${t("inv.perDay")}"
+                    "Comfortable" -> "2 ${t("coin.gold.abbr")} / ${t("inv.perDay")}"
+                    "Wealthy" -> "4 ${t("coin.gold.abbr")} / ${t("inv.perDay")}"
+                    "Aristocratic" -> "10 ${t("coin.gold.abbr")} / ${t("inv.perDay")}"
                     else -> ""
                 }
 
                 fun updateCostLabel() {
                     val cost = lifestyleCost(lifeSelect.value)
-                    costLabel.textContent = if (cost.isNotEmpty()) "Cost per day: $cost" else ""
+                    costLabel.textContent = if (cost.isNotEmpty()) "${t("inv.costPerDay")}: $cost" else ""
                 }
                 updateCostLabel()
                 lifeSelect.addEventListener("change", { updateCostLabel() })
@@ -2260,7 +2391,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 // Display AC
                 // Check proficiencies and stats for warnings
                 val features = dndFeaturesRepo.getByCharacterId(character.id)
-                val weaponArmorFeatures = features.filter { it.type == "Weapon/Armor Proficiency" || it.type == "Proficiency" }
+                val weaponArmorFeatures = features.filter { it.type == "Weapon/Armor Proficiency" || it.type == t("stats.proficiency") }
                 val armorProficiencies = mutableSetOf<String>()
                 weaponArmorFeatures.forEach { f ->
                     f.description.split(",").map { it.trim() }.forEach { entry ->
@@ -2295,7 +2426,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 acNumber.style.fontWeight = "bold"
                 acDisplay.appendChild(acNumber)
                 val acLabel = document.createElement("div") as HTMLDivElement
-                acLabel.textContent = "AC"
+                acLabel.textContent = t("stats.ac")
                 acLabel.style.fontSize = "12px"
                 acLabel.style.color = "#666"
                 acDisplay.appendChild(acLabel)
@@ -2312,7 +2443,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
 
                 if (lacksAnyProf) {
                     val warning = document.createElement("div") as HTMLDivElement
-                    warning.textContent = "\u26A0\uFE0F Lack Proficiency: Disadvantages on Tests, Saving Throws and attacks for Str and Dex. Cannot use magic."
+                    warning.textContent = "\u26A0\uFE0F " + t("inv.lackProf")
                     warning.style.color = "#c00"
                     warning.style.fontSize = "12px"
                     warning.style.marginBottom = "4px"
@@ -2321,7 +2452,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
 
                 if (equippedArmor?.hasSneakDisadvantage == true) {
                     val sneakWarn = document.createElement("div") as HTMLDivElement
-                    sneakWarn.textContent = "\u26A0\uFE0F Equipped armor has Disadvantages on Tests for Dex (Stealth)"
+                    sneakWarn.textContent = "\u26A0\uFE0F " + t("inv.sneakDisadvWarn")
                     sneakWarn.style.color = "#c00"
                     sneakWarn.style.fontSize = "12px"
                     sneakWarn.style.marginBottom = "4px"
@@ -2330,7 +2461,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
 
                 if (lacksStrength) {
                     val strWarn = document.createElement("div") as HTMLDivElement
-                    strWarn.textContent = "\u26A0\uFE0F Need more strength to use this armor. Your speed is reduced by 3"
+                    strWarn.textContent = "\u26A0\uFE0F " + t("inv.needStrength")
                     strWarn.style.color = "#c00"
                     strWarn.style.fontSize = "12px"
                     strWarn.style.marginBottom = "4px"
@@ -2350,7 +2481,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 if (lacksStrength) speedNumber.style.color = "#c00"
                 speedDisplay.appendChild(speedNumber)
                 val speedLabel = document.createElement("div") as HTMLDivElement
-                speedLabel.textContent = "Speed"
+                speedLabel.textContent = t("stats.speed")
                 speedLabel.style.fontSize = "12px"
                 speedLabel.style.color = "#666"
                 speedDisplay.appendChild(speedLabel)
@@ -2360,7 +2491,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
 
                 if (armors.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
-                    placeholder.textContent = "No armor yet."
+                    placeholder.textContent = t("inv.noArmor")
                     placeholder.style.color = "#999"
                     placeholder.style.fontSize = "13px"
                     box.appendChild(placeholder)
@@ -2412,16 +2543,16 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                         val warnings = StringBuilder()
                         if (!hasProficiency) warnings.append("\u26A0\uFE0F ")
                         if (hasStrWarning) warnings.append("\u26A0\uFE0F ")
-                        val sneakStr = if (armor.hasSneakDisadvantage) " | Sneak Disadv." else ""
-                        val strStr = if (armor.minimumStrength > 0) " | Min Str: ${armor.minimumStrength}" else ""
+                        val sneakStr = if (armor.hasSneakDisadvantage) " | " + t("inv.sneakDisadvShort") else ""
+                        val strStr = if (armor.minimumStrength > 0) " | ${t("inv.minStr")}: ${armor.minimumStrength}" else ""
                         if (armor.type == "Clothes") {
                             val featText = if (armor.additionalFeatures.isNotEmpty()) {
                                 val truncated = if (armor.additionalFeatures.length > 50) armor.additionalFeatures.take(50) + "..." else armor.additionalFeatures
                                 " | $truncated"
                             } else ""
-                            line2.textContent = "${armor.type} | ${armor.weight}kg | ${armor.price} ${armor.priceCurrency}$featText"
+                            line2.textContent = "${tArmorType(armor.type)} | ${armor.weight}kg | ${armor.price} ${tCurrency(armor.priceCurrency)}$featText"
                         } else {
-                            line2.textContent = "$warnings${armor.type} | AC: ${armor.baseAC} (${armor.acModifier})$strStr$sneakStr | ${armor.weight}kg | ${armor.price} ${armor.priceCurrency}"
+                            line2.textContent = "$warnings${tArmorType(armor.type)} | ${t("inv.baseAC")}: ${armor.baseAC} (${tAcModifier(armor.acModifier)})$strStr$sneakStr | ${armor.weight}kg | ${armor.price} ${tCurrency(armor.priceCurrency)}"
                         }
                         row.appendChild(line2)
 
@@ -2467,7 +2598,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                     // Header
                     val thead = document.createElement("thead")
                     val headerRow = document.createElement("tr") as HTMLTableRowElement
-                    listOf("Name", "Range", "Test", "Damage", "Notes").forEach { h ->
+                    listOf(t("inv.atkTable.name"), t("inv.atkTable.range"), t("inv.atkTable.test"), t("inv.atkTable.damage"), t("inv.atkTable.notes")).forEach { h ->
                         val th = document.createElement("th") as HTMLTableCellElement
                         th.textContent = h
                         th.style.textAlign = "left"
@@ -2492,16 +2623,16 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                         val tdName = document.createElement("td") as HTMLTableCellElement
                         tdName.style.padding = "3px 4px"
                         tdName.style.fontWeight = "bold"
-                        val statLabel = if (equippedWeapon.finesse) " (${if (useDex) "Dex" else "Str"})" else ""
-                        val handLabel = if (twoHanded) " [2H]" else ""
-                        val thrownLabel = if (thrown) " [Thrown]" else ""
+                        val statLabel = if (equippedWeapon.finesse) " (${if (useDex) tStat("Dex") else tStat("Str")})" else ""
+                        val handLabel = if (twoHanded) " [${t("inv.twoHandedShort")}]" else ""
+                        val thrownLabel = if (thrown) " [${t("inv.thrownShort")}]" else ""
                         tdName.textContent = "${equippedWeapon.name}$statLabel$handLabel$thrownLabel"
                         tr.appendChild(tdName)
 
                         // Range
                         val tdRange = document.createElement("td") as HTMLTableCellElement
                         tdRange.style.padding = "3px 4px"
-                        tdRange.textContent = if (isRanged || thrown) "${equippedWeapon.rangeDistance}/${equippedWeapon.rangeLongDistance}m" else "Melee"
+                        tdRange.textContent = if (isRanged || thrown) "${equippedWeapon.rangeDistance}/${equippedWeapon.rangeLongDistance}m" else t("inv.melee")
                         tr.appendChild(tdRange)
 
                         // Test
@@ -2516,10 +2647,10 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                         tdDmg.style.padding = "3px 4px"
                         val dice = if (twoHanded) equippedWeapon.versatileDice else equippedWeapon.damageDice
                         val dmgStr = if (isRanged || thrown) {
-                            "$dice ${equippedWeapon.damageType}"
+                            "$dice ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
                         } else {
                             val modSign = if (mod >= 0) "+" else ""
-                            "$dice$modSign$mod ${equippedWeapon.damageType}"
+                            "$dice$modSign$mod ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
                         }
                         tdDmg.textContent = dmgStr
                         tr.appendChild(tdDmg)
@@ -2572,7 +2703,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
 
                 if (weapons.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
-                    placeholder.textContent = "No weapons yet."
+                    placeholder.textContent = t("inv.noWeapons")
                     placeholder.style.color = "#999"
                     placeholder.style.fontSize = "13px"
                     box.appendChild(placeholder)
@@ -2615,12 +2746,12 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                         val line2 = document.createElement("div") as HTMLDivElement
                         line2.style.color = "#666"
                         val props = mutableListOf<String>()
-                        props.add(weapon.category)
-                        props.add("${weapon.damageDice} ${weapon.damageType}")
-                        if (weapon.versatile) props.add("Versatile (${weapon.versatileDice})")
-                        if (weapon.range) props.add("Range ${weapon.rangeDistance}/${weapon.rangeLongDistance}m")
+                        props.add(when(weapon.category) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); else -> weapon.category })
+                        props.add("${weapon.damageDice} ${when(weapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> weapon.damageType }}")
+                        if (weapon.versatile) props.add("${t("inv.versatile")} (${weapon.versatileDice})")
+                        if (weapon.range) props.add("${t("inv.range")} ${weapon.rangeDistance}/${weapon.rangeLongDistance}m")
                         props.add("${weapon.weight}kg")
-                        props.add("${weapon.price} ${weapon.priceCurrency}")
+                        props.add("${weapon.price} ${tCurrency(weapon.priceCurrency)}")
                         // Property icons
                         val icons = mutableListOf<String>()
                         if (weapon.silver) icons.add("\uD83E\uDD48") // silver medal
@@ -2659,12 +2790,12 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 synchInfo.style.fontSize = "12px"
                 synchInfo.style.marginBottom = "8px"
                 synchInfo.style.color = if (synchedCount > 3) "#c00" else "#555"
-                synchInfo.textContent = "Synched items: $synchedCount / Max: 3"
+                synchInfo.textContent = "${t("inv.synchedItems")}: $synchedCount / ${t("inv.max")}: 3"
                 box.appendChild(synchInfo)
 
                 if (magicItems.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
-                    placeholder.textContent = "No magic items yet."
+                    placeholder.textContent = t("inv.noMagicItems")
                     placeholder.style.color = "#999"
                     placeholder.style.fontSize = "13px"
                     box.appendChild(placeholder)
@@ -2707,7 +2838,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                             val truncated = if (item.effect.length > 80) item.effect.take(80) + "..." else item.effect
                             "$truncated | "
                         } else ""
-                        line2.textContent = "$effectStr${item.weight}kg | ${item.price} ${item.priceCurrency}"
+                        line2.textContent = "$effectStr${item.weight}kg | ${item.price} ${tCurrency(item.priceCurrency)}"
                         row.appendChild(line2)
 
                         box.appendChild(row)
@@ -2717,7 +2848,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                 val consumables = dndConsumableRepo.getByCharacterId(character.id)
                 if (consumables.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
-                    placeholder.textContent = "No items yet."
+                    placeholder.textContent = t("inv.noItems")
                     placeholder.style.color = "#999"
                     placeholder.style.fontSize = "13px"
                     box.appendChild(placeholder)
@@ -2759,7 +2890,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
                             val truncated = if (item.effect.length > 50) item.effect.take(50) + "..." else item.effect
                             " | $truncated"
                         } else ""
-                        line2.textContent = "${item.type}$effectStr | ${item.weight}kg | ${item.price} ${item.priceCurrency}"
+                        line2.textContent = "${when(item.type) { "Healing Potion" -> t("inv.consumable.healingPotion"); "Magic Potion" -> t("inv.consumable.magicPotion"); "Food" -> t("inv.consumable.food"); "Ammunition" -> t("inv.consumable.ammunition"); "Other" -> t("inv.consumable.other"); else -> item.type }}$effectStr | ${item.weight}kg | ${item.price} ${tCurrency(item.priceCurrency)}"
                         row.appendChild(line2)
 
                         box.appendChild(row)
@@ -2770,7 +2901,7 @@ private fun renderDndInventoryTab(character: Character, container: HTMLDivElemen
             val items = dndInventoryRepo.getByCategory(character.id, section).sortedBy { it.name }
             if (items.isEmpty()) {
                 val placeholder = document.createElement("p") as HTMLParagraphElement
-                placeholder.textContent = "No items yet."
+                placeholder.textContent = t("inv.noItems")
                 placeholder.style.color = "#999"
                 placeholder.style.fontSize = "13px"
                 box.appendChild(placeholder)
@@ -2851,7 +2982,7 @@ private fun showInventoryItemModal(
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Item" else "Add Item"
+    titleEl.textContent = if (existing != null) t("inv.editItem") else t("inv.addItem")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -2867,7 +2998,7 @@ private fun showInventoryItemModal(
 
     // Name (full width)
     val nameLbl = document.createElement("label") as HTMLLabelElement
-    nameLbl.textContent = "Name"; nameLbl.style.fontWeight = "bold"
+    nameLbl.textContent = t("label.name"); nameLbl.style.fontWeight = "bold"
     nameLbl.style.setProperty("grid-column", "1 / -1")
     form.appendChild(nameLbl)
     val nameInput = document.createElement("input") as HTMLInputElement
@@ -2877,7 +3008,7 @@ private fun showInventoryItemModal(
 
     // Description
     val descLbl = document.createElement("label") as HTMLLabelElement
-    descLbl.textContent = "Description"; descLbl.style.fontWeight = "bold"
+    descLbl.textContent = t("label.description"); descLbl.style.fontWeight = "bold"
     descLbl.style.setProperty("grid-column", "1 / -1")
     form.appendChild(descLbl)
     val descInput = document.createElement("textarea") as HTMLTextAreaElement
@@ -2887,7 +3018,7 @@ private fun showInventoryItemModal(
     form.appendChild(descInput)
 
     // Weight
-    lbl("Weight")
+    lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
     weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
     weightRow.style.setProperty("gap", "4px")
@@ -2902,7 +3033,7 @@ private fun showInventoryItemModal(
     form.appendChild(weightRow)
 
     // Price
-    lbl("Price")
+    lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
     priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
@@ -2913,7 +3044,7 @@ private fun showInventoryItemModal(
     val currSelect = document.createElement("select") as HTMLSelectElement
     listOf("pc", "ps", "pe", "pg", "pp").forEach { c ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = c; currSelect.appendChild(o)
+        o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
     }
     currSelect.value = "pg"
     priceRow.appendChild(currSelect)
@@ -2925,7 +3056,7 @@ private fun showInventoryItemModal(
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.style.setProperty("grid-column", "1 / -1")
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
     tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
@@ -2960,7 +3091,7 @@ private fun showInventoryItemModal(
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTagBadges() }
@@ -2978,12 +3109,12 @@ private fun showInventoryItemModal(
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val item = DndInventoryItem(
             id = existing?.id ?: 0,
@@ -3026,7 +3157,7 @@ private fun showMagicItemModal(
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Magic Item" else "Add Magic Item"
+    titleEl.textContent = if (existing != null) t("inv.editMagicItem") else t("inv.addMagicItem")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -3041,7 +3172,7 @@ private fun showMagicItemModal(
     }
 
     // Name
-    lbl("Name")
+    lbl(t("label.name"))
     val nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = existing?.name ?: ""
     form.appendChild(nameInput)
@@ -3056,7 +3187,7 @@ private fun showMagicItemModal(
     val needSynchCb = document.createElement("input") as HTMLInputElement
     needSynchCb.type = "checkbox"; needSynchCb.checked = existing?.needSynch ?: false
     needSynchCb.style.marginRight = "4px"
-    needSynchLbl.appendChild(needSynchCb); needSynchLbl.append("Need Synch")
+    needSynchLbl.appendChild(needSynchCb); needSynchLbl.append(t("inv.needSynch"))
     needSynchLbl.style.fontWeight = "bold"
     synchDiv.appendChild(needSynchLbl)
 
@@ -3064,7 +3195,7 @@ private fun showMagicItemModal(
     val isSynchedCb = document.createElement("input") as HTMLInputElement
     isSynchedCb.type = "checkbox"; isSynchedCb.checked = existing?.isSynched ?: false
     isSynchedCb.style.marginRight = "4px"
-    isSynchedLbl.appendChild(isSynchedCb); isSynchedLbl.append("Is Synched")
+    isSynchedLbl.appendChild(isSynchedCb); isSynchedLbl.append(t("inv.isSynched"))
     isSynchedLbl.style.fontWeight = "bold"
     synchDiv.appendChild(isSynchedLbl)
 
@@ -3077,7 +3208,7 @@ private fun showMagicItemModal(
 
     // Effect
     val effectLbl = document.createElement("label") as HTMLLabelElement
-    effectLbl.textContent = "Effect"; effectLbl.style.fontWeight = "bold"
+    effectLbl.textContent = t("inv.effect"); effectLbl.style.fontWeight = "bold"
     effectLbl.style.setProperty("grid-column", "1 / -1")
     form.appendChild(effectLbl)
     val effectInput = document.createElement("textarea") as HTMLTextAreaElement
@@ -3087,7 +3218,7 @@ private fun showMagicItemModal(
     form.appendChild(effectInput)
 
     // Weight
-    lbl("Weight")
+    lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
     weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
     weightRow.style.setProperty("gap", "4px")
@@ -3102,7 +3233,7 @@ private fun showMagicItemModal(
     form.appendChild(weightRow)
 
     // Price
-    lbl("Price")
+    lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
     priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
@@ -3113,7 +3244,7 @@ private fun showMagicItemModal(
     val currSelect = document.createElement("select") as HTMLSelectElement
     DndMagicItem.currencies.forEach { c ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = c; currSelect.appendChild(o)
+        o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
     }
     currSelect.value = existing?.priceCurrency ?: "pg"
     priceRow.appendChild(currSelect)
@@ -3126,7 +3257,7 @@ private fun showMagicItemModal(
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.style.setProperty("grid-column", "1 / -1")
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
     tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
@@ -3161,7 +3292,7 @@ private fun showMagicItemModal(
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTagBadges() }
@@ -3179,12 +3310,12 @@ private fun showMagicItemModal(
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val item = DndMagicItem(
             id = existing?.id ?: 0,
@@ -3230,7 +3361,7 @@ private fun showConsumableModal(
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Consumable" else "Add Consumable"
+    titleEl.textContent = if (existing != null) t("inv.editConsumable") else t("inv.addConsumable")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -3245,30 +3376,30 @@ private fun showConsumableModal(
     }
 
     // Name
-    lbl("Name")
+    lbl(t("label.name"))
     val nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = existing?.name ?: ""
     form.appendChild(nameInput)
 
     // Type
-    lbl("Type")
+    lbl(t("inv.type"))
     val typeSelect = document.createElement("select") as HTMLSelectElement
-    DndConsumable.types.forEach { t ->
+    DndConsumable.types.forEach { tp ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = t; o.textContent = t; typeSelect.appendChild(o)
+        o.value = tp; o.textContent = when(tp) { "Healing Potion" -> t("inv.consumable.healingPotion"); "Magic Potion" -> t("inv.consumable.magicPotion"); "Food" -> t("inv.consumable.food"); "Ammunition" -> t("inv.consumable.ammunition"); "Other" -> t("inv.consumable.other"); else -> tp }; typeSelect.appendChild(o)
     }
     typeSelect.value = existing?.type ?: DndConsumable.types.first()
     form.appendChild(typeSelect)
 
     // Quantity
-    lbl("Quantity")
+    lbl(t("inv.quantity"))
     val qtyInput = document.createElement("input") as HTMLInputElement
     qtyInput.type = "number"; qtyInput.min = "0"
     qtyInput.value = (existing?.quantity ?: 1).toString()
     form.appendChild(qtyInput)
 
     // Weight per unit
-    lbl("Weight per unit")
+    lbl(t("inv.weightPerUnit"))
     val weightRow = document.createElement("div") as HTMLDivElement
     weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
     weightRow.style.setProperty("gap", "4px")
@@ -3283,7 +3414,7 @@ private fun showConsumableModal(
     form.appendChild(weightRow)
 
     // Price per unit
-    lbl("Price per unit")
+    lbl(t("inv.pricePerUnit"))
     val priceRow = document.createElement("div") as HTMLDivElement
     priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
@@ -3294,7 +3425,7 @@ private fun showConsumableModal(
     val currSelect = document.createElement("select") as HTMLSelectElement
     DndConsumable.currencies.forEach { c ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = c; currSelect.appendChild(o)
+        o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
     }
     currSelect.value = existing?.priceCurrency ?: "pg"
     priceRow.appendChild(currSelect)
@@ -3302,7 +3433,7 @@ private fun showConsumableModal(
 
     // Effect
     val effectLbl = document.createElement("label") as HTMLLabelElement
-    effectLbl.textContent = "Effect"; effectLbl.style.fontWeight = "bold"
+    effectLbl.textContent = t("inv.effect"); effectLbl.style.fontWeight = "bold"
     effectLbl.style.setProperty("grid-column", "1 / -1")
     form.appendChild(effectLbl)
     val effectInput = document.createElement("textarea") as HTMLTextAreaElement
@@ -3318,7 +3449,7 @@ private fun showConsumableModal(
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.style.setProperty("grid-column", "1 / -1")
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
     tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
@@ -3353,7 +3484,7 @@ private fun showConsumableModal(
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTagBadges() }
@@ -3371,12 +3502,12 @@ private fun showConsumableModal(
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val item = DndConsumable(
             id = existing?.id ?: 0,
@@ -3422,7 +3553,7 @@ private fun showWeaponModal(
     modal.style.maxHeight = "85vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Weapon" else "Add Weapon"
+    titleEl.textContent = if (existing != null) t("inv.editWeapon") else t("inv.addWeapon")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -3437,30 +3568,30 @@ private fun showWeaponModal(
     }
 
     // Name
-    lbl("Name")
+    lbl(t("label.name"))
     val nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = existing?.name ?: ""
     form.appendChild(nameInput)
 
     // Category
-    lbl("Category")
+    lbl(t("inv.category"))
     val catSelect = document.createElement("select") as HTMLSelectElement
     DndWeapon.categories.forEach { c ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = c; catSelect.appendChild(o)
+        o.value = c; o.textContent = when(c) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); "Others" -> t("features.weapon.others"); else -> c }; catSelect.appendChild(o)
     }
     catSelect.value = existing?.category ?: DndWeapon.categories.first()
     form.appendChild(catSelect)
 
     // Weapon Type
-    lbl("Weapon Type")
+    lbl(t("inv.weaponType"))
     val typeSelect = document.createElement("select") as HTMLSelectElement
     val emptyTypeOpt = document.createElement("option") as HTMLOptionElement
     emptyTypeOpt.value = ""; emptyTypeOpt.textContent = "-- Select --"
     typeSelect.appendChild(emptyTypeOpt)
-    DndWeapon.weaponTypes.forEach { t ->
+    DndWeapon.weaponTypes.forEach { wp ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = t; o.textContent = t; typeSelect.appendChild(o)
+        o.value = wp; o.textContent = tWeapon(wp); typeSelect.appendChild(o)
     }
     val customTypeOpt = document.createElement("option") as HTMLOptionElement
     customTypeOpt.value = "__custom__"; customTypeOpt.textContent = "Custom..."
@@ -3484,18 +3615,18 @@ private fun showWeaponModal(
     form.appendChild(customTypeInput)
 
     // Damage Dice
-    lbl("Damage Dice")
+    lbl(t("inv.damageDice"))
     val dmgDiceInput = document.createElement("input") as HTMLInputElement
     dmgDiceInput.value = existing?.damageDice ?: ""
     dmgDiceInput.placeholder = "e.g. 1d8"
     form.appendChild(dmgDiceInput)
 
     // Damage Type
-    lbl("Damage Type")
+    lbl(t("inv.damageType"))
     val dmgTypeSelect = document.createElement("select") as HTMLSelectElement
     DndWeapon.damageTypes.forEach { d ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = d; o.textContent = d; dmgTypeSelect.appendChild(o)
+        o.value = d; o.textContent = when(d) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> d }; dmgTypeSelect.appendChild(o)
     }
     dmgTypeSelect.value = existing?.damageType ?: DndWeapon.damageTypes.first()
     form.appendChild(dmgTypeSelect)
@@ -3524,18 +3655,18 @@ private fun showWeaponModal(
         return cb
     }
 
-    val ammoCb = addCheckbox("Ammunition", existing?.ammunition ?: false)
-    val finesseCb = addCheckbox("Finesse", existing?.finesse ?: false)
-    val heavyCb = addCheckbox("Heavy", existing?.heavy ?: false)
-    val lightCb = addCheckbox("Light", existing?.light ?: false)
-    val loadingCb = addCheckbox("Loading", existing?.loading ?: false)
-    val rangeCb = addCheckbox("Range", existing?.range ?: false)
-    val reachCb = addCheckbox("Reach", existing?.reach ?: false)
-    val specialCb = addCheckbox("Special", existing?.special ?: false)
-    val thrownCb = addCheckbox("Throw", existing?.thrown ?: false)
-    val twoHandedCb = addCheckbox("Two-handed", existing?.twoHanded ?: false)
-    val versatileCb = addCheckbox("Versatile", existing?.versatile ?: false)
-    val silverCb = addCheckbox("Silver", existing?.silver ?: false)
+    val ammoCb = addCheckbox(t("inv.ammunition"), existing?.ammunition ?: false)
+    val finesseCb = addCheckbox(t("inv.finesse"), existing?.finesse ?: false)
+    val heavyCb = addCheckbox(t("inv.heavy"), existing?.heavy ?: false)
+    val lightCb = addCheckbox(t("inv.light"), existing?.light ?: false)
+    val loadingCb = addCheckbox(t("inv.loading"), existing?.loading ?: false)
+    val rangeCb = addCheckbox(t("inv.range"), existing?.range ?: false)
+    val reachCb = addCheckbox(t("inv.reach"), existing?.reach ?: false)
+    val specialCb = addCheckbox(t("inv.special"), existing?.special ?: false)
+    val thrownCb = addCheckbox(t("inv.thrown"), existing?.thrown ?: false)
+    val twoHandedCb = addCheckbox(t("inv.twoHanded"), existing?.twoHanded ?: false)
+    val versatileCb = addCheckbox(t("inv.versatile"), existing?.versatile ?: false)
+    val silverCb = addCheckbox(t("inv.silver"), existing?.silver ?: false)
 
     form.appendChild(propsGrid)
 
@@ -3547,10 +3678,10 @@ private fun showWeaponModal(
     rangeDiv.style.setProperty("gap", "10px")
 
     val rangeLbl1 = document.createElement("label") as HTMLLabelElement
-    rangeLbl1.textContent = "Range (m)"; rangeLbl1.style.fontWeight = "bold"
+    rangeLbl1.textContent = t("inv.rangeMeter"); rangeLbl1.style.fontWeight = "bold"
     rangeDiv.appendChild(rangeLbl1)
     val rangeLbl2 = document.createElement("label") as HTMLLabelElement
-    rangeLbl2.textContent = "Long Range (m)"; rangeLbl2.style.fontWeight = "bold"
+    rangeLbl2.textContent = t("inv.longRange"); rangeLbl2.style.fontWeight = "bold"
     rangeDiv.appendChild(rangeLbl2)
     val rangeInput = document.createElement("input") as HTMLInputElement
     rangeInput.type = "number"; rangeInput.min = "0"
@@ -3591,7 +3722,7 @@ private fun showWeaponModal(
     val versatileDiv = document.createElement("div") as HTMLDivElement
     versatileDiv.style.setProperty("grid-column", "1 / -1")
     val versatileLbl = document.createElement("label") as HTMLLabelElement
-    versatileLbl.textContent = "Two-handed Damage Dice"; versatileLbl.style.fontWeight = "bold"
+    versatileLbl.textContent = t("inv.twoHandedDice"); versatileLbl.style.fontWeight = "bold"
     versatileDiv.appendChild(versatileLbl)
     val versatileInput = document.createElement("input") as HTMLInputElement
     versatileInput.value = existing?.versatileDice ?: ""
@@ -3608,7 +3739,7 @@ private fun showWeaponModal(
 
     // Additional Features
     val addFeatLbl = document.createElement("label") as HTMLLabelElement
-    addFeatLbl.textContent = "Additional Features"; addFeatLbl.style.fontWeight = "bold"
+    addFeatLbl.textContent = t("features.additionalFeatures"); addFeatLbl.style.fontWeight = "bold"
     addFeatLbl.style.setProperty("grid-column", "1 / -1")
     form.appendChild(addFeatLbl)
     val addFeatInput = document.createElement("textarea") as HTMLTextAreaElement
@@ -3618,7 +3749,7 @@ private fun showWeaponModal(
     form.appendChild(addFeatInput)
 
     // Weight
-    lbl("Weight")
+    lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
     weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
     weightRow.style.setProperty("gap", "4px")
@@ -3633,7 +3764,7 @@ private fun showWeaponModal(
     form.appendChild(weightRow)
 
     // Price
-    lbl("Price")
+    lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
     priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
@@ -3644,7 +3775,7 @@ private fun showWeaponModal(
     val currSelect = document.createElement("select") as HTMLSelectElement
     DndWeapon.currencies.forEach { c ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = c; currSelect.appendChild(o)
+        o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
     }
     currSelect.value = existing?.priceCurrency ?: "pg"
     priceRow.appendChild(currSelect)
@@ -3657,7 +3788,7 @@ private fun showWeaponModal(
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.style.setProperty("grid-column", "1 / -1")
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
     tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
@@ -3692,7 +3823,7 @@ private fun showWeaponModal(
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTagBadges() }
@@ -3709,7 +3840,7 @@ private fun showWeaponModal(
     val eqCb = document.createElement("input") as HTMLInputElement
     eqCb.type = "checkbox"; eqCb.checked = existing?.isEquipped ?: false
     eqCb.style.marginRight = "6px"
-    eqLbl.appendChild(eqCb); eqLbl.append("Equipped")
+    eqLbl.appendChild(eqCb); eqLbl.append(t("features.equipped"))
     eqLbl.style.fontWeight = "bold"
     eqContainer.appendChild(eqLbl)
     form.appendChild(eqContainer)
@@ -3722,12 +3853,12 @@ private fun showWeaponModal(
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val weaponType = if (typeSelect.value == "__custom__") customTypeInput.value.trim() else typeSelect.value
         val weapon = DndWeapon(
@@ -3800,7 +3931,7 @@ private fun showArmorModal(
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Armor" else "Add Armor"
+    titleEl.textContent = if (existing != null) t("inv.editArmor") else t("inv.addArmor")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -3815,24 +3946,24 @@ private fun showArmorModal(
     }
 
     // Name
-    lbl("Name")
+    lbl(t("label.name"))
     val nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = existing?.name ?: ""
     form.appendChild(nameInput)
 
     // Type
-    lbl("Type")
+    lbl(t("inv.type"))
     val typeSelect = document.createElement("select") as HTMLSelectElement
-    DndArmor.types.forEach { t ->
+    DndArmor.types.forEach { tp ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = t; o.textContent = t; typeSelect.appendChild(o)
+        o.value = tp; o.textContent = tArmorType(tp); typeSelect.appendChild(o)
     }
     typeSelect.value = existing?.type ?: DndArmor.types.first()
     form.appendChild(typeSelect)
 
     // Base AC
     val acLbl = document.createElement("label") as HTMLLabelElement
-    acLbl.textContent = "Base AC"; acLbl.style.fontWeight = "bold"
+    acLbl.textContent = t("inv.baseAC"); acLbl.style.fontWeight = "bold"
     form.appendChild(acLbl)
     val acInput = document.createElement("input") as HTMLInputElement
     acInput.type = "number"; acInput.value = (existing?.baseAC ?: 10).toString()
@@ -3841,19 +3972,19 @@ private fun showArmorModal(
     // AC Modifier
     // AC Modifier
     val acModLbl = document.createElement("label") as HTMLLabelElement
-    acModLbl.textContent = "AC Modifier"; acModLbl.style.fontWeight = "bold"
+    acModLbl.textContent = t("inv.acModifier"); acModLbl.style.fontWeight = "bold"
     form.appendChild(acModLbl)
     val acModSelect = document.createElement("select") as HTMLSelectElement
     DndArmor.acModifiers.forEach { m ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = m; o.textContent = m; acModSelect.appendChild(o)
+        o.value = m; o.textContent = tAcModifier(m); acModSelect.appendChild(o)
     }
     acModSelect.value = existing?.acModifier ?: "none"
     form.appendChild(acModSelect)
 
     // Minimum Strength
     val minStrLbl = document.createElement("label") as HTMLLabelElement
-    minStrLbl.textContent = "Min. Strength"; minStrLbl.style.fontWeight = "bold"
+    minStrLbl.textContent = t("inv.minStrength"); minStrLbl.style.fontWeight = "bold"
     form.appendChild(minStrLbl)
     val minStrInput = document.createElement("input") as HTMLInputElement
     minStrInput.type = "number"; minStrInput.min = "0"; minStrInput.max = "20"
@@ -3868,7 +3999,7 @@ private fun showArmorModal(
     val sneakCb = document.createElement("input") as HTMLInputElement
     sneakCb.type = "checkbox"; sneakCb.checked = existing?.hasSneakDisadvantage ?: false
     sneakCb.style.marginRight = "6px"
-    sneakLbl.appendChild(sneakCb); sneakLbl.append("Sneak Disadvantage")
+    sneakLbl.appendChild(sneakCb); sneakLbl.append(t("inv.sneakDisadv"))
     form.appendChild(sneakLbl)
 
     // Visibility logic based on type
@@ -3890,7 +4021,7 @@ private fun showArmorModal(
     typeSelect.addEventListener("change", { updateArmorFieldVisibility() })
 
     // Weight
-    lbl("Weight")
+    lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
     weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
     weightRow.style.setProperty("gap", "4px")
@@ -3905,7 +4036,7 @@ private fun showArmorModal(
     form.appendChild(weightRow)
 
     // Price
-    lbl("Price")
+    lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
     priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
@@ -3916,7 +4047,7 @@ private fun showArmorModal(
     val currSelect = document.createElement("select") as HTMLSelectElement
     DndArmor.currencies.forEach { c ->
         val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = c; currSelect.appendChild(o)
+        o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
     }
     currSelect.value = existing?.priceCurrency ?: "pg"
     priceRow.appendChild(currSelect)
@@ -3924,7 +4055,7 @@ private fun showArmorModal(
 
     // Additional Features
     val addFeatLbl = document.createElement("label") as HTMLLabelElement
-    addFeatLbl.textContent = "Additional Features"; addFeatLbl.style.fontWeight = "bold"
+    addFeatLbl.textContent = t("features.additionalFeatures"); addFeatLbl.style.fontWeight = "bold"
     addFeatLbl.style.setProperty("grid-column", "1 / -1")
     form.appendChild(addFeatLbl)
     val addFeatInput = document.createElement("textarea") as HTMLTextAreaElement
@@ -3940,7 +4071,7 @@ private fun showArmorModal(
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.style.setProperty("grid-column", "1 / -1")
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = "Tags"; tagsLbl.style.fontWeight = "bold"
+    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
     tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
@@ -3975,7 +4106,7 @@ private fun showArmorModal(
     tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshArmorTagBadges() }
@@ -3992,7 +4123,7 @@ private fun showArmorModal(
     val eqCb = document.createElement("input") as HTMLInputElement
     eqCb.type = "checkbox"; eqCb.checked = existing?.isEquipped ?: false
     eqCb.style.marginRight = "6px"
-    eqLbl.appendChild(eqCb); eqLbl.append("Equipped")
+    eqLbl.appendChild(eqCb); eqLbl.append(t("features.equipped"))
     eqLbl.style.fontWeight = "bold"
     eqContainer.appendChild(eqLbl)
     form.appendChild(eqContainer)
@@ -4005,12 +4136,12 @@ private fun showArmorModal(
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val armor = DndArmor(
             id = existing?.id ?: 0,
@@ -4080,7 +4211,7 @@ private fun showChangeWeaponModal(
     modal.style.maxWidth = "400px"; modal.style.width = "90%"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = "Change Weapon"
+    titleEl.textContent = t("playing.changeWeapon")
     modal.appendChild(titleEl)
 
     val weapons = dndWeaponRepo.getByCharacterId(character.id)
@@ -4090,7 +4221,7 @@ private fun showChangeWeaponModal(
     select.style.width = "100%"; select.style.padding = "8px"; select.style.fontSize = "14px"
 
     val noneOpt = document.createElement("option") as HTMLOptionElement
-    noneOpt.value = ""; noneOpt.textContent = "-- None --"
+    noneOpt.value = ""; noneOpt.textContent = t("inv.none")
     select.appendChild(noneOpt)
 
     weapons.forEach { w ->
@@ -4107,12 +4238,12 @@ private fun showChangeWeaponModal(
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val selectedId = select.value.toLongOrNull()
         // Unequip all
@@ -4177,7 +4308,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     lifeBox.style.marginBottom = "16px"
 
     val lifeBoxTitle = document.createElement("h4") as HTMLHeadingElement
-    lifeBoxTitle.textContent = "Life Tracker"
+    lifeBoxTitle.textContent = t("playing.lifeTracker")
     lifeBoxTitle.style.margin = "0 0 10px 0"
     lifeBox.appendChild(lifeBoxTitle)
 
@@ -4191,7 +4322,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     val lifeCol = document.createElement("div") as HTMLDivElement
     lifeCol.style.textAlign = "center"
     val lifeLbl = document.createElement("div") as HTMLDivElement
-    lifeLbl.textContent = "Life Points"
+    lifeLbl.textContent = t("playing.lifePoints")
     lifeLbl.style.fontWeight = "bold"; lifeLbl.style.fontSize = "12px"; lifeLbl.style.marginBottom = "4px"
     lifeCol.appendChild(lifeLbl)
     val lifeVal = document.createElement("span") as HTMLSpanElement
@@ -4207,7 +4338,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     val maxCol = document.createElement("div") as HTMLDivElement
     maxCol.style.textAlign = "center"
     val maxLbl = document.createElement("div") as HTMLDivElement
-    maxLbl.textContent = "Max"
+    maxLbl.textContent = t("playing.max")
     maxLbl.style.fontWeight = "bold"; maxLbl.style.fontSize = "12px"; maxLbl.style.marginBottom = "4px"
     maxCol.appendChild(maxLbl)
     val maxValSpan = document.createElement("span") as HTMLSpanElement
@@ -4223,7 +4354,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     val tempCol = document.createElement("div") as HTMLDivElement
     tempCol.style.textAlign = "center"
     val tempLbl = document.createElement("div") as HTMLDivElement
-    tempLbl.textContent = "Temp HP"
+    tempLbl.textContent = t("playing.tempHP")
     tempLbl.style.fontWeight = "bold"; tempLbl.style.fontSize = "12px"; tempLbl.style.marginBottom = "4px"
     tempCol.appendChild(tempLbl)
     val tempVal = document.createElement("span") as HTMLSpanElement
@@ -4272,12 +4403,12 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
         val cancelBtn = document.createElement("button") as HTMLButtonElement
-        cancelBtn.textContent = "Cancel"
+        cancelBtn.textContent = t("btn.cancel")
         cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
         btnRow.appendChild(cancelBtn)
 
         val confirmBtn = document.createElement("button") as HTMLButtonElement
-        confirmBtn.textContent = "Confirm"
+        confirmBtn.textContent = t("playing.confirm")
         confirmBtn.addEventListener("click", {
             val value = input.value.toIntOrNull() ?: 0
             if (value > 0) onConfirm(value)
@@ -4335,7 +4466,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
         // Success row
         val successLabel = document.createElement("span") as HTMLSpanElement
-        successLabel.textContent = "Successes"
+        successLabel.textContent = t("playing.successes")
         successLabel.style.fontSize = "14px"
         successLabel.style.fontWeight = "bold"
         deathGrid.appendChild(successLabel)
@@ -4346,7 +4477,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
         // Fail row
         val failLabel = document.createElement("span") as HTMLSpanElement
-        failLabel.textContent = "Failures"
+        failLabel.textContent = t("playing.failures")
         failLabel.style.fontSize = "14px"
         failLabel.style.fontWeight = "bold"
         deathGrid.appendChild(failLabel)
@@ -4396,9 +4527,9 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     } else {
         // Normal mode
         val cureBtn = document.createElement("button") as HTMLButtonElement
-        cureBtn.textContent = "\u2764\uFE0F Cure"
+        cureBtn.textContent = "\u2764\uFE0F " + t("playing.cure")
         cureBtn.addEventListener("click", {
-            showValueModal("Cure") { value ->
+            showValueModal(t("playing.cure")) { value ->
                 currentLife = minOf(currentLife + value, maxLife)
                 saveLife(); updateDisplay()
             }
@@ -4406,9 +4537,9 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         btnSection.appendChild(cureBtn)
 
         val dmgBtn = document.createElement("button") as HTMLButtonElement
-        dmgBtn.textContent = "\u2694\uFE0F Dmg"
+        dmgBtn.textContent = "\u2694\uFE0F " + t("playing.dmg")
         dmgBtn.addEventListener("click", {
-            showValueModal("Damage") { value ->
+            showValueModal(t("playing.dmg")) { value ->
                 var remaining = value
                 if (currentTempLife > 0) {
                     val absorbed = minOf(remaining, currentTempLife)
@@ -4426,9 +4557,9 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         btnSection.appendChild(dmgBtn)
 
         val tempBtn = document.createElement("button") as HTMLButtonElement
-        tempBtn.textContent = "\uD83D\uDEE1\uFE0F Temp HP"
+        tempBtn.textContent = "\uD83D\uDEE1\uFE0F " + t("playing.tempHP")
         tempBtn.addEventListener("click", {
-            showValueModal("Add Temporary HP") { value ->
+            showValueModal(t("playing.tempHP")) { value ->
                 currentTempLife += value
                 saveTempLife(); updateDisplay()
             }
@@ -4437,7 +4568,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
         // Second row: Reset + Death Saves
         val resetBtn = document.createElement("button") as HTMLButtonElement
-        resetBtn.textContent = "\u21BA Reset"
+        resetBtn.textContent = "\u21BA " + t("playing.reset")
         resetBtn.addEventListener("click", {
             currentLife = maxLife
             currentTempLife = 0
@@ -4471,7 +4602,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     hitDiceSection.style.paddingTop = "12px"
 
     val hitDiceTitle = document.createElement("h5") as HTMLHeadingElement
-    hitDiceTitle.textContent = "Life Hit Dice"
+    hitDiceTitle.textContent = t("playing.hitDice")
     hitDiceTitle.style.margin = "0 0 8px 0"
     hitDiceSection.appendChild(hitDiceTitle)
 
@@ -4492,7 +4623,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
     if (hitDiceInfos.isEmpty()) {
         val noInfo = document.createElement("p") as HTMLParagraphElement
-        noInfo.textContent = "Set class and level in Main tab."
+        noInfo.textContent = t("playing.setClassLevel")
         noInfo.style.color = "#999"; noInfo.style.fontSize = "12px"
         hitDiceSection.appendChild(noInfo)
     } else {
@@ -4507,14 +4638,14 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             row.style.marginBottom = "6px"
 
             val infoSpan = document.createElement("span") as HTMLSpanElement
-            infoSpan.textContent = "${hd.className} (${hd.die}): $remaining / ${hd.maxDice}"
+            infoSpan.textContent = "${tDnd("class", hd.className)} (${hd.die}): $remaining / ${hd.maxDice}"
             infoSpan.style.fontSize = "13px"
             infoSpan.style.fontWeight = "bold"
             if (remaining <= 0) infoSpan.style.color = "#c00"
             row.appendChild(infoSpan)
 
             val useHdBtn = document.createElement("button") as HTMLButtonElement
-            useHdBtn.textContent = "Use"
+            useHdBtn.textContent = t("playing.use")
             useHdBtn.style.fontSize = "11px"
             useHdBtn.disabled = remaining <= 0
             useHdBtn.addEventListener("click", {
@@ -4526,7 +4657,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             row.appendChild(useHdBtn)
 
             val recoverBtn = document.createElement("button") as HTMLButtonElement
-            recoverBtn.textContent = "Recover"
+            recoverBtn.textContent = t("playing.recover")
             recoverBtn.style.fontSize = "11px"
             recoverBtn.disabled = usedDice <= 0
             recoverBtn.addEventListener("click", {
@@ -4559,7 +4690,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     atkBox.style.setProperty("flex", "1")
 
     val atkBoxTitle = document.createElement("h4") as HTMLHeadingElement
-    atkBoxTitle.textContent = "Attacks"
+    atkBoxTitle.textContent = t("playing.attacks")
     atkBoxTitle.style.margin = "0"
 
     val atkHeader = document.createElement("div") as HTMLDivElement
@@ -4570,7 +4701,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     atkHeader.appendChild(atkBoxTitle)
 
     val changeWeaponBtn = document.createElement("button") as HTMLButtonElement
-    changeWeaponBtn.textContent = "Change Weapon"
+    changeWeaponBtn.textContent = t("playing.changeWeapon")
     changeWeaponBtn.style.fontSize = "11px"
     changeWeaponBtn.addEventListener("click", {
         showChangeWeaponModal(character) {
@@ -4615,7 +4746,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
         val thead = document.createElement("thead")
         val headerRow = document.createElement("tr") as HTMLTableRowElement
-        listOf("Name", "Range", "Test", "Damage", "Notes").forEach { h ->
+        listOf(t("inv.atkTable.name"), t("inv.atkTable.range"), t("inv.atkTable.test"), t("inv.atkTable.damage"), t("inv.atkTable.notes")).forEach { h ->
             val th = document.createElement("th") as HTMLTableCellElement
             th.textContent = h
             th.style.textAlign = "left"
@@ -4638,15 +4769,15 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
             val tdName = document.createElement("td") as HTMLTableCellElement
             tdName.style.padding = "3px 4px"; tdName.style.fontWeight = "bold"
-            val statLabel = if (equippedWeapon.finesse) " (${if (useDex) "Dex" else "Str"})" else ""
-            val handLabel = if (twoHanded) " [2H]" else ""
-            val thrownLabel = if (thrown) " [Thrown]" else ""
+            val statLabel = if (equippedWeapon.finesse) " (${if (useDex) tStat("Dex") else tStat("Str")})" else ""
+            val handLabel = if (twoHanded) " [${t("inv.twoHandedShort")}]" else ""
+            val thrownLabel = if (thrown) " [${t("inv.thrownShort")}]" else ""
             tdName.textContent = "${equippedWeapon.name}$statLabel$handLabel$thrownLabel"
             tr.appendChild(tdName)
 
             val tdRange = document.createElement("td") as HTMLTableCellElement
             tdRange.style.padding = "3px 4px"
-            tdRange.textContent = if (isRanged || thrown) "${equippedWeapon.rangeDistance}/${equippedWeapon.rangeLongDistance}m" else "Melee"
+            tdRange.textContent = if (isRanged || thrown) "${equippedWeapon.rangeDistance}/${equippedWeapon.rangeLongDistance}m" else t("inv.melee")
             tr.appendChild(tdRange)
 
             val tdTest = document.createElement("td") as HTMLTableCellElement
@@ -4659,10 +4790,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             tdDmg.style.padding = "3px 4px"
             val dice = if (twoHanded) equippedWeapon.versatileDice else equippedWeapon.damageDice
             val dmgStr = if (isRanged || thrown) {
-                "$dice ${equippedWeapon.damageType}"
+                "$dice ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
             } else {
                 val modSign = if (mod >= 0) "+" else ""
-                "$dice$modSign$mod ${equippedWeapon.damageType}"
+                "$dice$modSign$mod ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
             }
             tdDmg.textContent = dmgStr
             tr.appendChild(tdDmg)
@@ -4711,10 +4842,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         val disarmedTr = document.createElement("tr") as HTMLTableRowElement
         val disName = document.createElement("td") as HTMLTableCellElement
         disName.style.padding = "3px 4px"; disName.style.fontWeight = "bold"
-        disName.textContent = "Disarmed Attack"
+        disName.textContent = t("combat.disarmedAttack")
         disarmedTr.appendChild(disName)
         val disRange = document.createElement("td") as HTMLTableCellElement
-        disRange.style.padding = "3px 4px"; disRange.textContent = "Melee"
+        disRange.style.padding = "3px 4px"; disRange.textContent = t("inv.melee")
         disarmedTr.appendChild(disRange)
         val disTest = document.createElement("td") as HTMLTableCellElement
         disTest.style.padding = "3px 4px"
@@ -4725,10 +4856,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         val disDmg = document.createElement("td") as HTMLTableCellElement
         disDmg.style.padding = "3px 4px"
         val disDmgStr = if (stats.disarmedDice == "Normal") {
-            "${maxOf(1, 1 + strMod)} Bludgeoning"
+            "${maxOf(1, 1 + strMod)} ${t("inv.dmg.bludgeoning")}"
         } else {
             val modSign = if (strMod >= 0) "+" else ""
-            "${stats.disarmedDice}$modSign$strMod Bludgeoning"
+            "${stats.disarmedDice}$modSign$strMod ${t("inv.dmg.bludgeoning")}"
         }
         disDmg.textContent = disDmgStr
         disarmedTr.appendChild(disDmg)
@@ -4743,7 +4874,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             val tr = document.createElement("tr") as HTMLTableRowElement
             val tdName = document.createElement("td") as HTMLTableCellElement
             tdName.style.padding = "3px 4px"; tdName.style.fontWeight = "bold"
-            val circleStr = if (spell.circle == "Cantrip") "" else " (${spell.circle})"
+            val circleStr = if (spell.circle == "Cantrip") "" else " (${tCircle(spell.circle)})"
             tdName.textContent = "\u2728 ${spell.name}$circleStr"
             tr.appendChild(tdName)
             val tdRange = document.createElement("td") as HTMLTableCellElement
@@ -4763,7 +4894,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
                 }
                 val tl = (mainInfo?.mainClassLevel ?: 0) + (mainInfo?.secondaryClassLevel ?: 0)
                 val dc = abMod + calcProficiency(tl) + 8
-                tdTest.textContent = "${spell.savingThrowAbility} Save (DC $dc)"
+                tdTest.textContent = "${tStat(spell.savingThrowAbility)} ${t("magic.saveAbility")} (${t("playing.dc")} $dc)"
             } else if (spell.isAttack) {
                 val magicAb = DungeonsAndDragons.spellcastingAbilityFor(mainInfo?.mainClass, mainInfo?.mainSubClass)
                     ?: localStorage.getItem("dnd_custom_spell_ability_${character.id}_${mainInfo?.mainClass}")?.takeIf { it != "__none__" }
@@ -4780,7 +4911,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             tr.appendChild(tdTest)
             val tdDmg = document.createElement("td") as HTMLTableCellElement
             tdDmg.style.padding = "3px 4px"
-            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${spell.attackDamageType}" else "\u2014"
+            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${tSpellDamageType(spell.attackDamageType)}" else "\u2014"
             tr.appendChild(tdDmg)
             val tdNotes = document.createElement("td") as HTMLTableCellElement
             tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "#666"
@@ -4791,9 +4922,9 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             if (spell.hasMaterial) components.add("M")
             if (components.isNotEmpty()) notes.add(components.joinToString(""))
             if (spell.hasMaterial && spell.materialComponents.isNotEmpty()) notes.add(spell.materialComponents)
-            if (spell.needsConcentration) notes.add("Conc.")
-            if (spell.canBeRitual) notes.add("Ritual")
-            if (spell.higherCircles.isNotEmpty()) notes.add("⬆️ Higher")
+            if (spell.needsConcentration) notes.add(t("magic.concShort"))
+            if (spell.canBeRitual) notes.add(t("magic.ritualShort"))
+            if (spell.higherCircles.isNotEmpty()) notes.add("⬆️ ${t("magic.higherShort")}")
             tdNotes.textContent = notes.joinToString(", ")
             tr.appendChild(tdNotes)
             tbody.appendChild(tr)
@@ -4815,7 +4946,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
         val thead = document.createElement("thead")
         val headerRow = document.createElement("tr") as HTMLTableRowElement
-        listOf("Name", "Range", "Test", "Damage", "Notes").forEach { h ->
+        listOf(t("inv.atkTable.name"), t("inv.atkTable.range"), t("inv.atkTable.test"), t("inv.atkTable.damage"), t("inv.atkTable.notes")).forEach { h ->
             val th = document.createElement("th") as HTMLTableCellElement
             th.textContent = h
             th.style.textAlign = "left"
@@ -4832,10 +4963,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         val disarmedTr = document.createElement("tr") as HTMLTableRowElement
         val disName = document.createElement("td") as HTMLTableCellElement
         disName.style.padding = "3px 4px"; disName.style.fontWeight = "bold"
-        disName.textContent = "Disarmed Attack"
+        disName.textContent = t("combat.disarmedAttack")
         disarmedTr.appendChild(disName)
         val disRange = document.createElement("td") as HTMLTableCellElement
-        disRange.style.padding = "3px 4px"; disRange.textContent = "Melee"
+        disRange.style.padding = "3px 4px"; disRange.textContent = t("inv.melee")
         disarmedTr.appendChild(disRange)
         val disTest = document.createElement("td") as HTMLTableCellElement
         disTest.style.padding = "3px 4px"
@@ -4846,10 +4977,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         val disDmg = document.createElement("td") as HTMLTableCellElement
         disDmg.style.padding = "3px 4px"
         val disDmgStr2 = if (stats.disarmedDice == "Normal") {
-            "${maxOf(1, 1 + strMod)} Bludgeoning"
+            "${maxOf(1, 1 + strMod)} ${t("inv.dmg.bludgeoning")}"
         } else {
             val modSign = if (strMod >= 0) "+" else ""
-            "${stats.disarmedDice}$modSign$strMod Bludgeoning"
+            "${stats.disarmedDice}$modSign$strMod ${t("inv.dmg.bludgeoning")}"
         }
         disDmg.textContent = disDmgStr2
         disarmedTr.appendChild(disDmg)
@@ -4864,7 +4995,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             val tr = document.createElement("tr") as HTMLTableRowElement
             val tdName = document.createElement("td") as HTMLTableCellElement
             tdName.style.padding = "3px 4px"; tdName.style.fontWeight = "bold"
-            val circleStr = if (spell.circle == "Cantrip") "" else " (${spell.circle})"
+            val circleStr = if (spell.circle == "Cantrip") "" else " (${tCircle(spell.circle)})"
             tdName.textContent = "\u2728 ${spell.name}$circleStr"
             tr.appendChild(tdName)
             val tdRange = document.createElement("td") as HTMLTableCellElement
@@ -4883,7 +5014,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
                     else -> 0
                 }
                 val dc = abMod + profBonus + 8
-                tdTest.textContent = "${spell.savingThrowAbility} Save (DC $dc)"
+                tdTest.textContent = "${tStat(spell.savingThrowAbility)} ${t("magic.saveAbility")} (${t("playing.dc")} $dc)"
             } else if (spell.isAttack) {
                 val magicAb = DungeonsAndDragons.spellcastingAbilityFor(mainInfo?.mainClass, mainInfo?.mainSubClass)
                     ?: localStorage.getItem("dnd_custom_spell_ability_${character.id}_${mainInfo?.mainClass}")?.takeIf { it != "__none__" }
@@ -4899,7 +5030,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             tr.appendChild(tdTest)
             val tdDmg = document.createElement("td") as HTMLTableCellElement
             tdDmg.style.padding = "3px 4px"
-            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${spell.attackDamageType}" else "\u2014"
+            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${tSpellDamageType(spell.attackDamageType)}" else "\u2014"
             tr.appendChild(tdDmg)
             val tdNotes = document.createElement("td") as HTMLTableCellElement
             tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "#666"
@@ -4910,9 +5041,9 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             if (spell.hasMaterial) components.add("M")
             if (components.isNotEmpty()) notes.add(components.joinToString(""))
             if (spell.hasMaterial && spell.materialComponents.isNotEmpty()) notes.add(spell.materialComponents)
-            if (spell.needsConcentration) notes.add("Conc.")
-            if (spell.canBeRitual) notes.add("Ritual")
-            if (spell.higherCircles.isNotEmpty()) notes.add("⬆️ Higher")
+            if (spell.needsConcentration) notes.add(t("magic.concShort"))
+            if (spell.canBeRitual) notes.add(t("magic.ritualShort"))
+            if (spell.higherCircles.isNotEmpty()) notes.add("⬆️ ${t("magic.higherShort")}")
             tdNotes.textContent = notes.joinToString(", ")
             tr.appendChild(tdNotes)
             tbody.appendChild(tr)
@@ -4931,7 +5062,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         ammoSection.style.paddingTop = "8px"
 
         val ammoTitle = document.createElement("div") as HTMLDivElement
-        ammoTitle.textContent = "Ammunition"
+        ammoTitle.textContent = t("playing.ammunition")
         ammoTitle.style.fontWeight = "bold"
         ammoTitle.style.fontSize = "12px"
         ammoTitle.style.marginBottom = "6px"
@@ -4996,14 +5127,14 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     specialBox.style.setProperty("flex", "0.4")
 
     val specialTitle = document.createElement("h4") as HTMLHeadingElement
-    specialTitle.textContent = "Special Actions"
+    specialTitle.textContent = t("playing.specialActions")
     specialTitle.style.margin = "0 0 10px 0"
     specialBox.appendChild(specialTitle)
 
     val rechargeables = features.filter { it.type == "Rechargable Feature" }
     if (rechargeables.isEmpty()) {
         val placeholder = document.createElement("p") as HTMLParagraphElement
-        placeholder.textContent = "No rechargeable features."
+        placeholder.textContent = t("playing.noRechargeable")
         placeholder.style.color = "#999"
         placeholder.style.fontSize = "13px"
         specialBox.appendChild(placeholder)
@@ -5080,9 +5211,9 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
             val infoDiv = document.createElement("div") as HTMLDivElement
             val nameSpan = document.createElement("span") as HTMLSpanElement
             val displayText = if (potion.type == "Healing Potion" && potion.effect.isNotEmpty()) {
-                "Drink ${potion.name} (${potion.effect})"
+                "${t("playing.drink")} ${potion.name} (${potion.effect})"
             } else {
-                "Drink ${potion.name}"
+                "${t("playing.drink")} ${potion.name}"
             }
             nameSpan.textContent = displayText
             nameSpan.style.fontSize = "12px"
@@ -5139,7 +5270,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
             val infoDiv = document.createElement("div") as HTMLDivElement
             val nameSpan = document.createElement("span") as HTMLSpanElement
-            nameSpan.textContent = "Use ${item.name}"
+            nameSpan.textContent = "${t("playing.use")} ${item.name}"
             nameSpan.style.fontSize = "12px"
             infoDiv.appendChild(nameSpan)
             val qtySpan = document.createElement("span") as HTMLSpanElement
@@ -5192,11 +5323,11 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         row.style.fontSize = "12px"
 
         val text = if (spell.circle == "Cantrip") {
-            "\u2728 Cast ${spell.name}"
+            "\u2728 ${t("playing.cast")} ${spell.name}"
         } else {
             val higherStr = if (spell.higherCircles.isNotEmpty()) " \uD83C\uDD99" else ""
             val ritualStr = if (spell.canBeRitual) "/Ritual" else ""
-            "\u2728 Cast ${spell.name} (${spell.circle}$higherStr$ritualStr)"
+            "\u2728 ${t("playing.cast")} ${spell.name} (${tCircle(spell.circle)}$higherStr$ritualStr)"
         }
         row.textContent = text
         specialBox.appendChild(row)
@@ -5219,10 +5350,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     defHeader.style.alignItems = "center"
     defHeader.style.marginBottom = "10px"
     val defTitle = document.createElement("h4") as HTMLHeadingElement
-    defTitle.textContent = "Defense and Status"; defTitle.style.margin = "0"
+    defTitle.textContent = t("playing.defenseStatus"); defTitle.style.margin = "0"
     defHeader.appendChild(defTitle)
     val changeArmorBtn = document.createElement("button") as HTMLButtonElement
-    changeArmorBtn.textContent = "Change Armor"
+    changeArmorBtn.textContent = t("playing.changeArmor")
     changeArmorBtn.style.fontSize = "11px"
     changeArmorBtn.addEventListener("click", {
         showChangeArmorModal(character) {
@@ -5268,7 +5399,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     acIcons.style.fontSize = "11px"; acIcons.style.color = "#666"
     val armorIcon = if (equippedArmor != null) "\uD83E\uDE96" else "\uD83D\uDC55"
     val shieldIcon = if (equippedShield != null) " \uD83D\uDEE1\uFE0F" else ""
-    acIcons.textContent = "AC $armorIcon$shieldIcon"
+    acIcons.textContent = "CA $armorIcon$shieldIcon"
     acCol.appendChild(acIcons)
     numbersRow.appendChild(acCol)
 
@@ -5281,7 +5412,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     initNum.style.fontSize = "32px"; initNum.style.fontWeight = "bold"
     initCol.appendChild(initNum)
     val initLabel = document.createElement("div") as HTMLDivElement
-    initLabel.textContent = "Initiative"
+    initLabel.textContent = t("stats.initiative")
     initLabel.style.fontSize = "11px"; initLabel.style.color = "#666"
     initCol.appendChild(initLabel)
     numbersRow.appendChild(initCol)
@@ -5300,7 +5431,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     statusTitle.textContent = "Status"; statusTitle.style.fontWeight = "bold"; statusTitle.style.fontSize = "13px"
     statusHeader.appendChild(statusTitle)
     val addStatusBtn = document.createElement("button") as HTMLButtonElement
-    addStatusBtn.textContent = "+ Add"
+    addStatusBtn.textContent = t("inv.add")
     addStatusBtn.style.fontSize = "11px"
     addStatusBtn.addEventListener("click", {
         showAddStatusModal(character) {
@@ -5315,7 +5446,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     val statuses = localStorage.getItem(statusKey)?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
     if (statuses.isEmpty()) {
         val noStatus = document.createElement("span") as HTMLSpanElement
-        noStatus.textContent = "No active status"
+        noStatus.textContent = t("playing.noActiveStatus")
         noStatus.style.color = "#999"; noStatus.style.fontSize = "12px"
         defenseBox.appendChild(noStatus)
     } else {
@@ -5325,7 +5456,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         statusList.style.setProperty("gap", "4px")
         statuses.forEach { status ->
             val badge = document.createElement("span") as HTMLSpanElement
-            badge.textContent = "$status \u00D7"
+            badge.textContent = "${tStatus(status)} \u00D7"
             badge.style.backgroundColor = "#ffe0e0"
             badge.style.padding = "2px 8px"
             badge.style.borderRadius = "4px"
@@ -5358,7 +5489,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     magicsBox.style.setProperty("flex", "1")
 
     val magicsTitle = document.createElement("h4") as HTMLHeadingElement
-    magicsTitle.textContent = "Magics"
+    magicsTitle.textContent = t("playing.magics")
     magicsTitle.style.margin = "0 0 10px 0"
     magicsBox.appendChild(magicsTitle)
 
@@ -5370,7 +5501,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
     if (magicAbility == null) {
         val noMagic = document.createElement("p") as HTMLParagraphElement
-        noMagic.textContent = "No Magic"
+        noMagic.textContent = t("playing.noMagic")
         noMagic.style.color = "#999"; noMagic.style.fontSize = "13px"
         magicsBox.appendChild(noMagic)
     } else {
@@ -5392,14 +5523,14 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         magicStats.style.fontSize = "12px"
 
         val abSpan = document.createElement("span") as HTMLSpanElement
-        abSpan.textContent = "\u2728 $abilityName"; abSpan.style.fontWeight = "bold"
+        abSpan.textContent = "\u2728 ${tStat(abilityName)}"; abSpan.style.fontWeight = "bold"
         magicStats.appendChild(abSpan)
         val modSpan = document.createElement("span") as HTMLSpanElement
         val modStr = if (spellMod >= 0) "+$spellMod" else "$spellMod"
-        modSpan.textContent = "Mod: $modStr"
+        modSpan.textContent = "${t("playing.mod")}: $modStr"
         magicStats.appendChild(modSpan)
         val dcSpan = document.createElement("span") as HTMLSpanElement
-        dcSpan.textContent = "DC: $spellDC"
+        dcSpan.textContent = "${t("playing.dc")}: $spellDC"
         magicStats.appendChild(dcSpan)
         magicsBox.appendChild(magicStats)
 
@@ -5487,7 +5618,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
         // Change Prepared Spells
         val prepBtn = document.createElement("button") as HTMLButtonElement
-        prepBtn.textContent = "\uD83D\uDCCB Prepared"
+        prepBtn.textContent = "\uD83D\uDCCB " + t("magic.prepared")
         prepBtn.title = "Change Prepared Spells"
         prepBtn.style.fontSize = "11px"
         val classNeedsPrepared = (magicMainClass ?: "") in DungeonsAndDragons.preparedCasters
@@ -5503,7 +5634,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         // Reset all slots
         val resetSlotsBtn = document.createElement("button") as HTMLButtonElement
         resetSlotsBtn.textContent = "\u21BA"
-        resetSlotsBtn.title = "Reset all spell slots"
+        resetSlotsBtn.title = t("playing.resetSlots")
         resetSlotsBtn.style.fontSize = "11px"
         resetSlotsBtn.addEventListener("click", {
             slots.forEachIndexed { idx, _ ->
@@ -5528,7 +5659,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     lootBox.style.setProperty("flex", "1")
 
     val lootTitle = document.createElement("h4") as HTMLHeadingElement
-    lootTitle.textContent = "Loot and Notes"
+    lootTitle.textContent = t("playing.lootNotes")
     lootTitle.style.margin = "0 0 10px 0"
     lootBox.appendChild(lootTitle)
 
@@ -5543,11 +5674,11 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
     data class CoinDisplay(val label: String, val abbr: String, val value: Int)
     val coins = listOf(
-        CoinDisplay("Copper", "pc", money.copper),
-        CoinDisplay("Silver", "ps", money.silver),
-        CoinDisplay("Electrum", "pe", money.electrum),
-        CoinDisplay("Gold", "pg", money.gold),
-        CoinDisplay("Platinum", "pp", money.platinum)
+        CoinDisplay(t("coin.copper"), t("coin.copper.abbr"), money.copper),
+        CoinDisplay(t("coin.silver"), t("coin.silver.abbr"), money.silver),
+        CoinDisplay(t("coin.electrum"), t("coin.electrum.abbr"), money.electrum),
+        CoinDisplay(t("coin.gold"), t("coin.gold.abbr"), money.gold),
+        CoinDisplay(t("coin.platinum"), t("coin.platinum.abbr"), money.platinum)
     )
 
     coins.forEach { coin ->
@@ -5573,10 +5704,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     moneyBtns.style.justifyContent = "center"
 
     val addMoneyBtn = document.createElement("button") as HTMLButtonElement
-    addMoneyBtn.textContent = "\uD83D\uDCB0 Add"
+    addMoneyBtn.textContent = "\uD83D\uDCB0 " + t("btn.add")
     addMoneyBtn.style.fontSize = "11px"
     addMoneyBtn.addEventListener("click", {
-        showMoneyModal(character, "Add Money", true) {
+        showMoneyModal(character, t("playing.addMoney"), true) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -5584,10 +5715,10 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     moneyBtns.appendChild(addMoneyBtn)
 
     val subMoneyBtn = document.createElement("button") as HTMLButtonElement
-    subMoneyBtn.textContent = "\uD83D\uDCB8 Spend"
+    subMoneyBtn.textContent = "\uD83D\uDCB8 " + t("playing.spend")
     subMoneyBtn.style.fontSize = "11px"
     subMoneyBtn.addEventListener("click", {
-        showMoneyModal(character, "Spend Money", false) {
+        showMoneyModal(character, t("playing.spendMoney"), false) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -5603,7 +5734,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
     lootBtnSection.style.paddingTop = "8px"
 
     val lootBtnTitle = document.createElement("div") as HTMLDivElement
-    lootBtnTitle.textContent = "Add Loot"
+    lootBtnTitle.textContent = t("playing.addLoot")
     lootBtnTitle.style.fontWeight = "bold"
     lootBtnTitle.style.fontSize = "12px"
     lootBtnTitle.style.marginBottom = "6px"
@@ -5622,35 +5753,35 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
         lootBtnRow.appendChild(btn)
     }
 
-    addLootBtn("\uD83E\uDE96 Armor") {
+    addLootBtn("\uD83E\uDE96 " + t("inventory.armor")) {
         showArmorModal(character, null) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
-    addLootBtn("\u2694\uFE0F Weapon") {
+    addLootBtn("\u2694\uFE0F " + t("inventory.weapons")) {
         showWeaponModal(character, null) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
-    addLootBtn("\u2728 Magic Item") {
+    addLootBtn("\u2728 " + t("inventory.magicItems")) {
         showMagicItemModal(character, null) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
-    addLootBtn("\uD83E\uDDEA Consumable") {
+    addLootBtn("\uD83E\uDDEA " + t("inv.addConsumable")) {
         showAddConsumableLootModal(character) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
-    addLootBtn("\uD83D\uDCE6 Key Item") {
+    addLootBtn("\uD83D\uDCE6 " + t("inventory.other")) {
         showInventoryItemModal(character, "Key Items, Loot and others", null) {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
@@ -5661,7 +5792,7 @@ private fun renderDndPlayingTab(character: Character, container: HTMLDivElement)
 
     // Add Note button
     val addNoteBtn = document.createElement("button") as HTMLButtonElement
-    addNoteBtn.textContent = "\uD83D\uDCDD Add Note"
+    addNoteBtn.textContent = "\uD83D\uDCDD " + t("playing.addNote")
     addNoteBtn.style.fontSize = "10px"
     addNoteBtn.style.marginTop = "8px"
     addNoteBtn.addEventListener("click", {
@@ -5707,11 +5838,11 @@ private fun showAddConsumableLootModal(character: Character, onDone: () -> Unit)
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = "Add Consumable Loot"
+    titleEl.textContent = t("inv.addConsumableLoot")
     modal.appendChild(titleEl)
 
     val desc = document.createElement("p") as HTMLParagraphElement
-    desc.textContent = "Select an existing item to increase quantity, or add a new one."
+    desc.textContent = t("inv.selectExisting")
     desc.style.fontSize = "13px"; desc.style.color = "#666"
     modal.appendChild(desc)
 
@@ -5746,7 +5877,7 @@ private fun showAddConsumableLootModal(character: Character, onDone: () -> Unit)
 
     // New item button
     val newBtn = document.createElement("button") as HTMLButtonElement
-    newBtn.textContent = "\u2795 New Consumable"
+    newBtn.textContent = "\u2795 " + t("inv.newConsumable")
     newBtn.style.marginTop = "12px"
     newBtn.style.width = "100%"
     newBtn.addEventListener("click", {
@@ -5757,7 +5888,7 @@ private fun showAddConsumableLootModal(character: Character, onDone: () -> Unit)
 
     // Cancel
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.style.marginTop = "8px"
     cancelBtn.style.width = "100%"
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
@@ -5778,7 +5909,7 @@ private fun showUseSlotModal(character: Character, className: String, slots: Lis
     modal.style.backgroundColor = "white"; modal.style.borderRadius = "8px"; modal.style.padding = "24px"
     modal.style.maxWidth = "300px"; modal.style.width = "90%"
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Use Spell Slot"; modal.appendChild(title)
+    title.textContent = t("magic.useSlot"); modal.appendChild(title)
     slots.forEachIndexed { idx, total ->
         val circleNum = idx + 1
         val slotKey = "dnd_spell_slots_${character.id}_${className}_$circleNum"
@@ -5795,7 +5926,7 @@ private fun showUseSlotModal(character: Character, className: String, slots: Lis
         }
     }
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"; cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
+    cancelBtn.textContent = t("btn.cancel"); cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     modal.appendChild(cancelBtn)
     overlay.appendChild(modal); document.body?.appendChild(overlay)
@@ -5812,7 +5943,7 @@ private fun showRestoreSlotModal(character: Character, className: String, slots:
     modal.style.backgroundColor = "white"; modal.style.borderRadius = "8px"; modal.style.padding = "24px"
     modal.style.maxWidth = "300px"; modal.style.width = "90%"
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Restore Spell Slot"; modal.appendChild(title)
+    title.textContent = t("magic.restoreSlot"); modal.appendChild(title)
     slots.forEachIndexed { idx, _ ->
         val circleNum = idx + 1
         val slotKey = "dnd_spell_slots_${character.id}_${className}_$circleNum"
@@ -5829,7 +5960,7 @@ private fun showRestoreSlotModal(character: Character, className: String, slots:
         }
     }
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"; cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
+    cancelBtn.textContent = t("btn.cancel"); cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     modal.appendChild(cancelBtn)
     overlay.appendChild(modal); document.body?.appendChild(overlay)
@@ -5846,7 +5977,7 @@ private fun showTempSlotModal(character: Character, className: String, slots: Li
     modal.style.backgroundColor = "white"; modal.style.borderRadius = "8px"; modal.style.padding = "24px"
     modal.style.maxWidth = "300px"; modal.style.width = "90%"
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Add Temporary Slot"; modal.appendChild(title)
+    title.textContent = t("magic.addTempSlot"); modal.appendChild(title)
     slots.forEachIndexed { idx, total ->
         val circleNum = idx + 1
         val slotKey = "dnd_spell_slots_${character.id}_${className}_$circleNum"
@@ -5862,7 +5993,7 @@ private fun showTempSlotModal(character: Character, className: String, slots: Li
         modal.appendChild(btn)
     }
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"; cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
+    cancelBtn.textContent = t("btn.cancel"); cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     modal.appendChild(cancelBtn)
     overlay.appendChild(modal); document.body?.appendChild(overlay)
@@ -5880,12 +6011,12 @@ private fun showPreparedSpellsModal(character: Character, onDone: () -> Unit) {
     modal.style.maxWidth = "400px"; modal.style.width = "90%"
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Change Prepared Spells"; modal.appendChild(title)
+    title.textContent = t("magic.changePrepared"); modal.appendChild(title)
 
     val allSpells = dndSpellRepo.getByCharacterId(character.id).filter { it.circle != "Cantrip" }
     if (allSpells.isEmpty()) {
         val empty = document.createElement("p") as HTMLParagraphElement
-        empty.textContent = "No spells to prepare."; empty.style.color = "#999"
+        empty.textContent = t("magic.noSpellsToPrepare"); empty.style.color = "#999"
         modal.appendChild(empty)
     } else {
         allSpells.sortedBy { it.circle }.forEach { spell ->
@@ -5907,7 +6038,7 @@ private fun showPreparedSpellsModal(character: Character, onDone: () -> Unit) {
     }
 
     val closeBtn = document.createElement("button") as HTMLButtonElement
-    closeBtn.textContent = "Done"; closeBtn.style.width = "100%"; closeBtn.style.marginTop = "12px"
+    closeBtn.textContent = t("magic.done"); closeBtn.style.width = "100%"; closeBtn.style.marginTop = "12px"
     closeBtn.addEventListener("click", { document.body?.removeChild(overlay); onDone() })
     modal.appendChild(closeBtn)
     overlay.appendChild(modal); document.body?.appendChild(overlay)
@@ -5940,7 +6071,7 @@ private fun showMoneyModal(character: Character, title: String, isAdd: Boolean, 
     data class CoinInput(val label: String, val abbr: String, val input: HTMLInputElement)
     val coinInputs = mutableListOf<CoinInput>()
 
-    listOf("Copper" to "pc", "Silver" to "ps", "Electrum" to "pe", "Gold" to "pg", "Platinum" to "pp").forEach { (label, abbr) ->
+    listOf(t("coin.copper") to t("coin.copper.abbr"), t("coin.silver") to t("coin.silver.abbr"), t("coin.electrum") to t("coin.electrum.abbr"), t("coin.gold") to t("coin.gold.abbr"), t("coin.platinum") to t("coin.platinum.abbr")).forEach { (label, abbr) ->
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = "$label ($abbr)"; lbl.style.fontWeight = "bold"; lbl.style.fontSize = "13px"
         form.appendChild(lbl)
@@ -5957,7 +6088,7 @@ private fun showMoneyModal(character: Character, title: String, isAdd: Boolean, 
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
@@ -6009,7 +6140,7 @@ private fun showChangeArmorModal(character: Character, onDone: () -> Unit) {
     modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
 
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Change Equipment"
+    title.textContent = t("playing.changeArmor")
     modal.appendChild(title)
 
     val armors = dndArmorRepo.getByCharacterId(character.id)
@@ -6047,7 +6178,7 @@ private fun showChangeArmorModal(character: Character, onDone: () -> Unit) {
     btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
@@ -6087,7 +6218,7 @@ private fun showAddStatusModal(character: Character, onDone: () -> Unit) {
     modal.style.maxWidth = "350px"; modal.style.width = "90%"
 
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Add Status"
+    title.textContent = t("playing.addStatus")
     modal.appendChild(title)
 
     val defaultStatuses = listOf("Poisoned", "Confused", "Flying", "Frightened", "Blinded", "Charmed", "Deafened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Prone", "Restrained", "Stunned", "Unconscious", "Exhaustion")
@@ -6095,11 +6226,11 @@ private fun showAddStatusModal(character: Character, onDone: () -> Unit) {
     val sel = document.createElement("select") as HTMLSelectElement
     sel.style.width = "100%"; sel.style.padding = "6px"; sel.style.marginBottom = "8px"
     val emptyOpt = document.createElement("option") as HTMLOptionElement
-    emptyOpt.value = ""; emptyOpt.textContent = "-- Select status --"
+    emptyOpt.value = ""; emptyOpt.textContent = t("playing.selectStatus")
     sel.appendChild(emptyOpt)
     defaultStatuses.forEach { s ->
         val opt = document.createElement("option") as HTMLOptionElement
-        opt.value = s; opt.textContent = s
+        opt.value = s; opt.textContent = tStatus(s)
         sel.appendChild(opt)
     }
     val customOpt = document.createElement("option") as HTMLOptionElement
@@ -6122,7 +6253,7 @@ private fun showAddStatusModal(character: Character, onDone: () -> Unit) {
     btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
@@ -6167,11 +6298,11 @@ private fun showHitDiceModal(
     modal.style.maxWidth = "300px"; modal.style.width = "90%"
 
     val title = document.createElement("h3") as HTMLHeadingElement
-    title.textContent = "Use Hit Die ($die)"
+    title.textContent = "${t("playing.useHitDie")} ($die)"
     modal.appendChild(title)
 
     val desc = document.createElement("p") as HTMLParagraphElement
-    desc.textContent = "Roll your $die and enter the value:"
+    desc.textContent = "${t("playing.rollValue")}:"
     desc.style.fontSize = "14px"
     modal.appendChild(desc)
 
@@ -6187,12 +6318,12 @@ private fun showHitDiceModal(
     btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val confirmBtn = document.createElement("button") as HTMLButtonElement
-    confirmBtn.textContent = "Apply"
+    confirmBtn.textContent = t("playing.apply")
     confirmBtn.addEventListener("click", {
         val rolled = input.value.toIntOrNull()
         if (rolled != null && rolled > 0) {
@@ -6228,7 +6359,7 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
 
         val nameEl = document.createElement("h4") as HTMLHeadingElement
         nameEl.textContent = when (f.type) {
-            "Idiom", "Tool Proficiency", "Weapon/Armor Proficiency" -> f.type
+            "Idiom", "Tool Proficiency", "Weapon/Armor Proficiency" -> tFeatureType(f.type)
             else -> f.name.ifEmpty { "(Unnamed)" }
         }
         nameEl.style.margin = "0 0 6px 0"
@@ -6242,7 +6373,7 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
 
         val left = document.createElement("div") as HTMLDivElement
         val sourceBadge = document.createElement("span") as HTMLSpanElement
-        sourceBadge.textContent = f.source
+        sourceBadge.textContent = tSource(f.source)
         sourceBadge.style.backgroundColor = when (f.source) {
             "Class" -> "#4a90d9"
             "Origin" -> "#d9a34a"
@@ -6264,7 +6395,7 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
         header.appendChild(left)
 
         val typeBadge = document.createElement("span") as HTMLSpanElement
-        typeBadge.textContent = f.type
+        typeBadge.textContent = tFeatureType(f.type)
         typeBadge.style.fontSize = "12px"
         typeBadge.style.fontStyle = "italic"
         header.appendChild(typeBadge)
@@ -6272,18 +6403,20 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
 
         val desc = document.createElement("p") as HTMLParagraphElement
         if (f.type == "Idiom") {
-            desc.textContent = "Languages: ${f.description}"
+            val translatedIdioms = f.description.split(",").map { tIdiom(it.trim()) }.joinToString(", ")
+            desc.textContent = "${t("features.languages")}: $translatedIdioms"
         } else if (f.type == "Tool Proficiency") {
-            desc.textContent = "Tools: ${f.description}"
+            val translatedTools = f.description.split(",").map { tTool(it.trim()) }.joinToString(", ")
+            desc.textContent = "${t("features.tools")}: $translatedTools"
         } else if (f.type == "Weapon/Armor Proficiency") {
             val parts = f.description.split(",").map { it.trim() }
             val armors = parts.filter { it.startsWith("armor:") }.map { it.removePrefix("armor:") }
             val cats = parts.filter { it.startsWith("weapon_cat:") }.map { it.removePrefix("weapon_cat:") }
             val weapons = parts.filter { it.startsWith("weapon:") }.map { it.removePrefix("weapon:") }
             val lines = mutableListOf<String>()
-            if (armors.isNotEmpty()) lines.add("Armor: ${armors.joinToString(", ")}")
-            if (cats.isNotEmpty()) lines.add("Weapon Categories: ${cats.joinToString(", ")}")
-            if (weapons.isNotEmpty()) lines.add("Weapons: ${weapons.joinToString(", ")}")
+            if (armors.isNotEmpty()) lines.add("${t("features.armor")}: ${armors.joinToString(", ") { when(it) { "Light" -> t("features.armor.light"); "Medium" -> t("features.armor.medium"); "Heavy" -> t("features.armor.heavy"); "Shields" -> t("features.armor.shields"); else -> it } }}")
+            if (cats.isNotEmpty()) lines.add("${t("features.weaponCategories")}: ${cats.joinToString(", ") { when(it) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); else -> it } }}")
+            if (weapons.isNotEmpty()) lines.add("${t("features.individualWeapons")}: ${weapons.joinToString(", ") { tWeapon(it) }}")
             desc.textContent = lines.joinToString(" | ")
         } else {
             desc.textContent = f.description
@@ -6294,7 +6427,7 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
 
         if (f.type == "Rechargable Feature" && f.maxQuantity != null) {
             val rechargeInfo = document.createElement("p") as HTMLParagraphElement
-            rechargeInfo.textContent = "Uses: ${f.maxQuantity} | Recharge: ${f.reloadRule ?: "\u2014"}"
+            rechargeInfo.textContent = "${t("features.uses")}: ${f.maxQuantity} | ${t("features.recharge")}: ${tReloadRule(f.reloadRule ?: "\u2014")}"
             rechargeInfo.style.fontSize = "13px"
             rechargeInfo.style.color = "#555"
             rechargeInfo.style.margin = "0 0 8px 0"
@@ -6322,12 +6455,12 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
         actions.style.setProperty("gap", "8px")
 
         val editBtn = document.createElement("button") as HTMLButtonElement
-        editBtn.textContent = "Edit"
+        editBtn.textContent = t("btn.edit")
         editBtn.addEventListener("click", { showFeatureModal(character, f, mainInfo) { onRefresh() } })
         actions.appendChild(editBtn)
 
         val deleteBtn = document.createElement("button") as HTMLButtonElement
-        deleteBtn.textContent = "Delete"
+        deleteBtn.textContent = t("btn.delete")
         deleteBtn.style.color = "red"
         deleteBtn.addEventListener("click", {
             dndFeaturesRepo.delete(f.id)
@@ -6343,7 +6476,7 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
         container.innerHTML = ""
 
         val addBtn = document.createElement("button") as HTMLButtonElement
-        addBtn.textContent = "Add New Feature"
+        addBtn.textContent = t("features.addNew")
         addBtn.style.marginBottom = "16px"
         addBtn.addEventListener("click", { showFeatureModal(character, null, mainInfo) { refreshList() } })
         container.appendChild(addBtn)
@@ -6366,7 +6499,7 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
         val leftCol = document.createElement("div") as HTMLDivElement
         leftCol.style.setProperty("flex", "1")
         val leftTitle = document.createElement("h3") as HTMLHeadingElement
-        leftTitle.textContent = "Proficiencies & Idioms"
+        leftTitle.textContent = t("features.profAndIdioms")
         leftTitle.style.marginTop = "0"
         leftCol.appendChild(leftTitle)
         if (leftFeatures.isEmpty()) {
@@ -6382,12 +6515,12 @@ private fun renderDndFeaturesTab(character: Character, container: HTMLDivElement
         val rightCol = document.createElement("div") as HTMLDivElement
         rightCol.style.setProperty("flex", "1")
         val rightTitle = document.createElement("h3") as HTMLHeadingElement
-        rightTitle.textContent = "Features"
+        rightTitle.textContent = t("features.features")
         rightTitle.style.marginTop = "0"
         rightCol.appendChild(rightTitle)
         if (rightFeatures.isEmpty()) {
             val empty = document.createElement("p") as HTMLParagraphElement
-            empty.textContent = "No features yet."
+            empty.textContent = t("features.noFeatures")
             rightCol.appendChild(empty)
         } else {
             rightFeatures.forEach { rightCol.appendChild(buildFeatureCard(it) { refreshList() }) }
@@ -6429,7 +6562,7 @@ private fun showFeatureModal(
     modal.style.overflowY = "auto"
 
     val titleEl = document.createElement("h2") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) "Edit Feature" else "Add New Feature"
+    titleEl.textContent = if (existing != null) t("features.editFeature") else t("features.addNew")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -6445,11 +6578,11 @@ private fun showFeatureModal(
     }
 
     // Type (first field)
-    addLabel("Type")
+    addLabel(t("features.type"))
     val typeSelect = document.createElement("select") as HTMLSelectElement
-    DndFeature.types.forEach { t ->
+    DndFeature.types.forEach { tp ->
         val opt = document.createElement("option") as HTMLOptionElement
-        opt.value = t; opt.textContent = t; typeSelect.appendChild(opt)
+        opt.value = tp; opt.textContent = tFeatureType(tp); typeSelect.appendChild(opt)
     }
     typeSelect.value = existing?.type ?: "Feature"
     if (existing != null) typeSelect.disabled = true
@@ -6461,11 +6594,11 @@ private fun showFeatureModal(
     nameInput.placeholder = "Feature name"
 
     // Source
-    addLabel("Source")
+    addLabel(t("features.source"))
     val sourceSelect = document.createElement("select") as HTMLSelectElement
     DndFeature.sources.forEach { s ->
         val opt = document.createElement("option") as HTMLOptionElement
-        opt.value = s; opt.textContent = s; sourceSelect.appendChild(opt)
+        opt.value = s; opt.textContent = tSource(s); sourceSelect.appendChild(opt)
     }
     sourceSelect.value = existing?.source ?: "Class"
     form.appendChild(sourceSelect)
@@ -6492,7 +6625,7 @@ private fun showFeatureModal(
         when (sourceSelect.value) {
             "Class" -> {
                 val lbl1 = document.createElement("label") as HTMLLabelElement
-                lbl1.textContent = "Class"; lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
+                lbl1.textContent = t("main.class"); lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
 
                 val mainClass = mainInfo?.mainClass
                 val secClass = mainInfo?.secondaryClass
@@ -6502,7 +6635,7 @@ private fun showFeatureModal(
                     // Single class — show as label
                     val classVal = classes.firstOrNull() ?: ""
                     val classSpan = document.createElement("span") as HTMLSpanElement
-                    classSpan.textContent = classVal
+                    classSpan.textContent = tDnd("class", classVal)
                     inner.appendChild(classSpan)
                     val inp = document.createElement("input") as HTMLInputElement
                     inp.type = "hidden"; inp.value = classVal
@@ -6511,7 +6644,7 @@ private fun showFeatureModal(
                     // Hack: reuse sourceCustomInput to carry the value
                     val hiddenSel = document.createElement("select") as HTMLSelectElement
                     val o = document.createElement("option") as HTMLOptionElement
-                    o.value = classVal; o.textContent = classVal; hiddenSel.appendChild(o)
+                    o.value = classVal; o.textContent = tDnd("class", classVal); hiddenSel.appendChild(o)
                     hiddenSel.value = classVal
                     hiddenSel.style.display = "none"
                     inner.appendChild(hiddenSel)
@@ -6521,7 +6654,7 @@ private fun showFeatureModal(
                     val sel = document.createElement("select") as HTMLSelectElement
                     classes.forEach { c ->
                         val o = document.createElement("option") as HTMLOptionElement
-                        o.value = c; o.textContent = c; sel.appendChild(o)
+                        o.value = c; o.textContent = tDnd("class", c); sel.appendChild(o)
                     }
                     sel.value = existing?.sourceClass ?: (mainClass ?: "")
                     inner.appendChild(sel)
@@ -6529,7 +6662,7 @@ private fun showFeatureModal(
                 }
 
                 val lbl2 = document.createElement("label") as HTMLLabelElement
-                lbl2.textContent = "Level"; lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
+                lbl2.textContent = t("main.level"); lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
                 val lvl = document.createElement("input") as HTMLInputElement
                 lvl.type = "number"; lvl.min = "1"; lvl.max = "20"
                 lvl.value = existing?.sourceClassLevel?.toString() ?: "1"
@@ -6538,7 +6671,7 @@ private fun showFeatureModal(
             }
             "Origin" -> {
                 val lbl = document.createElement("label") as HTMLLabelElement
-                lbl.textContent = "Origin"; lbl.style.fontWeight = "bold"; inner.appendChild(lbl)
+                lbl.textContent = t("main.origin"); lbl.style.fontWeight = "bold"; inner.appendChild(lbl)
                 val valSpan = document.createElement("span") as HTMLSpanElement
                 val originVal = existing?.sourceOrigin ?: (mainInfo?.origin ?: "")
                 valSpan.textContent = originVal
@@ -6551,10 +6684,10 @@ private fun showFeatureModal(
             }
             "Race" -> {
                 val lbl1 = document.createElement("label") as HTMLLabelElement
-                lbl1.textContent = "Race"; lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
+                lbl1.textContent = t("main.race"); lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
                 val raceVal = existing?.sourceRace ?: (mainInfo?.race ?: "")
                 val raceSpan = document.createElement("span") as HTMLSpanElement
-                raceSpan.textContent = raceVal
+                raceSpan.textContent = tDnd("race", raceVal)
                 inner.appendChild(raceSpan)
                 val inp1 = document.createElement("input") as HTMLInputElement
                 inp1.type = "hidden"; inp1.value = raceVal
@@ -6562,10 +6695,10 @@ private fun showFeatureModal(
                 sourceRaceInput = inp1
 
                 val lbl2 = document.createElement("label") as HTMLLabelElement
-                lbl2.textContent = "Sub-race"; lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
+                lbl2.textContent = t("main.subrace"); lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
                 val subRaceVal = existing?.sourceSubRace ?: (mainInfo?.subRace ?: "")
                 val subRaceSpan = document.createElement("span") as HTMLSpanElement
-                subRaceSpan.textContent = subRaceVal
+                subRaceSpan.textContent = tDnd("subrace", subRaceVal)
                 inner.appendChild(subRaceSpan)
                 val inp2 = document.createElement("input") as HTMLInputElement
                 inp2.type = "hidden"; inp2.value = subRaceVal
@@ -6574,7 +6707,7 @@ private fun showFeatureModal(
             }
             "Custom" -> {
                 val lbl = document.createElement("label") as HTMLLabelElement
-                lbl.textContent = "Source"; lbl.style.fontWeight = "bold"; inner.appendChild(lbl)
+                lbl.textContent = t("features.source"); lbl.style.fontWeight = "bold"; inner.appendChild(lbl)
                 val inp = document.createElement("input") as HTMLInputElement
                 inp.value = existing?.sourceCustom ?: ""
                 inner.appendChild(inp)
@@ -6603,18 +6736,18 @@ private fun showFeatureModal(
             inner.style.setProperty("gap", "10px")
 
             val lbl1 = document.createElement("label") as HTMLLabelElement
-            lbl1.textContent = "Max. Quantity"; lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
+            lbl1.textContent = t("features.maxQuantity"); lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
             val qty = document.createElement("input") as HTMLInputElement
             qty.type = "number"; qty.value = existing?.maxQuantity?.toString() ?: "1"
             inner.appendChild(qty)
             maxQtyInput = qty
 
             val lbl2 = document.createElement("label") as HTMLLabelElement
-            lbl2.textContent = "Reload Rule"; lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
+            lbl2.textContent = t("features.reloadRule"); lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
             val sel = document.createElement("select") as HTMLSelectElement
             DndFeature.reloadRules.forEach { r ->
                 val o = document.createElement("option") as HTMLOptionElement
-                o.value = r; o.textContent = r; sel.appendChild(o)
+                o.value = r; o.textContent = tReloadRule(r); sel.appendChild(o)
             }
             sel.value = existing?.reloadRule ?: "Long Rest"
             inner.appendChild(sel)
@@ -6665,7 +6798,7 @@ private fun showFeatureModal(
         dynamicDiv.innerHTML = ""
         if (typeSelect.value == "Idiom" || typeSelect.value == "Tool Proficiency") {
             val isIdiomType = typeSelect.value == "Idiom"
-            val itemLabel = if (isIdiomType) "Languages" else "Tools"
+            val itemLabel = if (isIdiomType) t("features.languages") else t("features.tools")
             val defaultList = if (isIdiomType) defaultIdioms else defaultTools
             val placeholder = if (isIdiomType) "Custom language" else "Custom tool"
             val addPlaceholder = if (isIdiomType) "-- Add language --" else "-- Add tool --"
@@ -6683,11 +6816,12 @@ private fun showFeatureModal(
             selectedDiv.style.setProperty("flex-wrap", "wrap")
             selectedDiv.style.setProperty("gap", "4px")
 
+            val translateBadge: (String) -> String = if (isIdiomType) ::tIdiom else ::tTool
             fun refreshTags() {
                 selectedDiv.innerHTML = ""
                 selectedItems.forEach { item ->
                     val badge = document.createElement("span") as HTMLSpanElement
-                    badge.textContent = "$item \u00D7"
+                    badge.textContent = "${translateBadge(item)} \u00D7"
                     badge.style.backgroundColor = "#e0e0e0"
                     badge.style.padding = "2px 8px"
                     badge.style.borderRadius = "4px"
@@ -6712,9 +6846,10 @@ private fun showFeatureModal(
             val emptyOpt = document.createElement("option") as HTMLOptionElement
             emptyOpt.value = ""; emptyOpt.textContent = addPlaceholder
             itemSelect.appendChild(emptyOpt)
+            val translateItem = if (isIdiomType) ::tIdiom else ::tTool
             defaultList.forEach { item ->
                 val opt = document.createElement("option") as HTMLOptionElement
-                opt.value = item; opt.textContent = item
+                opt.value = item; opt.textContent = translateItem(item)
                 itemSelect.appendChild(opt)
             }
             val customOpt = document.createElement("option") as HTMLOptionElement
@@ -6754,7 +6889,7 @@ private fun showFeatureModal(
         } else if (typeSelect.value == "Weapon/Armor Proficiency") {
             // Armor checkboxes
             val armorLabel = document.createElement("label") as HTMLLabelElement
-            armorLabel.textContent = "Armor"
+            armorLabel.textContent = t("features.armor")
             armorLabel.style.fontWeight = "bold"
             armorLabel.style.display = "block"
             armorLabel.style.marginBottom = "6px"
@@ -6767,13 +6902,14 @@ private fun showFeatureModal(
 
             val armorCbs = mutableMapOf<String, HTMLInputElement>()
             listOf("Light", "Medium", "Heavy", "Shields").forEach { armor ->
+                val armorDisplay = when (armor) { "Light" -> t("features.armor.light"); "Medium" -> t("features.armor.medium"); "Heavy" -> t("features.armor.heavy"); "Shields" -> t("features.armor.shields"); else -> armor }
                 val lbl = document.createElement("label") as HTMLLabelElement
                 val cb = document.createElement("input") as HTMLInputElement
                 cb.type = "checkbox"
                 cb.checked = armorChecks[armor] == true
                 cb.style.marginRight = "4px"
                 lbl.appendChild(cb)
-                lbl.append(armor)
+                lbl.append(armorDisplay)
                 armorRow.appendChild(lbl)
                 armorCbs[armor] = cb
             }
@@ -6781,7 +6917,7 @@ private fun showFeatureModal(
 
             // Weapon category checkboxes
             val weaponCatLabel = document.createElement("label") as HTMLLabelElement
-            weaponCatLabel.textContent = "Weapon Categories"
+            weaponCatLabel.textContent = t("features.weaponCategories")
             weaponCatLabel.style.fontWeight = "bold"
             weaponCatLabel.style.display = "block"
             weaponCatLabel.style.marginBottom = "6px"
@@ -6795,13 +6931,14 @@ private fun showFeatureModal(
 
             val weaponCatCbs = mutableMapOf<String, HTMLInputElement>()
             listOf("Simple", "Martial").forEach { cat ->
+                val catDisplay = when (cat) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); else -> cat }
                 val lbl = document.createElement("label") as HTMLLabelElement
                 val cb = document.createElement("input") as HTMLInputElement
                 cb.type = "checkbox"
                 cb.checked = weaponCatChecks[cat] == true
                 cb.style.marginRight = "4px"
                 lbl.appendChild(cb)
-                lbl.append(cat)
+                lbl.append(catDisplay)
                 weaponCatRow.appendChild(lbl)
                 weaponCatCbs[cat] = cb
             }
@@ -6813,7 +6950,7 @@ private fun showFeatureModal(
             othersCb.checked = weaponCatOther.isNotEmpty()
             othersCb.style.marginRight = "4px"
             othersLbl.appendChild(othersCb)
-            othersLbl.append("Others")
+            othersLbl.append(t("features.weapon.others"))
             weaponCatRow.appendChild(othersLbl)
 
             val othersInput = document.createElement("input") as HTMLInputElement
@@ -6832,7 +6969,7 @@ private fun showFeatureModal(
 
             // Individual weapons list
             val weaponListLabel = document.createElement("label") as HTMLLabelElement
-            weaponListLabel.textContent = "Individual Weapons"
+            weaponListLabel.textContent = t("features.individualWeapons")
             weaponListLabel.style.fontWeight = "bold"
             weaponListLabel.style.display = "block"
             weaponListLabel.style.marginBottom = "6px"
@@ -6849,7 +6986,7 @@ private fun showFeatureModal(
                 weaponSelectedDiv.innerHTML = ""
                 selectedWeapons.forEach { w ->
                     val badge = document.createElement("span") as HTMLSpanElement
-                    badge.textContent = "$w \u00D7"
+                    badge.textContent = "${tWeapon(w)} \u00D7"
                     badge.style.backgroundColor = "#e0e0e0"
                     badge.style.padding = "2px 8px"
                     badge.style.borderRadius = "4px"
@@ -6876,7 +7013,7 @@ private fun showFeatureModal(
             weaponSelect.appendChild(wEmptyOpt)
             defaultWeapons.forEach { w ->
                 val opt = document.createElement("option") as HTMLOptionElement
-                opt.value = w; opt.textContent = w
+                opt.value = w; opt.textContent = tWeapon(w)
                 weaponSelect.appendChild(opt)
             }
             val wCustomOpt = document.createElement("option") as HTMLOptionElement
@@ -6920,7 +7057,7 @@ private fun showFeatureModal(
         } else {
             // Name field
             val nameLbl = document.createElement("label") as HTMLLabelElement
-            nameLbl.textContent = "Name"
+            nameLbl.textContent = t("label.name")
             nameLbl.style.fontWeight = "bold"
             dynamicDiv.appendChild(nameLbl)
             nameInput.style.width = "100%"
@@ -6929,7 +7066,7 @@ private fun showFeatureModal(
 
             // Description textarea
             val lbl = document.createElement("label") as HTMLLabelElement
-            lbl.textContent = "Description"
+            lbl.textContent = t("label.description")
             lbl.style.fontWeight = "bold"
             dynamicDiv.appendChild(lbl)
             val ta = document.createElement("textarea") as HTMLTextAreaElement
@@ -6952,7 +7089,7 @@ private fun showFeatureModal(
     tagsContainer.style.setProperty("grid-column", "1 / -1")
 
     val tagsLabel = document.createElement("label") as HTMLLabelElement
-    tagsLabel.textContent = "Tags"
+    tagsLabel.textContent = t("label.tags")
     tagsLabel.style.fontWeight = "bold"
     tagsLabel.style.display = "block"
     tagsLabel.style.marginBottom = "6px"
@@ -6995,7 +7132,7 @@ private fun showFeatureModal(
     tagAddRow.appendChild(tagInput)
 
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = "Add"
+    tagAddBtn.textContent = t("btn.add")
     tagAddBtn.addEventListener("click", {
         val tag = tagInput.value.trim()
         if (tag.isNotEmpty() && tag !in selectedTags) {
@@ -7026,12 +7163,12 @@ private fun showFeatureModal(
     btnRow.style.justifyContent = "flex-end"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = "Cancel"
+    cancelBtn.textContent = t("btn.cancel")
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     btnRow.appendChild(cancelBtn)
 
     val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = "Save"
+    saveBtn.textContent = t("btn.save")
     saveBtn.addEventListener("click", {
         val isListType = typeSelect.value == "Idiom" || typeSelect.value == "Tool Proficiency"
         val isWeaponArmor = typeSelect.value == "Weapon/Armor Proficiency"
@@ -7128,7 +7265,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         subClasses.forEach { sc ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = sc
-            opt.textContent = sc
+            opt.textContent = tDnd("subclass", sc)
             select.appendChild(opt)
         }
 
@@ -7218,7 +7355,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         DungeonsAndDragons.defaultClasses.forEach { cls ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = cls
-            opt.textContent = cls
+            opt.textContent = tDnd("class", cls)
             select.appendChild(opt)
         }
 
@@ -7339,7 +7476,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         DungeonsAndDragons.defaultClasses.forEach { cls ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = cls
-            opt.textContent = cls
+            opt.textContent = tDnd("class", cls)
             select.appendChild(opt)
         }
         val customOpt = document.createElement("option") as HTMLOptionElement
@@ -7443,9 +7580,9 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         return input
     }
 
-    val mainClassSelect = addClassSelectTo(mainRow, "Class", info.mainClass) { mainSubClassWrapper }
-    mainSubClassWrapper = addSubClassSelectTo(mainRow, "Sub-class", info.mainClass, info.mainSubClass)
-    val mainClassLevelInput = addNumberFieldTo(mainRow, "Level", info.mainClassLevel)
+    val mainClassSelect = addClassSelectTo(mainRow, t("main.class"), info.mainClass) { mainSubClassWrapper }
+    mainSubClassWrapper = addSubClassSelectTo(mainRow, t("main.subclass"), info.mainClass, info.mainSubClass)
+    val mainClassLevelInput = addNumberFieldTo(mainRow, t("main.level"), info.mainClassLevel)
     mainClassLevelInput.min = "1"
     mainClassLevelInput.max = "20"
     container.appendChild(mainRow)
@@ -7457,9 +7594,9 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     secRow.style.setProperty("gap", "12px")
     secRow.style.marginBottom = "12px"
 
-    val secondaryClassSelect = addClassSelectTo(secRow, "Secondary Class", info.secondaryClass) { secondarySubClassWrapper }
-    secondarySubClassWrapper = addSubClassSelectTo(secRow, "Sub-class", info.secondaryClass, info.secondarySubClass)
-    val secondaryClassLevelInput = addNumberFieldTo(secRow, "Level", info.secondaryClassLevel)
+    val secondaryClassSelect = addClassSelectTo(secRow, t("main.secondaryClass"), info.secondaryClass) { secondarySubClassWrapper }
+    secondarySubClassWrapper = addSubClassSelectTo(secRow, t("main.subclass"), info.secondaryClass, info.secondarySubClass)
+    val secondaryClassLevelInput = addNumberFieldTo(secRow, t("main.level"), info.secondaryClassLevel)
     secondaryClassLevelInput.min = "0"
     secondaryClassLevelInput.max = "20"
     container.appendChild(secRow)
@@ -7468,7 +7605,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     val levelError = document.createElement("span") as HTMLSpanElement
     levelError.style.color = "red"
     levelError.style.display = "none"
-    levelError.textContent = "Sum of levels must be 20 or less"
+    levelError.textContent = t("main.levelSumError")
 
     fun validateLevels() {
         val main = mainClassLevelInput.value.toIntOrNull() ?: 0
@@ -7502,7 +7639,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         subRaces.forEach { sr ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = sr
-            opt.textContent = sr
+            opt.textContent = tDnd("subrace", sr)
             select.appendChild(opt)
         }
 
@@ -7582,7 +7719,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         DungeonsAndDragons.defaultRaces.forEach { r ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = r
-            opt.textContent = r
+            opt.textContent = tDnd("race", r)
             select.appendChild(opt)
         }
 
@@ -7664,12 +7801,12 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         return wrapper
     }
 
-    val raceSelect = addRaceSelect("Race", info.race)
-    subRaceWrapper = addSubRaceSelect("Sub-race", info.race, info.subRace)
-    val originInput = addField("Origin", info.origin)
+    val raceSelect = addRaceSelect(t("main.race"), info.race)
+    subRaceWrapper = addSubRaceSelect(t("main.subrace"), info.race, info.subRace)
+    val originInput = addField(t("main.origin"), info.origin)
     // Alignment select
     val alignmentLbl = document.createElement("label") as HTMLLabelElement
-    alignmentLbl.textContent = "Alignment"
+    alignmentLbl.textContent = t("main.alignment")
     alignmentLbl.style.fontWeight = "bold"
     form.appendChild(alignmentLbl)
     val alignmentSelect = document.createElement("select") as HTMLSelectElement
@@ -7682,7 +7819,7 @@ private fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     DungeonsAndDragons.defaultAlignments.forEach { a ->
         val opt = document.createElement("option") as HTMLOptionElement
         opt.value = a
-        opt.textContent = a
+        opt.textContent = tDnd("alignment", a)
         alignmentSelect.appendChild(opt)
     }
     alignmentSelect.value = info.alignment ?: ""
@@ -7929,7 +8066,18 @@ private fun showCharacterDetail(character: Character) {
 
     character.sheetModel.tabs.forEachIndexed { index, tabName ->
         val tabBtn = document.createElement("button") as HTMLButtonElement
-        tabBtn.textContent = tabName
+        val tabDisplayName = when (tabName) {
+            "Playing" -> t("tab.playing")
+            "Main" -> t("tab.main")
+            "Stats" -> t("tab.stats")
+            "Features" -> t("tab.features")
+            "Magic" -> t("tab.magic")
+            "Inventory" -> t("tab.inventory")
+            "Background" -> t("tab.background")
+            "Notes" -> t("tab.notes")
+            else -> tabName
+        }
+        tabBtn.textContent = tabDisplayName
         tabBtn.style.padding = "8px 16px"
         tabBtn.style.border = "none"
         tabBtn.style.cursor = "pointer"
@@ -7953,7 +8101,7 @@ private fun showCharacterDetail(character: Character) {
 
     // Back button
     val backBtn = document.createElement("button") as HTMLButtonElement
-    backBtn.textContent = "Back to selection"
+    backBtn.textContent = t("btn.back")
     backBtn.style.marginTop = "16px"
     backBtn.addEventListener("click", {
         app.style.display = ""
@@ -7969,8 +8117,27 @@ private fun showListScreen() {
     app.innerHTML = ""
 
     val title = document.createElement("h1")
-    title.textContent = "Dungeons And Deigo"
+    title.textContent = t("app.title")
     app.appendChild(title)
+
+    // Language switcher
+    val langDiv = document.createElement("div") as HTMLDivElement
+    langDiv.style.marginBottom = "12px"
+    val langBtn = document.createElement("button") as HTMLButtonElement
+    langBtn.textContent = if (I18n.current == Locale.EN) "\uD83C\uDDE7\uD83C\uDDF7 Português" else "\uD83C\uDDFA\uD83C\uDDF8 English"
+    langBtn.style.fontSize = "12px"
+    langBtn.addEventListener("click", {
+        if (I18n.current == Locale.EN) {
+            I18n.current = Locale.PT_BR
+            localStorage.setItem("app_locale", "PT_BR")
+        } else {
+            I18n.current = Locale.EN
+            localStorage.setItem("app_locale", "EN")
+        }
+        showListScreen()
+    })
+    langDiv.appendChild(langBtn)
+    app.appendChild(langDiv)
 
     // Character list
     val listDiv = document.createElement("div") as HTMLDivElement
@@ -7978,7 +8145,7 @@ private fun showListScreen() {
 
     val characters = repo.getAll()
     if (characters.isEmpty()) {
-        listDiv.textContent = "No characters created yet."
+        listDiv.textContent = t("char.noChars")
     } else {
         val ul = document.createElement("ul") as HTMLUListElement
         ul.style.listStyle = "none"
@@ -8009,7 +8176,7 @@ private fun showListScreen() {
 
     // Create button
     val createBtn = document.createElement("button") as HTMLButtonElement
-    createBtn.textContent = "Create a new Character"
+    createBtn.textContent = t("char.create")
     app.appendChild(createBtn)
 
     val formDiv = document.createElement("div") as HTMLDivElement
@@ -8020,7 +8187,7 @@ private fun showListScreen() {
 
     // Character Name
     val nameLabel = document.createElement("label")
-    nameLabel.textContent = "Character Name: "
+    nameLabel.textContent = t("char.name") + ": "
     val nameInput = document.createElement("input") as HTMLInputElement
     formDiv.appendChild(nameLabel)
     formDiv.appendChild(nameInput)
@@ -8028,7 +8195,7 @@ private fun showListScreen() {
 
     // Character Model dropdown
     val modelLabel = document.createElement("label")
-    modelLabel.textContent = "Character Model: "
+    modelLabel.textContent = t("char.model") + ": "
     val modelSelect = document.createElement("select") as HTMLSelectElement
     availableSheetModels.forEachIndexed { index, model ->
         val option = document.createElement("option") as HTMLOptionElement
@@ -8042,7 +8209,7 @@ private fun showListScreen() {
 
     // Image upload
     val imageLabel = document.createElement("label")
-    imageLabel.textContent = "Character Image: "
+    imageLabel.textContent = t("char.image") + ": "
     val imageInput = document.createElement("input") as HTMLInputElement
     imageInput.type = "file"
     imageInput.accept = "image/*"
@@ -8068,7 +8235,7 @@ private fun showListScreen() {
 
     // Submit
     val submitBtn = document.createElement("button") as HTMLButtonElement
-    submitBtn.textContent = "Submit"
+    submitBtn.textContent = t("btn.submit")
     formDiv.appendChild(submitBtn)
 
     submitBtn.addEventListener("click", {
