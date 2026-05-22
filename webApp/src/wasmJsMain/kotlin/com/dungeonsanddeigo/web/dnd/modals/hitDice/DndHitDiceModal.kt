@@ -1,0 +1,81 @@
+package com.dungeonsanddeigo.web.dnd.modals.hitDice
+
+import com.dungeonsanddeigo.i18n.t
+import com.dungeonsanddeigo.model.Character
+import com.dungeonsanddeigo.model.DungeonsAndDragons
+import com.dungeonsanddeigo.web.Repos
+import kotlinx.browser.document
+import kotlinx.browser.localStorage
+import org.w3c.dom.*
+
+fun showHitDiceModal(
+    die: String,
+    storageKey: String,
+    currentUsed: Int,
+    character: Character,
+    onDone: () -> Unit
+) {
+    val overlay = document.createElement("div") as HTMLDivElement
+    overlay.style.position = "fixed"
+    overlay.style.top = "0"; overlay.style.left = "0"
+    overlay.style.width = "100%"; overlay.style.height = "100%"
+    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
+    overlay.style.display = "flex"
+    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
+    overlay.style.setProperty("z-index", "1000")
+
+    val modal = document.createElement("div") as HTMLDivElement
+    modal.style.backgroundColor = "white"
+    modal.style.borderRadius = "8px"; modal.style.padding = "24px"
+    modal.style.maxWidth = "300px"; modal.style.width = "90%"
+
+    val title = document.createElement("h3") as HTMLHeadingElement
+    title.textContent = "${t("playing.useHitDie")} ($die)"
+    modal.appendChild(title)
+
+    val desc = document.createElement("p") as HTMLParagraphElement
+    desc.textContent = "${t("playing.rollValue")}:"
+    desc.style.fontSize = "14px"
+    modal.appendChild(desc)
+
+    val input = document.createElement("input") as HTMLInputElement
+    input.type = "number"; input.min = "1"
+    input.placeholder = "Rolled value"
+    input.style.width = "100%"; input.style.padding = "8px"
+    input.style.marginBottom = "16px"
+    modal.appendChild(input)
+
+    val btnRow = document.createElement("div") as HTMLDivElement
+    btnRow.style.display = "flex"; btnRow.style.setProperty("gap", "8px")
+    btnRow.style.justifyContent = "flex-end"
+
+    val cancelBtn = document.createElement("button") as HTMLButtonElement
+    cancelBtn.textContent = t("btn.cancel")
+    cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
+    btnRow.appendChild(cancelBtn)
+
+    val confirmBtn = document.createElement("button") as HTMLButtonElement
+    confirmBtn.textContent = t("playing.apply")
+    confirmBtn.addEventListener("click", {
+        val rolled = input.value.toIntOrNull()
+        if (rolled != null && rolled > 0) {
+            // Add 1 usage
+            localStorage.setItem(storageKey, (currentUsed + 1).toString())
+            // Add rolled value to current life
+            val lifeKey = "dnd_playing_life_${character.id}"
+            val stats = Repos.baseStats.getByCharacterId(character.id)
+            val maxLife = stats?.maxLife ?: 0
+            val currentLife = localStorage.getItem(lifeKey)?.toIntOrNull() ?: maxLife
+            val newLife = minOf(currentLife + rolled, maxLife)
+            localStorage.setItem(lifeKey, newLife.toString())
+            document.body?.removeChild(overlay)
+            onDone()
+        }
+    })
+    btnRow.appendChild(confirmBtn)
+
+    modal.appendChild(btnRow)
+    overlay.appendChild(modal)
+    document.body?.appendChild(overlay)
+}
+

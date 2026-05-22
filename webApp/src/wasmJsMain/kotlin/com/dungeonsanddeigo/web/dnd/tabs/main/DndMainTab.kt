@@ -1,0 +1,812 @@
+package com.dungeonsanddeigo.web.dnd.tabs.main
+
+import com.dungeonsanddeigo.dnd.rules.calcProficiency
+import com.dungeonsanddeigo.i18n.*
+import com.dungeonsanddeigo.model.Character
+import com.dungeonsanddeigo.model.DndFeature
+import com.dungeonsanddeigo.model.DndMainInfo
+import com.dungeonsanddeigo.model.DungeonsAndDragons
+import com.dungeonsanddeigo.web.Repos
+import kotlinx.browser.document
+import kotlinx.browser.window
+import org.w3c.dom.*
+
+fun renderDndMainTab(character: Character, container: HTMLDivElement) {
+    val info = Repos.mainInfo.getByCharacterId(character.id) ?: DndMainInfo(characterId = character.id)
+
+    val form = document.createElement("div") as HTMLDivElement
+    form.style.setProperty("display", "grid")
+    form.style.setProperty("grid-template-columns", "1fr 1fr")
+    form.style.setProperty("gap", "12px")
+    form.style.maxWidth = "600px"
+
+    val customClasses = mutableListOf<String>()
+
+    fun addField(label: String, value: String?): HTMLInputElement {
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        val input = document.createElement("input") as HTMLInputElement
+        input.value = value ?: ""
+        input.style.padding = "4px"
+        form.appendChild(lbl)
+        form.appendChild(input)
+        return input
+    }
+
+    fun addNumberField(label: String, value: Int?): HTMLInputElement {
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        val input = document.createElement("input") as HTMLInputElement
+        input.type = "number"
+        input.value = value?.toString() ?: ""
+        input.style.padding = "4px"
+        form.appendChild(lbl)
+        form.appendChild(input)
+        return input
+    }
+
+    fun buildSubClassSelect(className: String?, currentValue: String?): HTMLDivElement {
+        val wrapper = document.createElement("div") as HTMLDivElement
+        val select = document.createElement("select") as HTMLSelectElement
+        select.style.padding = "4px"
+        select.style.width = "100%"
+
+        val emptyOpt = document.createElement("option") as HTMLOptionElement
+        emptyOpt.value = ""
+        emptyOpt.textContent = "-- Select --"
+        select.appendChild(emptyOpt)
+
+        val subClasses = DungeonsAndDragons.subClassesFor(className)
+        subClasses.forEach { sc ->
+            val opt = document.createElement("option") as HTMLOptionElement
+            opt.value = sc
+            opt.textContent = tDnd("subclass", sc)
+            select.appendChild(opt)
+        }
+
+        val customOpt = document.createElement("option") as HTMLOptionElement
+        customOpt.value = "__custom__"
+        customOpt.textContent = "Custom..."
+        select.appendChild(customOpt)
+
+        if (currentValue != null && currentValue !in subClasses) {
+            val existingCustom = document.createElement("option") as HTMLOptionElement
+            existingCustom.value = currentValue
+            existingCustom.textContent = "$currentValue (Custom)"
+            select.insertBefore(existingCustom, customOpt)
+        }
+
+        select.value = currentValue ?: ""
+
+        val customInput = document.createElement("input") as HTMLInputElement
+        customInput.placeholder = "Enter custom sub-class"
+        customInput.style.padding = "4px"
+        customInput.style.width = "100%"
+        customInput.style.display = "none"
+        customInput.style.marginTop = "4px"
+
+        val addBtn = document.createElement("button") as HTMLButtonElement
+        addBtn.textContent = "Add"
+        addBtn.style.display = "none"
+        addBtn.style.marginTop = "4px"
+
+        select.addEventListener("change", {
+            if (select.value == "__custom__") {
+                customInput.style.display = "block"
+                addBtn.style.display = "inline-block"
+            } else {
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+        })
+
+        addBtn.addEventListener("click", {
+            val customValue = customInput.value.trim()
+            if (customValue.isNotEmpty()) {
+                val newOpt = document.createElement("option") as HTMLOptionElement
+                newOpt.value = customValue
+                newOpt.textContent = "$customValue (Custom)"
+                select.insertBefore(newOpt, customOpt)
+                select.value = customValue
+                customInput.value = ""
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+        })
+
+        wrapper.appendChild(select)
+        wrapper.appendChild(customInput)
+        wrapper.appendChild(addBtn)
+        return wrapper
+    }
+
+    fun addSubClassSelect(label: String, className: String?, value: String?): HTMLDivElement {
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        form.appendChild(lbl)
+        val wrapper = buildSubClassSelect(className, value)
+        form.appendChild(wrapper)
+        return wrapper
+    }
+
+    fun addClassSelect(label: String, value: String?, subClassWrapper: () -> HTMLDivElement?): HTMLSelectElement {
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        form.appendChild(lbl)
+
+        val wrapper = document.createElement("div") as HTMLDivElement
+
+        val select = document.createElement("select") as HTMLSelectElement
+        select.style.padding = "4px"
+        select.style.width = "100%"
+
+        val emptyOpt = document.createElement("option") as HTMLOptionElement
+        emptyOpt.value = ""
+        emptyOpt.textContent = "-- Select --"
+        select.appendChild(emptyOpt)
+
+        DungeonsAndDragons.defaultClasses.forEach { cls ->
+            val opt = document.createElement("option") as HTMLOptionElement
+            opt.value = cls
+            opt.textContent = tDnd("class", cls)
+            select.appendChild(opt)
+        }
+
+        val customOpt = document.createElement("option") as HTMLOptionElement
+        customOpt.value = "__custom__"
+        customOpt.textContent = "Custom..."
+        select.appendChild(customOpt)
+
+        Repos.customClass.getAll().forEach { cls ->
+            if (cls != value) {
+                val opt = document.createElement("option") as HTMLOptionElement
+                opt.value = cls
+                opt.textContent = "$cls (Custom)"
+                select.insertBefore(opt, customOpt)
+            }
+        }
+
+        if (value != null && value !in DungeonsAndDragons.defaultClasses && value !in Repos.customClass.getAll()) {
+            val existingCustom = document.createElement("option") as HTMLOptionElement
+            existingCustom.value = value
+            existingCustom.textContent = "$value (Custom)"
+            select.insertBefore(existingCustom, customOpt)
+            customClasses.add(value)
+        }
+
+        select.value = value ?: ""
+
+        val customInput = document.createElement("input") as HTMLInputElement
+        customInput.placeholder = "Enter custom class"
+        customInput.style.padding = "4px"
+        customInput.style.width = "100%"
+        customInput.style.display = "none"
+        customInput.style.marginTop = "4px"
+
+        val addBtn = document.createElement("button") as HTMLButtonElement
+        addBtn.textContent = "Add"
+        addBtn.style.display = "none"
+        addBtn.style.marginTop = "4px"
+
+        select.addEventListener("change", {
+            if (select.value == "__custom__") {
+                customInput.style.display = "block"
+                addBtn.style.display = "inline-block"
+            } else {
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+            // Rebuild sub-class dropdown
+            val scWrapper = subClassWrapper()
+            if (scWrapper != null) {
+                val selectedClass = if (select.value == "__custom__") null else select.value
+                val newContent = buildSubClassSelect(selectedClass, null)
+                scWrapper.innerHTML = ""
+                while (newContent.firstChild != null) {
+                    scWrapper.appendChild(newContent.firstChild!!)
+                }
+            }
+        })
+
+        addBtn.addEventListener("click", {
+            val customValue = customInput.value.trim()
+            if (customValue.isNotEmpty()) {
+                Repos.customClass.add(customValue)
+                val newOpt = document.createElement("option") as HTMLOptionElement
+                newOpt.value = customValue
+                newOpt.textContent = "$customValue (Custom)"
+                select.insertBefore(newOpt, customOpt)
+                select.value = customValue
+                customInput.value = ""
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+                // Rebuild sub-class for custom class (only Custom option)
+                val scWrapper = subClassWrapper()
+                if (scWrapper != null) {
+                    val newContent = buildSubClassSelect(customValue, null)
+                    scWrapper.innerHTML = ""
+                    while (newContent.firstChild != null) {
+                        scWrapper.appendChild(newContent.firstChild!!)
+                    }
+                }
+            }
+        })
+
+        wrapper.appendChild(select)
+        wrapper.appendChild(customInput)
+        wrapper.appendChild(addBtn)
+        form.appendChild(wrapper)
+
+        return select
+    }
+
+    // We need references to sub-class wrappers, but they're created after the class selects.
+    var mainSubClassWrapper: HTMLDivElement? = null
+    var secondarySubClassWrapper: HTMLDivElement? = null
+
+    // --- Main Class row (3 columns) ---
+    val mainRow = document.createElement("div") as HTMLDivElement
+    mainRow.style.setProperty("display", "grid")
+    mainRow.style.setProperty("grid-template-columns", "2fr 2fr 1fr")
+    mainRow.style.setProperty("gap", "12px")
+    mainRow.style.marginBottom = "12px"
+
+    fun addClassSelectTo(parent: HTMLDivElement, label: String, value: String?, subClassRef: () -> HTMLDivElement?): HTMLSelectElement {
+        val col = document.createElement("div") as HTMLDivElement
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        col.appendChild(lbl)
+        // Reuse addClassSelect logic but append to col instead of form
+        val wrapper = document.createElement("div") as HTMLDivElement
+        val select = document.createElement("select") as HTMLSelectElement
+        select.style.padding = "4px"
+        select.style.width = "100%"
+        val emptyOpt = document.createElement("option") as HTMLOptionElement
+        emptyOpt.value = ""
+        emptyOpt.textContent = "-- Select --"
+        select.appendChild(emptyOpt)
+        DungeonsAndDragons.defaultClasses.forEach { cls ->
+            val opt = document.createElement("option") as HTMLOptionElement
+            opt.value = cls
+            opt.textContent = tDnd("class", cls)
+            select.appendChild(opt)
+        }
+        val customOpt = document.createElement("option") as HTMLOptionElement
+        customOpt.value = "__custom__"
+        customOpt.textContent = "Custom..."
+        select.appendChild(customOpt)
+        Repos.customClass.getAll().forEach { cls ->
+            if (cls != value) {
+                val opt = document.createElement("option") as HTMLOptionElement
+                opt.value = cls
+                opt.textContent = "$cls (Custom)"
+                select.insertBefore(opt, customOpt)
+            }
+        }
+        if (value != null && value !in DungeonsAndDragons.defaultClasses && value !in Repos.customClass.getAll()) {
+            val existingCustom = document.createElement("option") as HTMLOptionElement
+            existingCustom.value = value
+            existingCustom.textContent = "$value (Custom)"
+            select.insertBefore(existingCustom, customOpt)
+        }
+        select.value = value ?: ""
+        val customInput = document.createElement("input") as HTMLInputElement
+        customInput.placeholder = "Enter custom class"
+        customInput.style.padding = "4px"
+        customInput.style.width = "100%"
+        customInput.style.display = "none"
+        customInput.style.marginTop = "4px"
+        val addBtn = document.createElement("button") as HTMLButtonElement
+        addBtn.textContent = "Add"
+        addBtn.style.display = "none"
+        addBtn.style.marginTop = "4px"
+        select.addEventListener("change", {
+            if (select.value == "__custom__") {
+                customInput.style.display = "block"
+                addBtn.style.display = "inline-block"
+            } else {
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+            val scWrapper = subClassRef()
+            if (scWrapper != null) {
+                val selectedClass = if (select.value == "__custom__") null else select.value
+                val newContent = buildSubClassSelect(selectedClass, null)
+                scWrapper.innerHTML = ""
+                while (newContent.firstChild != null) { scWrapper.appendChild(newContent.firstChild!!) }
+            }
+        })
+        addBtn.addEventListener("click", {
+            val customValue = customInput.value.trim()
+            if (customValue.isNotEmpty()) {
+                Repos.customClass.add(customValue)
+                val newOpt = document.createElement("option") as HTMLOptionElement
+                newOpt.value = customValue
+                newOpt.textContent = "$customValue (Custom)"
+                select.insertBefore(newOpt, customOpt)
+                select.value = customValue
+                customInput.value = ""
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+                val scWrapper = subClassRef()
+                if (scWrapper != null) {
+                    val newContent = buildSubClassSelect(customValue, null)
+                    scWrapper.innerHTML = ""
+                    while (newContent.firstChild != null) { scWrapper.appendChild(newContent.firstChild!!) }
+                }
+            }
+        })
+        wrapper.appendChild(select)
+        wrapper.appendChild(customInput)
+        wrapper.appendChild(addBtn)
+        col.appendChild(wrapper)
+        parent.appendChild(col)
+        return select
+    }
+
+    fun addSubClassSelectTo(parent: HTMLDivElement, label: String, className: String?, value: String?): HTMLDivElement {
+        val col = document.createElement("div") as HTMLDivElement
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        col.appendChild(lbl)
+        val wrapper = buildSubClassSelect(className, value)
+        col.appendChild(wrapper)
+        parent.appendChild(col)
+        return wrapper
+    }
+
+    fun addNumberFieldTo(parent: HTMLDivElement, label: String, value: Int?): HTMLInputElement {
+        val col = document.createElement("div") as HTMLDivElement
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        col.appendChild(lbl)
+        val input = document.createElement("input") as HTMLInputElement
+        input.type = "number"
+        input.value = value?.toString() ?: ""
+        input.style.padding = "4px"
+        input.style.width = "100%"
+        col.appendChild(input)
+        parent.appendChild(col)
+        return input
+    }
+
+    val mainClassSelect = addClassSelectTo(mainRow, t("main.class"), info.mainClass) { mainSubClassWrapper }
+    mainSubClassWrapper = addSubClassSelectTo(mainRow, t("main.subclass"), info.mainClass, info.mainSubClass)
+    val mainClassLevelInput = addNumberFieldTo(mainRow, t("main.level"), info.mainClassLevel)
+    mainClassLevelInput.min = "1"
+    mainClassLevelInput.max = "20"
+    container.appendChild(mainRow)
+
+    // --- Secondary Class row (3 columns) ---
+    val secRow = document.createElement("div") as HTMLDivElement
+    secRow.style.setProperty("display", "grid")
+    secRow.style.setProperty("grid-template-columns", "2fr 2fr 1fr")
+    secRow.style.setProperty("gap", "12px")
+    secRow.style.marginBottom = "12px"
+
+    val secondaryClassSelect = addClassSelectTo(secRow, t("main.secondaryClass"), info.secondaryClass) { secondarySubClassWrapper }
+    secondarySubClassWrapper = addSubClassSelectTo(secRow, t("main.subclass"), info.secondaryClass, info.secondarySubClass)
+    val secondaryClassLevelInput = addNumberFieldTo(secRow, t("main.level"), info.secondaryClassLevel)
+    secondaryClassLevelInput.min = "0"
+    secondaryClassLevelInput.max = "20"
+    container.appendChild(secRow)
+
+    // Enforce sum <= 20
+    val levelError = document.createElement("span") as HTMLSpanElement
+    levelError.style.color = "red"
+    levelError.style.display = "none"
+    levelError.textContent = t("main.levelSumError")
+
+    fun validateLevels() {
+        val main = mainClassLevelInput.value.toIntOrNull() ?: 0
+        val sec = secondaryClassLevelInput.value.toIntOrNull() ?: 0
+        if (main + sec > 20) {
+            levelError.style.display = "inline"
+        } else {
+            levelError.style.display = "none"
+        }
+    }
+
+    mainClassLevelInput.addEventListener("input", { validateLevels() })
+    secondaryClassLevelInput.addEventListener("input", { validateLevels() })
+
+    // Insert error span after the grid (will be added to container later)
+    validateLevels()
+    var subRaceWrapper: HTMLDivElement? = null
+
+    fun buildSubRaceSelect(raceName: String?, currentValue: String?): HTMLDivElement {
+        val wrapper = document.createElement("div") as HTMLDivElement
+        val select = document.createElement("select") as HTMLSelectElement
+        select.style.padding = "4px"
+        select.style.width = "100%"
+
+        val emptyOpt = document.createElement("option") as HTMLOptionElement
+        emptyOpt.value = ""
+        emptyOpt.textContent = "-- Select --"
+        select.appendChild(emptyOpt)
+
+        val subRaces = DungeonsAndDragons.subRacesFor(raceName)
+        subRaces.forEach { sr ->
+            val opt = document.createElement("option") as HTMLOptionElement
+            opt.value = sr
+            opt.textContent = tDnd("subrace", sr)
+            select.appendChild(opt)
+        }
+
+        val customOpt = document.createElement("option") as HTMLOptionElement
+        customOpt.value = "__custom__"
+        customOpt.textContent = "Custom..."
+        select.appendChild(customOpt)
+
+        if (currentValue != null && currentValue !in subRaces) {
+            val existingCustom = document.createElement("option") as HTMLOptionElement
+            existingCustom.value = currentValue
+            existingCustom.textContent = "$currentValue (Custom)"
+            select.insertBefore(existingCustom, customOpt)
+        }
+
+        select.value = currentValue ?: ""
+
+        val customInput = document.createElement("input") as HTMLInputElement
+        customInput.placeholder = "Enter custom sub-race"
+        customInput.style.padding = "4px"
+        customInput.style.width = "100%"
+        customInput.style.display = "none"
+        customInput.style.marginTop = "4px"
+
+        val addBtn = document.createElement("button") as HTMLButtonElement
+        addBtn.textContent = "Add"
+        addBtn.style.display = "none"
+        addBtn.style.marginTop = "4px"
+
+        select.addEventListener("change", {
+            if (select.value == "__custom__") {
+                customInput.style.display = "block"
+                addBtn.style.display = "inline-block"
+            } else {
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+        })
+
+        addBtn.addEventListener("click", {
+            val customValue = customInput.value.trim()
+            if (customValue.isNotEmpty()) {
+                val newOpt = document.createElement("option") as HTMLOptionElement
+                newOpt.value = customValue
+                newOpt.textContent = "$customValue (Custom)"
+                select.insertBefore(newOpt, customOpt)
+                select.value = customValue
+                customInput.value = ""
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+        })
+
+        wrapper.appendChild(select)
+        wrapper.appendChild(customInput)
+        wrapper.appendChild(addBtn)
+        return wrapper
+    }
+
+    // Race select
+    fun addRaceSelect(label: String, value: String?): HTMLSelectElement {
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        form.appendChild(lbl)
+
+        val wrapper = document.createElement("div") as HTMLDivElement
+        val select = document.createElement("select") as HTMLSelectElement
+        select.style.padding = "4px"
+        select.style.width = "100%"
+
+        val emptyOpt = document.createElement("option") as HTMLOptionElement
+        emptyOpt.value = ""
+        emptyOpt.textContent = "-- Select --"
+        select.appendChild(emptyOpt)
+
+        DungeonsAndDragons.defaultRaces.forEach { r ->
+            val opt = document.createElement("option") as HTMLOptionElement
+            opt.value = r
+            opt.textContent = tDnd("race", r)
+            select.appendChild(opt)
+        }
+
+        val customOpt = document.createElement("option") as HTMLOptionElement
+        customOpt.value = "__custom__"
+        customOpt.textContent = "Custom..."
+        select.appendChild(customOpt)
+
+        if (value != null && value !in DungeonsAndDragons.defaultRaces) {
+            val existingCustom = document.createElement("option") as HTMLOptionElement
+            existingCustom.value = value
+            existingCustom.textContent = "$value (Custom)"
+            select.insertBefore(existingCustom, customOpt)
+        }
+
+        select.value = value ?: ""
+
+        val customInput = document.createElement("input") as HTMLInputElement
+        customInput.placeholder = "Enter custom race"
+        customInput.style.padding = "4px"
+        customInput.style.width = "100%"
+        customInput.style.display = "none"
+        customInput.style.marginTop = "4px"
+
+        val addBtn = document.createElement("button") as HTMLButtonElement
+        addBtn.textContent = "Add"
+        addBtn.style.display = "none"
+        addBtn.style.marginTop = "4px"
+
+        fun rebuildSubRace(raceName: String?) {
+            val srw = subRaceWrapper ?: return
+            val newContent = buildSubRaceSelect(raceName, null)
+            srw.innerHTML = ""
+            while (newContent.firstChild != null) {
+                srw.appendChild(newContent.firstChild!!)
+            }
+        }
+
+        select.addEventListener("change", {
+            if (select.value == "__custom__") {
+                customInput.style.display = "block"
+                addBtn.style.display = "inline-block"
+            } else {
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+            }
+            rebuildSubRace(if (select.value == "__custom__") null else select.value)
+        })
+
+        addBtn.addEventListener("click", {
+            val customValue = customInput.value.trim()
+            if (customValue.isNotEmpty()) {
+                val newOpt = document.createElement("option") as HTMLOptionElement
+                newOpt.value = customValue
+                newOpt.textContent = "$customValue (Custom)"
+                select.insertBefore(newOpt, customOpt)
+                select.value = customValue
+                customInput.value = ""
+                customInput.style.display = "none"
+                addBtn.style.display = "none"
+                rebuildSubRace(customValue)
+            }
+        })
+
+        wrapper.appendChild(select)
+        wrapper.appendChild(customInput)
+        wrapper.appendChild(addBtn)
+        form.appendChild(wrapper)
+        return select
+    }
+
+    fun addSubRaceSelect(label: String, raceName: String?, value: String?): HTMLDivElement {
+        val lbl = document.createElement("label") as HTMLLabelElement
+        lbl.textContent = label
+        lbl.style.fontWeight = "bold"
+        form.appendChild(lbl)
+        val wrapper = buildSubRaceSelect(raceName, value)
+        form.appendChild(wrapper)
+        return wrapper
+    }
+
+    val raceSelect = addRaceSelect(t("main.race"), info.race)
+    subRaceWrapper = addSubRaceSelect(t("main.subrace"), info.race, info.subRace)
+    val originInput = addField(t("main.origin"), info.origin)
+    // Alignment select
+    val alignmentLbl = document.createElement("label") as HTMLLabelElement
+    alignmentLbl.textContent = t("main.alignment")
+    alignmentLbl.style.fontWeight = "bold"
+    form.appendChild(alignmentLbl)
+    val alignmentSelect = document.createElement("select") as HTMLSelectElement
+    alignmentSelect.style.padding = "4px"
+    alignmentSelect.style.width = "100%"
+    val alignEmptyOpt = document.createElement("option") as HTMLOptionElement
+    alignEmptyOpt.value = ""
+    alignEmptyOpt.textContent = "-- Select --"
+    alignmentSelect.appendChild(alignEmptyOpt)
+    DungeonsAndDragons.defaultAlignments.forEach { a ->
+        val opt = document.createElement("option") as HTMLOptionElement
+        opt.value = a
+        opt.textContent = tDnd("alignment", a)
+        alignmentSelect.appendChild(opt)
+    }
+    alignmentSelect.value = info.alignment ?: ""
+    form.appendChild(alignmentSelect)
+
+    container.appendChild(form)
+    container.appendChild(levelError)
+
+    // Auto-save status indicator
+    val statusEl = document.createElement("span") as HTMLSpanElement
+    statusEl.style.marginTop = "8px"
+    statusEl.style.display = "block"
+    statusEl.style.fontSize = "14px"
+    container.appendChild(statusEl)
+
+    var saveTimeout = 0
+
+    fun autoSave() {
+        val mainLevel = mainClassLevelInput.value.toIntOrNull() ?: 0
+        val secLevel = secondaryClassLevelInput.value.toIntOrNull() ?: 0
+        if (mainLevel + secLevel > 20) return
+
+        statusEl.textContent = "Saving..."
+        statusEl.style.color = "gray"
+
+        if (saveTimeout != 0) window.clearTimeout(saveTimeout)
+        saveTimeout = window.setTimeout({
+            val mainSubSelect = mainSubClassWrapper?.querySelector("select") as? HTMLSelectElement
+            val secSubSelect = secondarySubClassWrapper?.querySelector("select") as? HTMLSelectElement
+            val updated = DndMainInfo(
+                characterId = character.id,
+                mainClass = mainClassSelect.value.ifBlank { null },
+                mainSubClass = mainSubSelect?.value?.ifBlank { null },
+                mainClassLevel = mainClassLevelInput.value.toIntOrNull(),
+                secondaryClass = secondaryClassSelect.value.ifBlank { null },
+                secondarySubClass = secSubSelect?.value?.ifBlank { null },
+                secondaryClassLevel = secondaryClassLevelInput.value.toIntOrNull(),
+                race = raceSelect.value.ifBlank { null },
+                subRace = (subRaceWrapper?.querySelector("select") as? HTMLSelectElement)?.value?.ifBlank { null },
+                origin = originInput.value.ifBlank { null },
+                alignment = alignmentSelect.value.ifBlank { null }
+            )
+            Repos.mainInfo.save(updated)
+            statusEl.textContent = "\u2713 Saved"
+            statusEl.style.color = "green"
+            null
+        }, 500)
+    }
+
+    // Attach auto-save to all inputs
+    container.addEventListener("input", { autoSave() })
+    container.addEventListener("change", { autoSave() })
+
+    // Track previous values for feature-deletion warnings
+    var prevMainClass = info.mainClass ?: ""
+    var prevSecondaryClass = info.secondaryClass ?: ""
+    var prevRace = info.race ?: ""
+    var prevOrigin = info.origin ?: ""
+    var prevMainSubClass = info.mainSubClass
+    var prevSecondarySubClass = info.secondarySubClass
+    var prevSubRace = info.subRace
+    var prevMainLevel = info.mainClassLevel ?: 1
+    var prevSecondaryLevel = info.secondaryClassLevel ?: 0
+
+    fun checkFeatureWarning(source: String, oldValue: String, newValue: String, matchFn: (DndFeature) -> Boolean, revert: () -> Unit) {
+        if (oldValue == newValue || newValue.isBlank()) return
+        val features = Repos.features.getByCharacterId(character.id)
+        val affected = features.filter(matchFn)
+        if (affected.isEmpty()) return
+        val names = affected.joinToString(", ") { it.name.ifEmpty { "(Unnamed)" } }
+        val confirmed = window.confirm("Changing $source will delete ${affected.size} feature(s): $names\n\nProceed?")
+        if (confirmed) {
+            affected.forEach { Repos.features.delete(it.id) }
+        } else {
+            revert()
+        }
+    }
+
+    fun rebuildSubClass(wrapper: HTMLDivElement?, className: String?, currentValue: String?) {
+        if (wrapper == null) return
+        val newContent = buildSubClassSelect(className, currentValue)
+        wrapper.innerHTML = ""
+        while (newContent.firstChild != null) { wrapper.appendChild(newContent.firstChild!!) }
+    }
+
+    fun rebuildSubRaceWrapper(raceName: String?, currentValue: String?) {
+        val srw = subRaceWrapper ?: return
+        val newContent = buildSubRaceSelect(raceName, currentValue)
+        srw.innerHTML = ""
+        while (newContent.firstChild != null) { srw.appendChild(newContent.firstChild!!) }
+    }
+
+    mainClassSelect.addEventListener("change", {
+        val newVal = mainClassSelect.value
+        checkFeatureWarning("Main Class", prevMainClass, newVal,
+            { it.source == "Class" && it.sourceClass == prevMainClass },
+            {
+                mainClassSelect.value = prevMainClass
+                rebuildSubClass(mainSubClassWrapper, prevMainClass, prevMainSubClass)
+            }
+        )
+        prevMainClass = mainClassSelect.value
+        prevMainSubClass = (mainSubClassWrapper?.querySelector("select") as? HTMLSelectElement)?.value
+    })
+
+    secondaryClassSelect.addEventListener("change", {
+        val newVal = secondaryClassSelect.value
+        checkFeatureWarning("Secondary Class", prevSecondaryClass, newVal,
+            { it.source == "Class" && it.sourceClass == prevSecondaryClass },
+            {
+                secondaryClassSelect.value = prevSecondaryClass
+                rebuildSubClass(secondarySubClassWrapper, prevSecondaryClass, prevSecondarySubClass)
+            }
+        )
+        prevSecondaryClass = secondaryClassSelect.value
+        prevSecondarySubClass = (secondarySubClassWrapper?.querySelector("select") as? HTMLSelectElement)?.value
+    })
+
+    raceSelect.addEventListener("change", {
+        val newVal = raceSelect.value
+        if (newVal != "__custom__") {
+            checkFeatureWarning("Race", prevRace, newVal,
+                { it.source == "Race" },
+                {
+                    raceSelect.value = prevRace
+                    rebuildSubRaceWrapper(prevRace, prevSubRace)
+                }
+            )
+            prevRace = raceSelect.value
+            prevSubRace = (subRaceWrapper?.querySelector("select") as? HTMLSelectElement)?.value
+        }
+    })
+
+    originInput.addEventListener("change", {
+        val newVal = originInput.value
+        checkFeatureWarning("Origin", prevOrigin, newVal,
+            { it.source == "Origin" },
+            { originInput.value = prevOrigin }
+        )
+        prevOrigin = originInput.value
+    })
+
+    mainClassLevelInput.addEventListener("change", {
+        val newLevel = mainClassLevelInput.value.toIntOrNull() ?: 1
+        if (newLevel < prevMainLevel) {
+            val currentClass = mainClassSelect.value
+            val features = Repos.features.getByCharacterId(character.id)
+            val affected = features.filter {
+                it.source == "Class" && it.sourceClass == currentClass
+                    && (it.sourceClassLevel ?: 0) > newLevel
+            }
+            if (affected.isNotEmpty()) {
+                val names = affected.joinToString(", ") { it.name.ifEmpty { "(Unnamed)" } }
+                val confirmed = window.confirm(
+                    "Lowering ${currentClass} level to $newLevel will delete ${affected.size} feature(s) above that level: $names\n\nProceed?"
+                )
+                if (confirmed) {
+                    affected.forEach { Repos.features.delete(it.id) }
+                } else {
+                    mainClassLevelInput.value = prevMainLevel.toString()
+                    return@addEventListener
+                }
+            }
+        }
+        prevMainLevel = mainClassLevelInput.value.toIntOrNull() ?: 1
+    })
+
+    secondaryClassLevelInput.addEventListener("change", {
+        val newLevel = secondaryClassLevelInput.value.toIntOrNull() ?: 0
+        if (newLevel < prevSecondaryLevel) {
+            val currentClass = secondaryClassSelect.value
+            val features = Repos.features.getByCharacterId(character.id)
+            val affected = features.filter {
+                it.source == "Class" && it.sourceClass == currentClass
+                    && (it.sourceClassLevel ?: 0) > newLevel
+            }
+            if (affected.isNotEmpty()) {
+                val names = affected.joinToString(", ") { it.name.ifEmpty { "(Unnamed)" } }
+                val confirmed = window.confirm(
+                    "Lowering ${currentClass} level to $newLevel will delete ${affected.size} feature(s) above that level: $names\n\nProceed?"
+                )
+                if (confirmed) {
+                    affected.forEach { Repos.features.delete(it.id) }
+                } else {
+                    secondaryClassLevelInput.value = prevSecondaryLevel.toString()
+                    return@addEventListener
+                }
+            }
+        }
+        prevSecondaryLevel = secondaryClassLevelInput.value.toIntOrNull() ?: 0
+    })
+}
+
