@@ -403,7 +403,9 @@ object PtBrStrings {
         "playing.search.test" to "Teste de",
         "playing.search.save" to "Salvaguarda de",
         "playing.search.trained" to "Treinado",
-        "playing.search.untrained" to "Não-treinado"
+        "playing.search.untrained" to "Não-treinado",
+        "playing.search.equipped" to "Equipada",
+        "playing.search.unequipped" to "Não equipada"
     )
 
     fun get(key: String): String = strings[key] ?: EnStrings.get(key)

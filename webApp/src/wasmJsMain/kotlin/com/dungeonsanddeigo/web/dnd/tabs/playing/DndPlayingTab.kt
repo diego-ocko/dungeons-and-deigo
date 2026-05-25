@@ -447,6 +447,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     // Attacks box
     val atkBox = document.createElement("div") as HTMLDivElement
+    atkBox.id = "attacks-box"
     atkBox.style.border = "1px solid #ccc"
     atkBox.style.borderRadius = "8px"
     atkBox.style.padding = "12px"

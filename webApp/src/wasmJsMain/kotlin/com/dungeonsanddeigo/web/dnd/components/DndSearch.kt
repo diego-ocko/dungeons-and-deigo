@@ -60,6 +60,63 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
     resultsDiv.style.marginTop = "10px"
     container.appendChild(resultsDiv)
 
+    fun renderWeapon(weapon: DndWeapon, target: HTMLDivElement, indent: Boolean = false, weaponCatProfs: Set<String> = emptySet(), weaponSpecificProfs: Set<String> = emptySet(), onEquippedFound: () -> Unit = {}) {
+        if (weapon.isEquipped) onEquippedFound()
+        val wDiv = document.createElement("div") as HTMLDivElement
+        wDiv.style.fontSize = "12px"
+        wDiv.style.color = "#555"
+        wDiv.style.marginBottom = "4px"
+        if (indent) wDiv.style.paddingLeft = "12px"
+
+        val hasProf = weapon.category in weaponCatProfs || weapon.weaponType in weaponSpecificProfs
+        val nameSpan = document.createElement("div") as HTMLDivElement
+        val equippedStr = if (weapon.isEquipped) " [${t("playing.search.equipped")}]" else " [${t("playing.search.unequipped")}]"
+        val warnStr = if (!hasProf) " \u26A0\uFE0F" else ""
+        nameSpan.textContent = "\u2694\uFE0F ${weapon.name}$equippedStr$warnStr"
+        nameSpan.style.fontWeight = "bold"
+        wDiv.appendChild(nameSpan)
+
+        val props = mutableListOf<String>()
+        if (weapon.ammunition) props.add(t("inv.ammunition"))
+        if (weapon.finesse) props.add(t("inv.finesse"))
+        if (weapon.heavy) props.add(t("inv.heavy"))
+        if (weapon.light) props.add(t("inv.light"))
+        if (weapon.loading) props.add(t("inv.loading"))
+        if (weapon.range) props.add(t("inv.range"))
+        if (weapon.reach) props.add(t("inv.reach"))
+        if (weapon.thrown) props.add(t("inv.thrown"))
+        if (weapon.twoHanded) props.add(t("inv.twoHanded"))
+        if (weapon.versatile) props.add(t("inv.versatile"))
+        if (weapon.silver) props.add(t("inv.silver"))
+        if (weapon.special) props.add(t("inv.special"))
+
+        if (props.isNotEmpty()) {
+            val propsSpan = document.createElement("div") as HTMLDivElement
+            propsSpan.textContent = props.joinToString(", ")
+            propsSpan.style.paddingLeft = "12px"
+            propsSpan.style.color = "#777"
+            wDiv.appendChild(propsSpan)
+        }
+
+        if (weapon.additionalFeatures.isNotEmpty()) {
+            val addSpan = document.createElement("div") as HTMLDivElement
+            addSpan.textContent = weapon.additionalFeatures
+            addSpan.style.paddingLeft = "12px"
+            addSpan.style.color = "#777"
+            addSpan.style.fontStyle = "italic"
+            wDiv.appendChild(addSpan)
+        }
+
+        val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.textContent = "${weapon.price} ${weapon.priceCurrency} | ${weapon.weight} kg"
+        infoSpan.style.paddingLeft = "12px"
+        infoSpan.style.color = "#999"
+        infoSpan.style.fontSize = "11px"
+        wDiv.appendChild(infoSpan)
+
+        target.appendChild(wDiv)
+    }
+
     fun renderFeature(feat: DndFeature, target: HTMLDivElement, indent: Boolean = false) {
         val fDiv = document.createElement("div") as HTMLDivElement
         fDiv.style.fontSize = "12px"
@@ -118,10 +175,12 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 (nodes.item(i) as? HTMLDivElement)?.classList?.remove("focused")
             }
         }
+        document.getElementById("attacks-box")?.classList?.remove("focused")
 
         if (query.length < 3) return@addEventListener
 
         val highlightIds = mutableSetOf<Long>()
+        var highlightAttacks = false
 
         val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
         val mainInfo = Repos.mainInfo.getByCharacterId(character.id)
@@ -140,6 +199,27 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         )
 
         val features = Repos.features.getByCharacterId(character.id)
+        val weapons = Repos.weapon.getByCharacterId(character.id)
+        val shownWeaponIds = mutableSetOf<Long>()
+
+        // Gather weapon proficiencies
+        val weaponCatProfs = mutableSetOf<String>()
+        val weaponSpecificProfs = mutableSetOf<String>()
+        features.filter { it.type == "Weapon/Armor Proficiency" }.forEach { f ->
+            f.description.split(",").map { it.trim() }.forEach { entry ->
+                when {
+                    entry.startsWith("weapon_cat:") -> weaponCatProfs.add(entry.removePrefix("weapon_cat:"))
+                    entry.startsWith("weapon:") -> weaponSpecificProfs.add(entry.removePrefix("weapon:"))
+                }
+            }
+        }
+
+        fun renderWeaponsByTag(tag: String) {
+            weapons.filter { w -> w.tags.any { it.lowercase() == tag.lowercase() } && w.id !in shownWeaponIds }.forEach { w ->
+                shownWeaponIds.add(w.id)
+                renderWeapon(w, resultsDiv, indent = true, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+            }
+        }
 
         fun renderFeaturesByTag(tag: String) {
             val matching = features.filter { feat -> feat.tags.any { it.lowercase() == tag.lowercase() } }
@@ -147,6 +227,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 if (feat.type == "Rechargable Feature") highlightIds.add(feat.id)
                 renderFeature(feat, resultsDiv, indent = true)
             }
+            renderWeaponsByTag(tag)
         }
 
         statEntries.filter { it.name.lowercase().contains(query) }.forEach { entry ->
@@ -259,6 +340,8 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 if (related.type == "Rechargable Feature") highlightIds.add(related.id)
                 renderFeature(related, resultsDiv, indent = true)
             }
+            // Weapons that have this feature's name as a tag
+            renderWeaponsByTag(feat.name)
         }
 
         // Features with a tag partially matching the query
@@ -268,11 +351,28 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             renderFeature(feat, resultsDiv)
         }
 
+        // Weapons by name match
+        weapons.filter { it.id !in shownWeaponIds && it.name.lowercase().contains(query) }.forEach { w ->
+            shownWeaponIds.add(w.id)
+            renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+        }
+
+        // Weapons by tag partial match
+        weapons.filter { it.id !in shownWeaponIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { w ->
+            shownWeaponIds.add(w.id)
+            renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+        }
+
         // Highlight rechargeable features in Special Actions
         highlightIds.forEach { id ->
             document.querySelector("[data-feature-id='$id']")?.let {
                 (it as HTMLDivElement).classList.add("focused")
             }
+        }
+
+        // Highlight attacks box if equipped weapon found
+        if (highlightAttacks) {
+            document.getElementById("attacks-box")?.classList?.add("focused")
         }
     })
 }
