@@ -399,7 +399,11 @@ object PtBrStrings {
         "playing.spendMoney" to "Gastar Dinheiro",
         "playing.mod" to "Mod",
         "playing.dc" to "CD",
-        "playing.resetSlots" to "Resetar espaços de magia"
+        "playing.resetSlots" to "Resetar espaços de magia",
+        "playing.search.test" to "Teste de",
+        "playing.search.save" to "Salvaguarda de",
+        "playing.search.trained" to "Treinado",
+        "playing.search.untrained" to "Não-treinado"
     )
 
     fun get(key: String): String = strings[key] ?: EnStrings.get(key)

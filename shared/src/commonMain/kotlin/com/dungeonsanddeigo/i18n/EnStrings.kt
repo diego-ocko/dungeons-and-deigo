@@ -399,7 +399,11 @@ object EnStrings {
         "playing.spendMoney" to "Spend Money",
         "playing.mod" to "Mod",
         "playing.dc" to "DC",
-        "playing.resetSlots" to "Reset all spell slots"
+        "playing.resetSlots" to "Reset all spell slots",
+        "playing.search.test" to "Test of",
+        "playing.search.save" to "Saving Throw of",
+        "playing.search.trained" to "Trained",
+        "playing.search.untrained" to "Untrained"
     )
 
     fun get(key: String): String = strings[key] ?: key
