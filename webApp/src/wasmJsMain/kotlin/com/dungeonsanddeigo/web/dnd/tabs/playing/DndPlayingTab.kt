@@ -904,6 +904,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     } else {
         rechargeables.forEach { feat ->
             val row = document.createElement("div") as HTMLDivElement
+            row.setAttribute("data-feature-id", feat.id.toString())
             row.style.display = "flex"
             row.style.justifyContent = "space-between"
             row.style.alignItems = "center"
