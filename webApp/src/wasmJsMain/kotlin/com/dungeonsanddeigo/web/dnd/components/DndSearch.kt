@@ -175,7 +175,11 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 (nodes.item(i) as? HTMLDivElement)?.classList?.remove("focused")
             }
         }
-        document.getElementById("attacks-box")?.classList?.remove("focused")
+        document.querySelectorAll(".weapon-atk-row").let { nodes ->
+            for (i in 0 until nodes.length) {
+                (nodes.item(i) as? HTMLElement)?.classList?.remove("focused")
+            }
+        }
 
         if (query.length < 3) return@addEventListener
 
@@ -370,9 +374,13 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             }
         }
 
-        // Highlight attacks box if equipped weapon found
+        // Highlight attack rows if equipped weapon found
         if (highlightAttacks) {
-            document.getElementById("attacks-box")?.classList?.add("focused")
+            document.querySelectorAll(".weapon-atk-row").let { nodes ->
+                for (i in 0 until nodes.length) {
+                    (nodes.item(i) as? HTMLElement)?.classList?.add("focused")
+                }
+            }
         }
     })
 }

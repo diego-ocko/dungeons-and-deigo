@@ -447,7 +447,6 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     // Attacks box
     val atkBox = document.createElement("div") as HTMLDivElement
-    atkBox.id = "attacks-box"
     atkBox.style.border = "1px solid #ccc"
     atkBox.style.borderRadius = "8px"
     atkBox.style.padding = "12px"
@@ -530,6 +529,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             val atkMod = mod + (if (hasProfEq) profBonus else 0)
 
             val tr = document.createElement("tr") as HTMLTableRowElement
+            tr.classList.add("weapon-atk-row")
 
             val tdName = document.createElement("td") as HTMLTableCellElement
             tdName.style.padding = "3px 4px"; tdName.style.fontWeight = "bold"

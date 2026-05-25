@@ -1,6 +1,22 @@
-[data-feature-id].focused,
-#attacks-box.focused {
+[data-feature-id].focused {
   border: 2px solid #4a90d9;
   border-radius: 6px;
   padding: 4px 6px;
+}
+
+.weapon-atk-row.focused {
+  border-left: 2px solid #4a90d9;
+  border-right: 2px solid #4a90d9;
+  padding-left: 6px;
+  padding-right: 6px;
+
+  &:nth-child(1 of .focused) {
+    border-top: 2px solid #4a90d9;
+    padding-top: 4px;
+  }
+
+  &:nth-last-child(1 of .focused) {
+    border-bottom: 2px solid #4a90d9;
+    padding-bottom: 4px;
+  }
 }
