@@ -1,5 +1,7 @@
 [data-feature-id].focused,
-[data-consumable-id].focused {
+[data-consumable-id].focused,
+div[data-spell-id].focused,
+.magic-atk-row.focused {
   border: 2px solid #4a90d9;
   border-radius: 6px;
   padding: 4px 6px;
@@ -11,12 +13,12 @@
   padding-left: 6px;
   padding-right: 6px;
 
-  &:nth-child(1 of .focused) {
+  &:nth-child(1 of .weapon-atk-row.focused) {
     border-top: 2px solid #4a90d9;
     padding-top: 4px;
   }
 
-  &:nth-last-child(1 of .focused) {
+  &:nth-last-child(1 of .weapon-atk-row.focused) {
     border-bottom: 2px solid #4a90d9;
     padding-bottom: 4px;
   }

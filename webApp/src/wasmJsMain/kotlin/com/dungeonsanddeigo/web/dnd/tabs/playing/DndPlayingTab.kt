@@ -636,6 +636,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         val attackSpells = Repos.spell.getByCharacterId(character.id).filter { it.isAttack && (it.circle == "Cantrip" || it.isPrepared || it.originClass !in DungeonsAndDragons.preparedCasters) }
         attackSpells.forEach { spell ->
             val tr = document.createElement("tr") as HTMLTableRowElement
+            tr.classList.add("magic-atk-row")
+            tr.setAttribute("data-spell-id", spell.id.toString())
             val tdName = document.createElement("td") as HTMLTableCellElement
             tdName.style.padding = "3px 4px"; tdName.style.fontWeight = "bold"
             val circleStr = if (spell.circle == "Cantrip") "" else " (${tCircle(spell.circle)})"
@@ -757,6 +759,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         val attackSpells2 = Repos.spell.getByCharacterId(character.id).filter { it.isAttack && (it.circle == "Cantrip" || it.isPrepared || it.originClass !in DungeonsAndDragons.preparedCasters) }
         attackSpells2.forEach { spell ->
             val tr = document.createElement("tr") as HTMLTableRowElement
+            tr.classList.add("magic-atk-row")
+            tr.setAttribute("data-spell-id", spell.id.toString())
             val tdName = document.createElement("td") as HTMLTableCellElement
             tdName.style.padding = "3px 4px"; tdName.style.fontWeight = "bold"
             val circleStr = if (spell.circle == "Cantrip") "" else " (${tCircle(spell.circle)})"
@@ -1085,6 +1089,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     }
     nonAttackSpells.forEach { spell ->
         val row = document.createElement("div") as HTMLDivElement
+        row.setAttribute("data-spell-id", spell.id.toString())
         row.style.padding = "4px 0"
         row.style.borderBottom = "1px solid #f5f5f5"
         row.style.fontSize = "12px"

@@ -289,6 +289,82 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         target.appendChild(kDiv)
     }
 
+    fun renderSpell(spell: DndSpell, target: HTMLDivElement, indent: Boolean = false, spellDC: Int = 0, onAttackFound: () -> Unit = {}, onNonAttackFound: () -> Unit = {}) {
+        if (spell.isAttack) onAttackFound() else onNonAttackFound()
+        val sDiv = document.createElement("div") as HTMLDivElement
+        sDiv.style.fontSize = "12px"
+        sDiv.style.color = "#555"
+        sDiv.style.marginBottom = "4px"
+        if (indent) sDiv.style.paddingLeft = "12px"
+
+        val circleStr = if (spell.circle == "Cantrip") t("magic.cantrips") else tCircle(spell.circle)
+        val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.textContent = "\u2728 ${spell.name} ($circleStr)"
+        nameSpan.style.fontWeight = "bold"
+        sDiv.appendChild(nameSpan)
+
+        val details = mutableListOf<String>()
+        if (spell.school.isNotEmpty()) details.add(tSchool(spell.school))
+        if (spell.castingTime.isNotEmpty()) details.add(spell.castingTime)
+        if (spell.duration.isNotEmpty()) details.add(spell.duration)
+        if (spell.range.isNotEmpty()) details.add("${spell.range}m")
+        if (details.isNotEmpty()) {
+            val detailSpan = document.createElement("div") as HTMLDivElement
+            detailSpan.textContent = details.joinToString(" | ")
+            detailSpan.style.paddingLeft = "12px"
+            detailSpan.style.color = "#777"
+            sDiv.appendChild(detailSpan)
+        }
+
+        val flags = mutableListOf<String>()
+        val components = mutableListOf<String>()
+        if (spell.hasVerbal) components.add("V")
+        if (spell.hasSomatic) components.add("S")
+        if (spell.hasMaterial) components.add("M")
+        if (components.isNotEmpty()) flags.add(components.joinToString(""))
+        if (spell.needsConcentration) flags.add(t("magic.concShort"))
+        if (spell.canBeRitual) flags.add(t("magic.ritualShort"))
+        if (spell.higherCircles.isNotEmpty()) flags.add("\u2B06\uFE0F ${t("magic.higherShort")}")
+        if (flags.isNotEmpty()) {
+            val flagSpan = document.createElement("div") as HTMLDivElement
+            flagSpan.textContent = flags.joinToString(", ")
+            flagSpan.style.paddingLeft = "12px"
+            flagSpan.style.color = "#999"
+            flagSpan.style.fontSize = "11px"
+            sDiv.appendChild(flagSpan)
+        }
+
+        if (spell.description.isNotEmpty()) {
+            val descSpan = document.createElement("div") as HTMLDivElement
+            descSpan.textContent = spell.description
+            descSpan.style.paddingLeft = "12px"
+            descSpan.style.color = "#777"
+            descSpan.style.fontStyle = "italic"
+            sDiv.appendChild(descSpan)
+        }
+
+        if (spell.higherCircles.isNotEmpty()) {
+            val higherSpan = document.createElement("div") as HTMLDivElement
+            higherSpan.textContent = "\u2B06\uFE0F ${t("magic.higherShort")}: ${spell.higherCircles}"
+            higherSpan.style.paddingLeft = "12px"
+            higherSpan.style.color = "#666"
+            higherSpan.style.fontSize = "11px"
+            sDiv.appendChild(higherSpan)
+        }
+
+        if (spell.needsSavingThrow && spell.savingThrowAbility.isNotEmpty()) {
+            val saveSpan = document.createElement("div") as HTMLDivElement
+            saveSpan.textContent = "${t("playing.search.spellSave")} ${tStat(spell.savingThrowAbility)} (${t("playing.dc")} $spellDC)"
+            saveSpan.style.paddingLeft = "12px"
+            saveSpan.style.color = "#c00"
+            saveSpan.style.fontWeight = "bold"
+            saveSpan.style.fontSize = "11px"
+            sDiv.appendChild(saveSpan)
+        }
+
+        target.appendChild(sDiv)
+    }
+
     fun renderFeature(feat: DndFeature, target: HTMLDivElement, indent: Boolean = false) {
         val fDiv = document.createElement("div") as HTMLDivElement
         fDiv.style.fontSize = "12px"
@@ -352,7 +428,17 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 (nodes.item(i) as? HTMLElement)?.classList?.remove("focused")
             }
         }
+        document.querySelectorAll(".magic-atk-row").let { nodes ->
+            for (i in 0 until nodes.length) {
+                (nodes.item(i) as? HTMLElement)?.classList?.remove("focused")
+            }
+        }
         document.querySelectorAll("[data-consumable-id]").let { nodes ->
+            for (i in 0 until nodes.length) {
+                (nodes.item(i) as? HTMLDivElement)?.classList?.remove("focused")
+            }
+        }
+        document.querySelectorAll("div[data-spell-id]").let { nodes ->
             for (i in 0 until nodes.length) {
                 (nodes.item(i) as? HTMLDivElement)?.classList?.remove("focused")
             }
@@ -360,14 +446,27 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
         if (query.length < 3) return@addEventListener
 
-        val highlightIds = mutableSetOf<Long>()
+        var highlightIds = mutableSetOf<Long>()
         val highlightConsumableIds = mutableSetOf<Long>()
-        var highlightAttacks = false
+        val highlightSpellIds = mutableSetOf<Long>()
+        val highlightNonAttackSpellIds = mutableSetOf<Long>()
+        var highlightWeaponAttacks = false
 
         val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
         val mainInfo = Repos.mainInfo.getByCharacterId(character.id)
         val totalLevel = (mainInfo?.mainClassLevel ?: 0) + (mainInfo?.secondaryClassLevel ?: 0)
         val prof = calcProficiency(totalLevel)
+
+        // Compute spell DC
+        val magicAbility = com.dungeonsanddeigo.model.DungeonsAndDragons.spellcastingAbilityFor(mainInfo?.mainClass, mainInfo?.mainSubClass)
+            ?: kotlinx.browser.localStorage.getItem("dnd_custom_spell_ability_${character.id}_${mainInfo?.mainClass}")?.takeIf { it != "__none__" }
+        val spellAbilityMod = when (magicAbility) {
+            "Cha" -> stats.chaValue?.let { calcModifier(it) } ?: 0
+            "Int" -> stats.intValue?.let { calcModifier(it) } ?: 0
+            "Wis" -> stats.wisValue?.let { calcModifier(it) } ?: 0
+            else -> 0
+        }
+        val spellDC = spellAbilityMod + prof + 8
 
         data class StatEntry(val name: String, val value: Int?, val hasSave: Boolean)
 
@@ -406,6 +505,8 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         val shownConsumableIds = mutableSetOf<Long>()
         val keyItems = Repos.inventory.getByCategory(character.id, "Key Items, Loot and others")
         val shownKeyItemIds = mutableSetOf<Long>()
+        val spells = Repos.spell.getByCharacterId(character.id)
+        val shownSpellIds = mutableSetOf<Long>()
 
         fun renderConsumablesByTag(tag: String) {
             consumables.filter { c -> c.tags.any { it.lowercase() == tag.lowercase() } && c.id !in shownConsumableIds }.forEach { c ->
@@ -422,6 +523,13 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             }
         }
 
+        fun renderSpellsByTag(tag: String) {
+            spells.filter { s -> s.tags.any { it.lowercase() == tag.lowercase() } && s.id !in shownSpellIds }.forEach { s ->
+                shownSpellIds.add(s.id)
+                renderSpell(s, resultsDiv, indent = true, spellDC = spellDC, onAttackFound = { highlightSpellIds.add(s.id) }, onNonAttackFound = { highlightNonAttackSpellIds.add(s.id) })
+            }
+        }
+
         fun renderMagicItemsByTag(tag: String) {
             magicItems.filter { m -> m.tags.any { it.lowercase() == tag.lowercase() } && m.id !in shownMagicItemIds }.forEach { m ->
                 shownMagicItemIds.add(m.id)
@@ -429,6 +537,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             }
             renderConsumablesByTag(tag)
             renderKeyItemsByTag(tag)
+            renderSpellsByTag(tag)
         }
 
         fun renderArmorsByTag(tag: String) {
@@ -442,7 +551,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         fun renderWeaponsByTag(tag: String) {
             weapons.filter { w -> w.tags.any { it.lowercase() == tag.lowercase() } && w.id !in shownWeaponIds }.forEach { w ->
                 shownWeaponIds.add(w.id)
-                renderWeapon(w, resultsDiv, indent = true, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+                renderWeapon(w, resultsDiv, indent = true, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightWeaponAttacks = true }
             }
             renderArmorsByTag(tag)
         }
@@ -586,7 +695,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         // Weapons by name match
         weapons.filter { it.id !in shownWeaponIds && it.name.lowercase().contains(query) }.forEach { w ->
             shownWeaponIds.add(w.id)
-            renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+            renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightWeaponAttacks = true }
             // Armors that have this weapon's name as a tag
             renderArmorsByTag(w.name)
         }
@@ -594,7 +703,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         // Weapons by tag partial match
         weapons.filter { it.id !in shownWeaponIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { w ->
             shownWeaponIds.add(w.id)
-            renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+            renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightWeaponAttacks = true }
         }
 
         // Armors by name match
@@ -653,6 +762,26 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             renderKeyItem(k, resultsDiv)
         }
 
+        // Spells by name match
+        spells.filter { it.id !in shownSpellIds && it.name.lowercase().contains(query) }.forEach { s ->
+            shownSpellIds.add(s.id)
+            renderSpell(s, resultsDiv, spellDC = spellDC, onAttackFound = { highlightSpellIds.add(s.id) }, onNonAttackFound = { highlightNonAttackSpellIds.add(s.id) })
+            // Features with tag matching this spell's name
+            renderFeaturesByTag(s.name)
+            // Features with tags matching this spell's tags
+            s.tags.forEach { tag -> renderFeaturesByTag(tag) }
+        }
+
+        // Spells by tag partial match
+        spells.filter { it.id !in shownSpellIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { s ->
+            shownSpellIds.add(s.id)
+            renderSpell(s, resultsDiv, spellDC = spellDC, onAttackFound = { highlightSpellIds.add(s.id) }, onNonAttackFound = { highlightNonAttackSpellIds.add(s.id) })
+            // Features with tag matching this spell's name
+            renderFeaturesByTag(s.name)
+            // Features with tags matching this spell's tags
+            s.tags.forEach { tag -> renderFeaturesByTag(tag) }
+        }
+
         // Highlight rechargeable features in Special Actions
         highlightIds.forEach { id ->
             document.querySelector("[data-feature-id='$id']")?.let {
@@ -660,12 +789,26 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             }
         }
 
-        // Highlight attack rows if equipped weapon found
-        if (highlightAttacks) {
+        // Highlight weapon attack rows if equipped weapon found
+        if (highlightWeaponAttacks) {
             document.querySelectorAll(".weapon-atk-row").let { nodes ->
                 for (i in 0 until nodes.length) {
                     (nodes.item(i) as? HTMLElement)?.classList?.add("focused")
                 }
+            }
+        }
+
+        // Highlight magic attack rows for specific spells found
+        highlightSpellIds.forEach { id ->
+            document.querySelector(".magic-atk-row[data-spell-id='$id']")?.let {
+                (it as HTMLElement).classList.add("focused")
+            }
+        }
+
+        // Highlight non-attack spells in Special Actions
+        highlightNonAttackSpellIds.forEach { id ->
+            document.querySelector("div[data-spell-id='$id']")?.let {
+                (it as HTMLElement).classList.add("focused")
             }
         }
 
