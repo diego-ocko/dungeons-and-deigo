@@ -750,12 +750,6 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             renderKeyItem(k, resultsDiv)
         }
 
-        // Key items by description match
-        keyItems.filter { it.id !in shownKeyItemIds && it.description.lowercase().contains(query) }.forEach { k ->
-            shownKeyItemIds.add(k.id)
-            renderKeyItem(k, resultsDiv)
-        }
-
         // Key items by tag partial match
         keyItems.filter { it.id !in shownKeyItemIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { k ->
             shownKeyItemIds.add(k.id)

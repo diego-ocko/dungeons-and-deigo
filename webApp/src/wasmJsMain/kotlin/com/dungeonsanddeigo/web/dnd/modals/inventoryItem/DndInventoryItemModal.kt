@@ -72,7 +72,7 @@ fun showInventoryItemModal(
     weightRow.style.setProperty("gap", "4px")
     val weightInput = document.createElement("input") as HTMLInputElement
     weightInput.type = "number"; weightInput.step = "0.1"; weightInput.min = "0"
-    weightInput.value = (existing?.quantity ?: 0).toString()
+    weightInput.value = (existing?.weight ?: 0.0).toString()
     weightInput.style.width = "100%"
     weightRow.appendChild(weightInput)
     val kgLabel = document.createElement("span") as HTMLSpanElement
@@ -86,7 +86,7 @@ fun showInventoryItemModal(
     priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
     priceInput.type = "number"; priceInput.min = "0"
-    priceInput.value = "0"
+    priceInput.value = (existing?.price ?: 0).toString()
     priceInput.style.width = "70%"
     priceRow.appendChild(priceInput)
     val currSelect = document.createElement("select") as HTMLSelectElement
@@ -94,12 +94,13 @@ fun showInventoryItemModal(
         val o = document.createElement("option") as HTMLOptionElement
         o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
     }
-    currSelect.value = "pg"
+    currSelect.value = existing?.priceCurrency ?: "pg"
     priceRow.appendChild(currSelect)
     form.appendChild(priceRow)
 
     // Tags
     val selectedTags = mutableListOf<String>()
+    if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
 
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.style.setProperty("grid-column", "1 / -1")
