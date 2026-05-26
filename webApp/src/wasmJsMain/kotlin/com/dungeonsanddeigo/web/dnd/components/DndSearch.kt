@@ -117,6 +117,101 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         target.appendChild(wDiv)
     }
 
+    fun renderArmor(armor: DndArmor, target: HTMLDivElement, indent: Boolean = false, armorProfs: Set<String> = emptySet(), strValue: Int? = null) {
+        val aDiv = document.createElement("div") as HTMLDivElement
+        aDiv.style.fontSize = "12px"
+        aDiv.style.color = "#555"
+        aDiv.style.marginBottom = "4px"
+        if (indent) aDiv.style.paddingLeft = "12px"
+
+        val profKey = when (armor.type) {
+            "Light Armor" -> "Light"
+            "Medium Armor" -> "Medium"
+            "Heavy Armor" -> "Heavy"
+            "Shield" -> "Shields"
+            else -> null
+        }
+        val hasProf = armor.type == "Clothes" || (profKey != null && profKey in armorProfs)
+        val lacksStr = armor.minimumStrength > 0 && (strValue ?: 0) < armor.minimumStrength
+        val showWarning = !hasProf || lacksStr
+
+        val typeStr = when (armor.type) {
+            "Light Armor" -> t("inv.lightArmor")
+            "Medium Armor" -> t("inv.mediumArmor")
+            "Heavy Armor" -> t("inv.heavyArmor")
+            "Shield" -> t("inv.shield")
+            "Clothes" -> t("inv.clothes")
+            else -> armor.type
+        }
+        val equippedStr = if (armor.isEquipped) " [${t("playing.search.equipped")}]" else " [${t("playing.search.unequipped")}]"
+        val warnStr = if (showWarning) " \u26A0\uFE0F" else ""
+
+        val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.textContent = "\uD83D\uDEE1\uFE0F ${armor.name} ($typeStr)$equippedStr$warnStr"
+        nameSpan.style.fontWeight = "bold"
+        aDiv.appendChild(nameSpan)
+
+        if (armor.hasSneakDisadvantage) {
+            val sneakSpan = document.createElement("div") as HTMLDivElement
+            sneakSpan.textContent = t("inv.sneakDisadvShort")
+            sneakSpan.style.paddingLeft = "12px"
+            sneakSpan.style.color = "#c00"
+            aDiv.appendChild(sneakSpan)
+        }
+
+        if (armor.additionalFeatures.isNotEmpty()) {
+            val addSpan = document.createElement("div") as HTMLDivElement
+            addSpan.textContent = armor.additionalFeatures
+            addSpan.style.paddingLeft = "12px"
+            addSpan.style.color = "#777"
+            addSpan.style.fontStyle = "italic"
+            aDiv.appendChild(addSpan)
+        }
+
+        val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.textContent = "${armor.price} ${armor.priceCurrency} | ${armor.weight} kg"
+        infoSpan.style.paddingLeft = "12px"
+        infoSpan.style.color = "#999"
+        infoSpan.style.fontSize = "11px"
+        aDiv.appendChild(infoSpan)
+
+        target.appendChild(aDiv)
+    }
+
+    fun renderMagicItem(item: DndMagicItem, target: HTMLDivElement, indent: Boolean = false) {
+        val mDiv = document.createElement("div") as HTMLDivElement
+        mDiv.style.fontSize = "12px"
+        mDiv.style.color = "#555"
+        mDiv.style.marginBottom = "4px"
+        if (indent) mDiv.style.paddingLeft = "12px"
+
+        val nameSpan = document.createElement("div") as HTMLDivElement
+        val synchStr = if (item.needSynch) {
+            if (item.isSynched) " [${t("playing.search.synched")}]" else " [${t("playing.search.needsSynch")}] \u26A0\uFE0F"
+        } else ""
+        nameSpan.textContent = "\u2728 ${item.name}$synchStr"
+        nameSpan.style.fontWeight = "bold"
+        mDiv.appendChild(nameSpan)
+
+        if (item.effect.isNotEmpty()) {
+            val effectSpan = document.createElement("div") as HTMLDivElement
+            effectSpan.textContent = item.effect
+            effectSpan.style.paddingLeft = "12px"
+            effectSpan.style.color = "#777"
+            effectSpan.style.fontStyle = "italic"
+            mDiv.appendChild(effectSpan)
+        }
+
+        val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.textContent = "${item.price} ${item.priceCurrency} | ${item.weight} kg"
+        infoSpan.style.paddingLeft = "12px"
+        infoSpan.style.color = "#999"
+        infoSpan.style.fontSize = "11px"
+        mDiv.appendChild(infoSpan)
+
+        target.appendChild(mDiv)
+    }
+
     fun renderFeature(feat: DndFeature, target: HTMLDivElement, indent: Boolean = false) {
         val fDiv = document.createElement("div") as HTMLDivElement
         fDiv.style.fontSize = "12px"
@@ -209,13 +304,35 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         // Gather weapon proficiencies
         val weaponCatProfs = mutableSetOf<String>()
         val weaponSpecificProfs = mutableSetOf<String>()
+        val armorProfs = mutableSetOf<String>()
         features.filter { it.type == "Weapon/Armor Proficiency" }.forEach { f ->
             f.description.split(",").map { it.trim() }.forEach { entry ->
                 when {
                     entry.startsWith("weapon_cat:") -> weaponCatProfs.add(entry.removePrefix("weapon_cat:"))
                     entry.startsWith("weapon:") -> weaponSpecificProfs.add(entry.removePrefix("weapon:"))
+                    entry.startsWith("armor:") -> armorProfs.add(entry.removePrefix("armor:"))
                 }
             }
+        }
+
+        val armors = Repos.armor.getByCharacterId(character.id)
+        val shownArmorIds = mutableSetOf<Long>()
+        val magicItems = Repos.magicItem.getByCharacterId(character.id)
+        val shownMagicItemIds = mutableSetOf<Long>()
+
+        fun renderMagicItemsByTag(tag: String) {
+            magicItems.filter { m -> m.tags.any { it.lowercase() == tag.lowercase() } && m.id !in shownMagicItemIds }.forEach { m ->
+                shownMagicItemIds.add(m.id)
+                renderMagicItem(m, resultsDiv, indent = true)
+            }
+        }
+
+        fun renderArmorsByTag(tag: String) {
+            armors.filter { a -> a.tags.any { it.lowercase() == tag.lowercase() } && a.id !in shownArmorIds }.forEach { a ->
+                shownArmorIds.add(a.id)
+                renderArmor(a, resultsDiv, indent = true, armorProfs = armorProfs, strValue = stats.strValue)
+            }
+            renderMagicItemsByTag(tag)
         }
 
         fun renderWeaponsByTag(tag: String) {
@@ -223,6 +340,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 shownWeaponIds.add(w.id)
                 renderWeapon(w, resultsDiv, indent = true, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
             }
+            renderArmorsByTag(tag)
         }
 
         fun renderFeaturesByTag(tag: String) {
@@ -346,6 +464,10 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             }
             // Weapons that have this feature's name as a tag
             renderWeaponsByTag(feat.name)
+            // Armors that have this feature's name as a tag
+            renderArmorsByTag(feat.name)
+            // Magic items that have this feature's name as a tag
+            renderMagicItemsByTag(feat.name)
         }
 
         // Features with a tag partially matching the query
@@ -359,12 +481,38 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         weapons.filter { it.id !in shownWeaponIds && it.name.lowercase().contains(query) }.forEach { w ->
             shownWeaponIds.add(w.id)
             renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+            // Armors that have this weapon's name as a tag
+            renderArmorsByTag(w.name)
         }
 
         // Weapons by tag partial match
         weapons.filter { it.id !in shownWeaponIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { w ->
             shownWeaponIds.add(w.id)
             renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightAttacks = true }
+        }
+
+        // Armors by name match
+        armors.filter { it.id !in shownArmorIds && it.name.lowercase().contains(query) }.forEach { a ->
+            shownArmorIds.add(a.id)
+            renderArmor(a, resultsDiv, armorProfs = armorProfs, strValue = stats.strValue)
+        }
+
+        // Armors by tag partial match
+        armors.filter { it.id !in shownArmorIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { a ->
+            shownArmorIds.add(a.id)
+            renderArmor(a, resultsDiv, armorProfs = armorProfs, strValue = stats.strValue)
+        }
+
+        // Magic items by name match
+        magicItems.filter { it.id !in shownMagicItemIds && it.name.lowercase().contains(query) }.forEach { m ->
+            shownMagicItemIds.add(m.id)
+            renderMagicItem(m, resultsDiv)
+        }
+
+        // Magic items by tag partial match
+        magicItems.filter { it.id !in shownMagicItemIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { m ->
+            shownMagicItemIds.add(m.id)
+            renderMagicItem(m, resultsDiv)
         }
 
         // Highlight rechargeable features in Special Actions

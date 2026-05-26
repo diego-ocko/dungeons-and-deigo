@@ -405,7 +405,10 @@ object PtBrStrings {
         "playing.search.trained" to "Treinado",
         "playing.search.untrained" to "Não-treinado",
         "playing.search.equipped" to "Equipada",
-        "playing.search.unequipped" to "Não equipada"
+        "playing.search.unequipped" to "Não equipada",
+        "playing.search.synched" to "Sincronizado",
+        "playing.search.notSynched" to "Não Sincronizado",
+        "playing.search.needsSynch" to "Precisa Sincronizar"
     )
 
     fun get(key: String): String = strings[key] ?: EnStrings.get(key)

@@ -405,7 +405,10 @@ object EnStrings {
         "playing.search.trained" to "Trained",
         "playing.search.untrained" to "Untrained",
         "playing.search.equipped" to "Equipped",
-        "playing.search.unequipped" to "Unequipped"
+        "playing.search.unequipped" to "Unequipped",
+        "playing.search.synched" to "Synched",
+        "playing.search.notSynched" to "Not Synched",
+        "playing.search.needsSynch" to "Needs Synch"
     )
 
     fun get(key: String): String = strings[key] ?: key
