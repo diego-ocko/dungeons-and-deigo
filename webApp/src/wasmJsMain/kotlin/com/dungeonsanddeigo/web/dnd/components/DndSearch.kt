@@ -54,7 +54,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
     }
 
     addCheckbox(t("playing.search.notesCheckbox"), "search-notes")
-    addCheckbox("Plain Search", "search-plain")
+    addCheckbox(t("playing.search.plainCheckbox"), "search-plain")
 
     val resultsDiv = document.createElement("div") as HTMLDivElement
     resultsDiv.style.marginTop = "10px"
@@ -62,6 +62,10 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     val notesCheckbox = container.querySelector("#search-notes") as? HTMLInputElement
     notesCheckbox?.addEventListener("change", {
+        searchInput.dispatchEvent(org.w3c.dom.events.Event("input"))
+    })
+    val plainCheckbox = container.querySelector("#search-plain") as? HTMLInputElement
+    plainCheckbox?.addEventListener("change", {
         searchInput.dispatchEvent(org.w3c.dom.events.Event("input"))
     })
 
@@ -459,6 +463,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
         if (notesCheckbox?.checked != true) {
 
+        val plainSearch = plainCheckbox?.checked == true
         val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
         val mainInfo = Repos.mainInfo.getByCharacterId(character.id)
         val totalLevel = (mainInfo?.mainClassLevel ?: 0) + (mainInfo?.secondaryClassLevel ?: 0)
@@ -475,15 +480,15 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
         val spellDC = spellAbilityMod + prof + 8
 
-        data class StatEntry(val name: String, val value: Int?, val hasSave: Boolean)
+        data class StatEntry(val name: String, val abbr: String, val value: Int?, val hasSave: Boolean)
 
         val statEntries = listOf(
-            StatEntry(tStat("Strength"), stats.strValue, stats.hasStrRes),
-            StatEntry(tStat("Dexterity"), stats.dexValue, stats.hasDexRes),
-            StatEntry(tStat("Constitution"), stats.conValue, stats.hasConRes),
-            StatEntry(tStat("Intelligence"), stats.intValue, stats.hasIntRes),
-            StatEntry(tStat("Wisdom"), stats.wisValue, stats.hasWisRes),
-            StatEntry(tStat("Charisma"), stats.chaValue, stats.hasChaRes)
+            StatEntry(tStat("Strength"), tStat("Str"), stats.strValue, stats.hasStrRes),
+            StatEntry(tStat("Dexterity"), tStat("Dex"), stats.dexValue, stats.hasDexRes),
+            StatEntry(tStat("Constitution"), tStat("Con"), stats.conValue, stats.hasConRes),
+            StatEntry(tStat("Intelligence"), tStat("Int"), stats.intValue, stats.hasIntRes),
+            StatEntry(tStat("Wisdom"), tStat("Wis"), stats.wisValue, stats.hasWisRes),
+            StatEntry(tStat("Charisma"), tStat("Cha"), stats.chaValue, stats.hasChaRes)
         )
 
         val features = Repos.features.getByCharacterId(character.id)
@@ -514,9 +519,15 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         val shownKeyItemIds = mutableSetOf<Long>()
         val spells = Repos.spell.getByCharacterId(character.id)
         val shownSpellIds = mutableSetOf<Long>()
+        val alreadyRendered = mutableSetOf<Long>()
+
+        fun matchesTag(tag: String, tags: List<String>, description: String = ""): Boolean {
+            val t = tag.lowercase()
+            return tags.any { it.lowercase() == t } || (plainSearch && description.lowercase().contains(t))
+        }
 
         fun renderConsumablesByTag(tag: String) {
-            consumables.filter { c -> c.tags.any { it.lowercase() == tag.lowercase() } && c.id !in shownConsumableIds }.forEach { c ->
+            consumables.filter { c -> matchesTag(tag, c.tags, c.effect) && c.id !in shownConsumableIds }.forEach { c ->
                 shownConsumableIds.add(c.id)
                 highlightConsumableIds.add(c.id)
                 renderConsumable(c, resultsDiv, indent = true)
@@ -524,21 +535,21 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         fun renderKeyItemsByTag(tag: String) {
-            keyItems.filter { k -> k.tags.any { it.lowercase() == tag.lowercase() } && k.id !in shownKeyItemIds }.forEach { k ->
+            keyItems.filter { k -> matchesTag(tag, k.tags, k.description) && k.id !in shownKeyItemIds }.forEach { k ->
                 shownKeyItemIds.add(k.id)
                 renderKeyItem(k, resultsDiv, indent = true)
             }
         }
 
         fun renderSpellsByTag(tag: String) {
-            spells.filter { s -> s.tags.any { it.lowercase() == tag.lowercase() } && s.id !in shownSpellIds }.forEach { s ->
+            spells.filter { s -> matchesTag(tag, s.tags, s.description) && s.id !in shownSpellIds }.forEach { s ->
                 shownSpellIds.add(s.id)
                 renderSpell(s, resultsDiv, indent = true, spellDC = spellDC, onAttackFound = { highlightSpellIds.add(s.id) }, onNonAttackFound = { highlightNonAttackSpellIds.add(s.id) })
             }
         }
 
         fun renderMagicItemsByTag(tag: String) {
-            magicItems.filter { m -> m.tags.any { it.lowercase() == tag.lowercase() } && m.id !in shownMagicItemIds }.forEach { m ->
+            magicItems.filter { m -> matchesTag(tag, m.tags, m.effect) && m.id !in shownMagicItemIds }.forEach { m ->
                 shownMagicItemIds.add(m.id)
                 renderMagicItem(m, resultsDiv, indent = true)
             }
@@ -548,7 +559,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         fun renderArmorsByTag(tag: String) {
-            armors.filter { a -> a.tags.any { it.lowercase() == tag.lowercase() } && a.id !in shownArmorIds }.forEach { a ->
+            armors.filter { a -> matchesTag(tag, a.tags, a.additionalFeatures) && a.id !in shownArmorIds }.forEach { a ->
                 shownArmorIds.add(a.id)
                 renderArmor(a, resultsDiv, indent = true, armorProfs = armorProfs, strValue = stats.strValue)
             }
@@ -556,7 +567,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         fun renderWeaponsByTag(tag: String) {
-            weapons.filter { w -> w.tags.any { it.lowercase() == tag.lowercase() } && w.id !in shownWeaponIds }.forEach { w ->
+            weapons.filter { w -> matchesTag(tag, w.tags, w.additionalFeatures) && w.id !in shownWeaponIds }.forEach { w ->
                 shownWeaponIds.add(w.id)
                 renderWeapon(w, resultsDiv, indent = true, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightWeaponAttacks = true }
             }
@@ -564,8 +575,9 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         fun renderFeaturesByTag(tag: String) {
-            val matching = features.filter { feat -> feat.tags.any { it.lowercase() == tag.lowercase() } }
+            val matching = features.filter { feat -> feat.id !in alreadyRendered && matchesTag(tag, feat.tags, feat.description) }
             matching.forEach { feat ->
+                alreadyRendered.add(feat.id)
                 if (feat.type == "Rechargable Feature") highlightIds.add(feat.id)
                 renderFeature(feat, resultsDiv, indent = true)
             }
@@ -592,6 +604,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
             resultsDiv.appendChild(div)
             renderFeaturesByTag(entry.name)
+            if (plainSearch) renderFeaturesByTag(entry.abbr)
         }
 
         // Skills
@@ -609,10 +622,10 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             div.textContent = "${t("playing.search.test")} $translated ($trainedStr): $valStr"
             resultsDiv.appendChild(div)
             renderFeaturesByTag(translated)
+            if (plainSearch && translated != skillName) renderFeaturesByTag(skillName)
         }
 
         // Features by name match or translated type match
-        val alreadyRendered = mutableSetOf<Long>()
         val typeTranslations = mapOf(
             "Idiom" to t("features.idiom"),
             "Tool Proficiency" to t("features.toolProf"),
@@ -670,26 +683,29 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Other features by name match
-        val nameMatched = features.filter { it.id !in alreadyRendered && it.name.lowercase().contains(query) }
+        val nameMatched = features.filter { it.id !in alreadyRendered && (it.name.lowercase().contains(query) || (plainSearch && it.description.lowercase().contains(query))) }
         nameMatched.forEach { feat ->
             alreadyRendered.add(feat.id)
             if (feat.type == "Rechargable Feature") highlightIds.add(feat.id)
             renderFeature(feat, resultsDiv)
 
-            // Features that have this feature's name as a tag
-            features.filter { it.id !in alreadyRendered && it.tags.any { t -> t.lowercase() == feat.name.lowercase() } }.forEach { related ->
+            // Features that have this feature's name or tags in their tags/description
+            features.filter { it.id !in alreadyRendered && (matchesTag(feat.name, it.tags, it.description) || feat.tags.any { ft -> matchesTag(ft, it.tags, it.description) }) }.forEach { related ->
                 alreadyRendered.add(related.id)
                 if (related.type == "Rechargable Feature") highlightIds.add(related.id)
                 renderFeature(related, resultsDiv, indent = true)
             }
-            // Weapons that have this feature's name as a tag
+            // Other items by feature name and tags
             renderWeaponsByTag(feat.name)
-            // Armors that have this feature's name as a tag
             renderArmorsByTag(feat.name)
-            // Magic items that have this feature's name as a tag
             renderMagicItemsByTag(feat.name)
-            // Consumables that have this feature's name as a tag
             renderConsumablesByTag(feat.name)
+            feat.tags.forEach { tag ->
+                renderWeaponsByTag(tag)
+                renderArmorsByTag(tag)
+                renderMagicItemsByTag(tag)
+                renderConsumablesByTag(tag)
+            }
         }
 
         // Features with a tag partially matching the query
@@ -700,7 +716,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Weapons by name match
-        weapons.filter { it.id !in shownWeaponIds && it.name.lowercase().contains(query) }.forEach { w ->
+        weapons.filter { it.id !in shownWeaponIds && (it.name.lowercase().contains(query) || (plainSearch && it.additionalFeatures.lowercase().contains(query))) }.forEach { w ->
             shownWeaponIds.add(w.id)
             renderWeapon(w, resultsDiv, weaponCatProfs = weaponCatProfs, weaponSpecificProfs = weaponSpecificProfs) { highlightWeaponAttacks = true }
             // Armors that have this weapon's name as a tag
@@ -714,7 +730,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Armors by name match
-        armors.filter { it.id !in shownArmorIds && it.name.lowercase().contains(query) }.forEach { a ->
+        armors.filter { it.id !in shownArmorIds && (it.name.lowercase().contains(query) || (plainSearch && it.additionalFeatures.lowercase().contains(query))) }.forEach { a ->
             shownArmorIds.add(a.id)
             renderArmor(a, resultsDiv, armorProfs = armorProfs, strValue = stats.strValue)
         }
@@ -726,7 +742,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Magic items by name match
-        magicItems.filter { it.id !in shownMagicItemIds && it.name.lowercase().contains(query) }.forEach { m ->
+        magicItems.filter { it.id !in shownMagicItemIds && (it.name.lowercase().contains(query) || (plainSearch && it.effect.lowercase().contains(query))) }.forEach { m ->
             shownMagicItemIds.add(m.id)
             renderMagicItem(m, resultsDiv)
         }
@@ -738,7 +754,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Consumables by name match
-        consumables.filter { it.id !in shownConsumableIds && it.name.lowercase().contains(query) }.forEach { c ->
+        consumables.filter { it.id !in shownConsumableIds && (it.name.lowercase().contains(query) || (plainSearch && it.effect.lowercase().contains(query))) }.forEach { c ->
             shownConsumableIds.add(c.id)
             highlightConsumableIds.add(c.id)
             renderConsumable(c, resultsDiv)
@@ -752,7 +768,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Key items by name match
-        keyItems.filter { it.id !in shownKeyItemIds && it.name.lowercase().contains(query) }.forEach { k ->
+        keyItems.filter { it.id !in shownKeyItemIds && (it.name.lowercase().contains(query) || (plainSearch && it.description.lowercase().contains(query))) }.forEach { k ->
             shownKeyItemIds.add(k.id)
             renderKeyItem(k, resultsDiv)
         }
@@ -764,7 +780,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         // Spells by name match
-        spells.filter { it.id !in shownSpellIds && it.name.lowercase().contains(query) }.forEach { s ->
+        spells.filter { it.id !in shownSpellIds && (it.name.lowercase().contains(query) || (plainSearch && it.description.lowercase().contains(query))) }.forEach { s ->
             shownSpellIds.add(s.id)
             renderSpell(s, resultsDiv, spellDC = spellDC, onAttackFound = { highlightSpellIds.add(s.id) }, onNonAttackFound = { highlightNonAttackSpellIds.add(s.id) })
             // Features with tag matching this spell's name
@@ -785,6 +801,8 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
         } else {
         // Notes search
+            val plainSearch = plainCheckbox?.checked == true
+
             // Appearance fields
             val appearance = Repos.appearance.getByCharacterId(character.id)
             if (appearance != null) {
@@ -795,7 +813,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                     AppField(t("bg.weight"), appearance.weight),
                     AppField(t("bg.appearanceDesc"), appearance.description)
                 )
-                appFields.filter { it.label.lowercase().contains(query) && it.value.isNotEmpty() }.forEach { field ->
+                appFields.filter { it.value.isNotEmpty() && (it.label.lowercase().contains(query) || (plainSearch && it.value.lowercase().contains(query))) }.forEach { field ->
                     val div = document.createElement("div") as HTMLDivElement
                     div.style.marginBottom = "4px"
                     div.style.fontSize = "13px"
@@ -826,7 +844,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                     BsField(t("bg.factionBackstory"), backstory.factionBackstory),
                     BsField(t("bg.charBackstory"), backstory.characterBackstory)
                 )
-                bsFields.filter { it.label.lowercase().contains(query) && it.value.isNotEmpty() }.forEach { field ->
+                bsFields.filter { it.value.isNotEmpty() && (it.label.lowercase().contains(query) || (plainSearch && it.value.lowercase().contains(query))) }.forEach { field ->
                     val div = document.createElement("div") as HTMLDivElement
                     div.style.marginBottom = "4px"
                     div.style.fontSize = "13px"
@@ -845,7 +863,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
             // Notes
             val notes = Repos.note.getByCharacterId(character.id)
-            notes.filter { it.title.lowercase().contains(query) || it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { note ->
+            notes.filter { it.title.lowercase().contains(query) || it.tags.any { tag -> tag.lowercase().contains(query) } || (plainSearch && it.note.lowercase().contains(query)) }.forEach { note ->
                 val div = document.createElement("div") as HTMLDivElement
                 div.style.marginBottom = "4px"
                 div.style.fontSize = "13px"
