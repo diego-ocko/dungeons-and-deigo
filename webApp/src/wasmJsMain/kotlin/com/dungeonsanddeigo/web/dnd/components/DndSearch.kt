@@ -53,12 +53,17 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         container.appendChild(row)
     }
 
-    addCheckbox("Notes", "search-notes")
+    addCheckbox(t("playing.search.notesCheckbox"), "search-notes")
     addCheckbox("Plain Search", "search-plain")
 
     val resultsDiv = document.createElement("div") as HTMLDivElement
     resultsDiv.style.marginTop = "10px"
     container.appendChild(resultsDiv)
+
+    val notesCheckbox = container.querySelector("#search-notes") as? HTMLInputElement
+    notesCheckbox?.addEventListener("change", {
+        searchInput.dispatchEvent(org.w3c.dom.events.Event("input"))
+    })
 
     fun renderWeapon(weapon: DndWeapon, target: HTMLDivElement, indent: Boolean = false, weaponCatProfs: Set<String> = emptySet(), weaponSpecificProfs: Set<String> = emptySet(), onEquippedFound: () -> Unit = {}) {
         if (weapon.isEquipped) onEquippedFound()
@@ -452,6 +457,8 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         val highlightNonAttackSpellIds = mutableSetOf<Long>()
         var highlightWeaponAttacks = false
 
+        if (notesCheckbox?.checked != true) {
+
         val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
         val mainInfo = Repos.mainInfo.getByCharacterId(character.id)
         val totalLevel = (mainInfo?.mainClassLevel ?: 0) + (mainInfo?.secondaryClassLevel ?: 0)
@@ -774,6 +781,95 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             renderFeaturesByTag(s.name)
             // Features with tags matching this spell's tags
             s.tags.forEach { tag -> renderFeaturesByTag(tag) }
+        }
+
+        } else {
+        // Notes search
+            // Appearance fields
+            val appearance = Repos.appearance.getByCharacterId(character.id)
+            if (appearance != null) {
+                data class AppField(val label: String, val value: String)
+                val appFields = listOf(
+                    AppField(t("bg.age"), appearance.age),
+                    AppField(t("bg.height"), appearance.height),
+                    AppField(t("bg.weight"), appearance.weight),
+                    AppField(t("bg.appearanceDesc"), appearance.description)
+                )
+                appFields.filter { it.label.lowercase().contains(query) && it.value.isNotEmpty() }.forEach { field ->
+                    val div = document.createElement("div") as HTMLDivElement
+                    div.style.marginBottom = "4px"
+                    div.style.fontSize = "13px"
+                    val lbl = document.createElement("div") as HTMLDivElement
+                    lbl.textContent = "\uD83D\uDC64 ${field.label}"
+                    lbl.style.fontWeight = "bold"
+                    div.appendChild(lbl)
+                    val val_ = document.createElement("div") as HTMLDivElement
+                    val_.textContent = field.value
+                    val_.style.paddingLeft = "12px"
+                    val_.style.color = "#777"
+                    div.appendChild(val_)
+                    resultsDiv.appendChild(div)
+                }
+            }
+
+            // Backstory fields
+            val backstory = Repos.backstory.getByCharacterId(character.id)
+            if (backstory != null) {
+                data class BsField(val label: String, val value: String)
+                val bsFields = listOf(
+                    BsField(t("bg.personalityTraits"), backstory.personalityTraits),
+                    BsField(t("bg.ideals"), backstory.ideals),
+                    BsField(t("bg.bonds"), backstory.bonds),
+                    BsField(t("bg.defects"), backstory.defects),
+                    BsField(t("bg.habits"), backstory.habits),
+                    BsField(t("bg.factionName"), backstory.factionName),
+                    BsField(t("bg.factionBackstory"), backstory.factionBackstory),
+                    BsField(t("bg.charBackstory"), backstory.characterBackstory)
+                )
+                bsFields.filter { it.label.lowercase().contains(query) && it.value.isNotEmpty() }.forEach { field ->
+                    val div = document.createElement("div") as HTMLDivElement
+                    div.style.marginBottom = "4px"
+                    div.style.fontSize = "13px"
+                    val lbl = document.createElement("div") as HTMLDivElement
+                    lbl.textContent = "\uD83D\uDCDC ${field.label}"
+                    lbl.style.fontWeight = "bold"
+                    div.appendChild(lbl)
+                    val val_ = document.createElement("div") as HTMLDivElement
+                    val_.textContent = field.value
+                    val_.style.paddingLeft = "12px"
+                    val_.style.color = "#777"
+                    div.appendChild(val_)
+                    resultsDiv.appendChild(div)
+                }
+            }
+
+            // Notes
+            val notes = Repos.note.getByCharacterId(character.id)
+            notes.filter { it.title.lowercase().contains(query) || it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { note ->
+                val div = document.createElement("div") as HTMLDivElement
+                div.style.marginBottom = "4px"
+                div.style.fontSize = "13px"
+                val titleSpan = document.createElement("div") as HTMLDivElement
+                titleSpan.textContent = "\uD83D\uDCDD ${note.title}"
+                titleSpan.style.fontWeight = "bold"
+                div.appendChild(titleSpan)
+                if (note.session.isNotEmpty()) {
+                    val sessionSpan = document.createElement("div") as HTMLDivElement
+                    sessionSpan.textContent = note.session
+                    sessionSpan.style.paddingLeft = "12px"
+                    sessionSpan.style.color = "#999"
+                    sessionSpan.style.fontSize = "11px"
+                    div.appendChild(sessionSpan)
+                }
+                if (note.note.isNotEmpty()) {
+                    val noteSpan = document.createElement("div") as HTMLDivElement
+                    noteSpan.textContent = note.note
+                    noteSpan.style.paddingLeft = "12px"
+                    noteSpan.style.color = "#777"
+                    div.appendChild(noteSpan)
+                }
+                resultsDiv.appendChild(div)
+            }
         }
 
         // Highlight rechargeable features in Special Actions

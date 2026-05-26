@@ -409,7 +409,8 @@ object PtBrStrings {
         "playing.search.synched" to "Sincronizado",
         "playing.search.notSynched" to "Não Sincronizado",
         "playing.search.needsSynch" to "Precisa Sincronizar",
-        "playing.search.spellSave" to "Realizar salvaguarda de"
+        "playing.search.spellSave" to "Realizar salvaguarda de",
+        "playing.search.notesCheckbox" to "Pesquisar nas notas"
     )
 
     fun get(key: String): String = strings[key] ?: EnStrings.get(key)
