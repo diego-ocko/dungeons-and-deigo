@@ -113,6 +113,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             addSpan.style.paddingLeft = "12px"
             addSpan.style.color = "#777"
             addSpan.style.fontStyle = "italic"
+            addSpan.style.whiteSpace = "pre-wrap"
             wDiv.appendChild(addSpan)
         }
 
@@ -174,6 +175,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             addSpan.style.paddingLeft = "12px"
             addSpan.style.color = "#777"
             addSpan.style.fontStyle = "italic"
+            addSpan.style.whiteSpace = "pre-wrap"
             aDiv.appendChild(addSpan)
         }
 
@@ -208,6 +210,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             effectSpan.style.paddingLeft = "12px"
             effectSpan.style.color = "#777"
             effectSpan.style.fontStyle = "italic"
+            effectSpan.style.whiteSpace = "pre-wrap"
             mDiv.appendChild(effectSpan)
         }
 
@@ -254,6 +257,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             effectSpan.style.paddingLeft = "12px"
             effectSpan.style.color = "#777"
             effectSpan.style.fontStyle = "italic"
+            effectSpan.style.whiteSpace = "pre-wrap"
             cDiv.appendChild(effectSpan)
         }
 
@@ -285,6 +289,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             descSpan.style.paddingLeft = "12px"
             descSpan.style.color = "#777"
             descSpan.style.fontStyle = "italic"
+            descSpan.style.whiteSpace = "pre-wrap"
             kDiv.appendChild(descSpan)
         }
 
@@ -349,6 +354,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             descSpan.style.paddingLeft = "12px"
             descSpan.style.color = "#777"
             descSpan.style.fontStyle = "italic"
+            descSpan.style.whiteSpace = "pre-wrap"
             sDiv.appendChild(descSpan)
         }
 
@@ -396,6 +402,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             val descSpan = document.createElement("div") as HTMLDivElement
             descSpan.style.paddingLeft = "12px"
             descSpan.style.color = "#777"
+            descSpan.style.whiteSpace = "pre-wrap"
 
             descSpan.textContent = when (feat.type) {
                 "Idiom" -> {
@@ -650,7 +657,6 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             nameSpan.textContent = "\u2022 $translatedType"
             nameSpan.style.fontWeight = "bold"
             fDiv.appendChild(nameSpan)
-
             val descSpan = document.createElement("div") as HTMLDivElement
             descSpan.style.paddingLeft = "12px"
             descSpan.style.color = "#777"
@@ -825,6 +831,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                     val_.textContent = field.value
                     val_.style.paddingLeft = "12px"
                     val_.style.color = "#777"
+                    val_.style.whiteSpace = "pre-wrap"
                     div.appendChild(val_)
                     resultsDiv.appendChild(div)
                 }
@@ -856,6 +863,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                     val_.textContent = field.value
                     val_.style.paddingLeft = "12px"
                     val_.style.color = "#777"
+                    val_.style.whiteSpace = "pre-wrap"
                     div.appendChild(val_)
                     resultsDiv.appendChild(div)
                 }
@@ -884,6 +892,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                     noteSpan.textContent = note.note
                     noteSpan.style.paddingLeft = "12px"
                     noteSpan.style.color = "#777"
+                    noteSpan.style.whiteSpace = "pre-wrap"
                     div.appendChild(noteSpan)
                 }
                 resultsDiv.appendChild(div)
