@@ -212,6 +212,83 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         target.appendChild(mDiv)
     }
 
+    fun renderConsumable(item: DndConsumable, target: HTMLDivElement, indent: Boolean = false) {
+        val cDiv = document.createElement("div") as HTMLDivElement
+        cDiv.style.fontSize = "12px"
+        cDiv.style.color = "#555"
+        cDiv.style.marginBottom = "4px"
+        if (indent) cDiv.style.paddingLeft = "12px"
+
+        val typeStr = when (item.type) {
+            "Healing Potion" -> t("inv.consumable.healingPotion")
+            "Magic Potion" -> t("inv.consumable.magicPotion")
+            "Food" -> t("inv.consumable.food")
+            "Ammunition" -> t("inv.consumable.ammunition")
+            "Other" -> t("inv.consumable.other")
+            else -> item.type
+        }
+        val icon = when (item.type) {
+            "Healing Potion", "Magic Potion" -> "\uD83E\uDDEA"
+            "Food" -> "\uD83C\uDF56"
+            "Ammunition" -> "\uD83C\uDFF9"
+            else -> "\uD83D\uDCE6"
+        }
+
+        val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.textContent = "$icon ${item.name} ($typeStr)"
+        nameSpan.style.fontWeight = "bold"
+        cDiv.appendChild(nameSpan)
+
+        if (item.effect.isNotEmpty()) {
+            val effectSpan = document.createElement("div") as HTMLDivElement
+            effectSpan.textContent = item.effect
+            effectSpan.style.paddingLeft = "12px"
+            effectSpan.style.color = "#777"
+            effectSpan.style.fontStyle = "italic"
+            cDiv.appendChild(effectSpan)
+        }
+
+        val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.textContent = "${item.price} ${item.priceCurrency} | ${item.weight} kg"
+        infoSpan.style.paddingLeft = "12px"
+        infoSpan.style.color = "#999"
+        infoSpan.style.fontSize = "11px"
+        cDiv.appendChild(infoSpan)
+
+        target.appendChild(cDiv)
+    }
+
+    fun renderKeyItem(item: DndInventoryItem, target: HTMLDivElement, indent: Boolean = false) {
+        val kDiv = document.createElement("div") as HTMLDivElement
+        kDiv.style.fontSize = "12px"
+        kDiv.style.color = "#555"
+        kDiv.style.marginBottom = "4px"
+        if (indent) kDiv.style.paddingLeft = "12px"
+
+        val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.textContent = "\uD83D\uDD11 ${item.name}"
+        nameSpan.style.fontWeight = "bold"
+        kDiv.appendChild(nameSpan)
+
+        if (item.description.isNotEmpty()) {
+            val descSpan = document.createElement("div") as HTMLDivElement
+            descSpan.textContent = item.description
+            descSpan.style.paddingLeft = "12px"
+            descSpan.style.color = "#777"
+            descSpan.style.fontStyle = "italic"
+            kDiv.appendChild(descSpan)
+        }
+
+        val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.textContent = "${item.price} ${item.priceCurrency} | ${item.weight} kg"
+        infoSpan.style.paddingLeft = "12px"
+        infoSpan.style.color = "#999"
+        infoSpan.style.fontSize = "11px"
+        kDiv.appendChild(infoSpan)
+
+        target.appendChild(kDiv)
+    }
+
     fun renderFeature(feat: DndFeature, target: HTMLDivElement, indent: Boolean = false) {
         val fDiv = document.createElement("div") as HTMLDivElement
         fDiv.style.fontSize = "12px"
@@ -275,10 +352,16 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 (nodes.item(i) as? HTMLElement)?.classList?.remove("focused")
             }
         }
+        document.querySelectorAll("[data-consumable-id]").let { nodes ->
+            for (i in 0 until nodes.length) {
+                (nodes.item(i) as? HTMLDivElement)?.classList?.remove("focused")
+            }
+        }
 
         if (query.length < 3) return@addEventListener
 
         val highlightIds = mutableSetOf<Long>()
+        val highlightConsumableIds = mutableSetOf<Long>()
         var highlightAttacks = false
 
         val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
@@ -319,12 +402,33 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         val shownArmorIds = mutableSetOf<Long>()
         val magicItems = Repos.magicItem.getByCharacterId(character.id)
         val shownMagicItemIds = mutableSetOf<Long>()
+        val consumables = Repos.consumable.getByCharacterId(character.id)
+        val shownConsumableIds = mutableSetOf<Long>()
+        val keyItems = Repos.inventory.getByCategory(character.id, "Key Items, Loot and others")
+        val shownKeyItemIds = mutableSetOf<Long>()
+
+        fun renderConsumablesByTag(tag: String) {
+            consumables.filter { c -> c.tags.any { it.lowercase() == tag.lowercase() } && c.id !in shownConsumableIds }.forEach { c ->
+                shownConsumableIds.add(c.id)
+                highlightConsumableIds.add(c.id)
+                renderConsumable(c, resultsDiv, indent = true)
+            }
+        }
+
+        fun renderKeyItemsByTag(tag: String) {
+            keyItems.filter { k -> k.tags.any { it.lowercase() == tag.lowercase() } && k.id !in shownKeyItemIds }.forEach { k ->
+                shownKeyItemIds.add(k.id)
+                renderKeyItem(k, resultsDiv, indent = true)
+            }
+        }
 
         fun renderMagicItemsByTag(tag: String) {
             magicItems.filter { m -> m.tags.any { it.lowercase() == tag.lowercase() } && m.id !in shownMagicItemIds }.forEach { m ->
                 shownMagicItemIds.add(m.id)
                 renderMagicItem(m, resultsDiv, indent = true)
             }
+            renderConsumablesByTag(tag)
+            renderKeyItemsByTag(tag)
         }
 
         fun renderArmorsByTag(tag: String) {
@@ -468,6 +572,8 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             renderArmorsByTag(feat.name)
             // Magic items that have this feature's name as a tag
             renderMagicItemsByTag(feat.name)
+            // Consumables that have this feature's name as a tag
+            renderConsumablesByTag(feat.name)
         }
 
         // Features with a tag partially matching the query
@@ -515,6 +621,38 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             renderMagicItem(m, resultsDiv)
         }
 
+        // Consumables by name match
+        consumables.filter { it.id !in shownConsumableIds && it.name.lowercase().contains(query) }.forEach { c ->
+            shownConsumableIds.add(c.id)
+            highlightConsumableIds.add(c.id)
+            renderConsumable(c, resultsDiv)
+        }
+
+        // Consumables by tag partial match
+        consumables.filter { it.id !in shownConsumableIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { c ->
+            shownConsumableIds.add(c.id)
+            highlightConsumableIds.add(c.id)
+            renderConsumable(c, resultsDiv)
+        }
+
+        // Key items by name match
+        keyItems.filter { it.id !in shownKeyItemIds && it.name.lowercase().contains(query) }.forEach { k ->
+            shownKeyItemIds.add(k.id)
+            renderKeyItem(k, resultsDiv)
+        }
+
+        // Key items by description match
+        keyItems.filter { it.id !in shownKeyItemIds && it.description.lowercase().contains(query) }.forEach { k ->
+            shownKeyItemIds.add(k.id)
+            renderKeyItem(k, resultsDiv)
+        }
+
+        // Key items by tag partial match
+        keyItems.filter { it.id !in shownKeyItemIds && it.tags.any { tag -> tag.lowercase().contains(query) } }.forEach { k ->
+            shownKeyItemIds.add(k.id)
+            renderKeyItem(k, resultsDiv)
+        }
+
         // Highlight rechargeable features in Special Actions
         highlightIds.forEach { id ->
             document.querySelector("[data-feature-id='$id']")?.let {
@@ -528,6 +666,13 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 for (i in 0 until nodes.length) {
                     (nodes.item(i) as? HTMLElement)?.classList?.add("focused")
                 }
+            }
+        }
+
+        // Highlight consumables in Special Actions
+        highlightConsumableIds.forEach { id ->
+            document.querySelector("[data-consumable-id='$id']")?.let {
+                (it as HTMLDivElement).classList.add("focused")
             }
         }
     })

@@ -171,7 +171,11 @@ fun showInventoryItemModal(
             name = nameInput.value,
             description = descInput.value,
             quantity = 1,
-            equipped = false
+            equipped = false,
+            weight = weightInput.value.toDoubleOrNull() ?: 0.0,
+            price = priceInput.value.toIntOrNull() ?: 0,
+            priceCurrency = currSelect.value,
+            tags = selectedTags.toList()
         )
         Repos.inventory.save(item)
         document.body?.removeChild(overlay)

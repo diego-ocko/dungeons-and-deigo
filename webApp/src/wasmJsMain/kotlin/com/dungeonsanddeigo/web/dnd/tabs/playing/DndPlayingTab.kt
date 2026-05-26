@@ -967,6 +967,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (allPotions.isNotEmpty()) {
         allPotions.forEach { potion ->
             val row = document.createElement("div") as HTMLDivElement
+            row.setAttribute("data-consumable-id", potion.id.toString())
             row.style.display = "flex"
             row.style.justifyContent = "space-between"
             row.style.alignItems = "center"
@@ -1027,6 +1028,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (otherItems.isNotEmpty()) {
         otherItems.forEach { item ->
             val row = document.createElement("div") as HTMLDivElement
+            row.setAttribute("data-consumable-id", item.id.toString())
             row.style.display = "flex"
             row.style.justifyContent = "space-between"
             row.style.alignItems = "center"
