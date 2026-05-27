@@ -1,0 +1,127 @@
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  text-align: center;
+  max-width: 600px;
+}
+
+.stats-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats-col-label {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.stats-col-mod {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.stats-col-input {
+  padding: 4px;
+  width: 50px;
+  text-align: center;
+}
+
+.stats-extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  max-width: 600px;
+
+  label {
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  input, select {
+    padding: 4px;
+    width: 100%;
+  }
+}
+
+.stats-extra-value {
+  font-size: 20px;
+  font-weight: bold;
+  display: block;
+}
+
+.stats-extra-checkbox {
+  margin-right: 6px;
+}
+
+.stats-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  max-width: 300px;
+
+  h3 {
+    margin-top: 0;
+  }
+}
+
+.stats-res-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.stats-res-name {
+  width: 30px;
+  font-weight: bold;
+}
+
+.stats-res-value {
+  font-size: 16px;
+}
+
+.stats-skills-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  max-width: 650px;
+
+  h3 {
+    margin-top: 0;
+  }
+}
+
+.stats-skill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.stats-skill-name {
+  width: 130px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.stats-skill-mod {
+  padding: 2px;
+}
+
+.stats-skill-add {
+  width: 45px;
+  padding: 2px;
+  text-align: center;
+}
+
+.stats-skill-total {
+  font-weight: bold;
+  min-width: 50px;
+}
+
+

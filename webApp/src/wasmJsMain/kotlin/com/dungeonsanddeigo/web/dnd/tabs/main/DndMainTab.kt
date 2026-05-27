@@ -15,20 +15,15 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     val info = Repos.mainInfo.getByCharacterId(character.id) ?: DndMainInfo(characterId = character.id)
 
     val form = document.createElement("div") as HTMLDivElement
-    form.style.setProperty("display", "grid")
-    form.style.setProperty("grid-template-columns", "1fr 1fr")
-    form.style.setProperty("gap", "12px")
-    form.style.maxWidth = "600px"
+    form.className = "main-tab-form"
 
     val customClasses = mutableListOf<String>()
 
     fun addField(label: String, value: String?): HTMLInputElement {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         val input = document.createElement("input") as HTMLInputElement
         input.value = value ?: ""
-        input.style.padding = "4px"
         form.appendChild(lbl)
         form.appendChild(input)
         return input
@@ -37,11 +32,9 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun addNumberField(label: String, value: Int?): HTMLInputElement {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         val input = document.createElement("input") as HTMLInputElement
         input.type = "number"
         input.value = value?.toString() ?: ""
-        input.style.padding = "4px"
         form.appendChild(lbl)
         form.appendChild(input)
         return input
@@ -50,8 +43,6 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun buildSubClassSelect(className: String?, currentValue: String?): HTMLDivElement {
         val wrapper = document.createElement("div") as HTMLDivElement
         val select = document.createElement("select") as HTMLSelectElement
-        select.style.padding = "4px"
-        select.style.width = "100%"
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
@@ -82,15 +73,11 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customInput = document.createElement("input") as HTMLInputElement
         customInput.placeholder = "Enter custom sub-class"
-        customInput.style.padding = "4px"
-        customInput.style.width = "100%"
-        customInput.style.display = "none"
-        customInput.style.marginTop = "4px"
+        customInput.className = "main-tab-custom-input"
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
-        addBtn.style.display = "none"
-        addBtn.style.marginTop = "4px"
+        addBtn.className = "main-tab-custom-btn"
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
@@ -125,7 +112,6 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun addSubClassSelect(label: String, className: String?, value: String?): HTMLDivElement {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         form.appendChild(lbl)
         val wrapper = buildSubClassSelect(className, value)
         form.appendChild(wrapper)
@@ -135,14 +121,11 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun addClassSelect(label: String, value: String?, subClassWrapper: () -> HTMLDivElement?): HTMLSelectElement {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         form.appendChild(lbl)
 
         val wrapper = document.createElement("div") as HTMLDivElement
 
         val select = document.createElement("select") as HTMLSelectElement
-        select.style.padding = "4px"
-        select.style.width = "100%"
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
@@ -182,15 +165,15 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customInput = document.createElement("input") as HTMLInputElement
         customInput.placeholder = "Enter custom class"
-        customInput.style.padding = "4px"
-        customInput.style.width = "100%"
+        
+        
         customInput.style.display = "none"
-        customInput.style.marginTop = "4px"
+        
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
         addBtn.style.display = "none"
-        addBtn.style.marginTop = "4px"
+        
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
@@ -250,22 +233,16 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
     // --- Main Class row (3 columns) ---
     val mainRow = document.createElement("div") as HTMLDivElement
-    mainRow.style.setProperty("display", "grid")
-    mainRow.style.setProperty("grid-template-columns", "2fr 2fr 1fr")
-    mainRow.style.setProperty("gap", "12px")
-    mainRow.style.marginBottom = "12px"
+    mainRow.className = "main-tab-class-row"
 
     fun addClassSelectTo(parent: HTMLDivElement, label: String, value: String?, subClassRef: () -> HTMLDivElement?): HTMLSelectElement {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         col.appendChild(lbl)
         // Reuse addClassSelect logic but append to col instead of form
         val wrapper = document.createElement("div") as HTMLDivElement
         val select = document.createElement("select") as HTMLSelectElement
-        select.style.padding = "4px"
-        select.style.width = "100%"
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
         emptyOpt.textContent = "-- Select --"
@@ -297,14 +274,14 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         select.value = value ?: ""
         val customInput = document.createElement("input") as HTMLInputElement
         customInput.placeholder = "Enter custom class"
-        customInput.style.padding = "4px"
-        customInput.style.width = "100%"
+        
+        
         customInput.style.display = "none"
-        customInput.style.marginTop = "4px"
+        
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
         addBtn.style.display = "none"
-        addBtn.style.marginTop = "4px"
+        
         select.addEventListener("change", {
             if (select.value == "__custom__") {
                 customInput.style.display = "block"
@@ -353,7 +330,6 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         col.appendChild(lbl)
         val wrapper = buildSubClassSelect(className, value)
         col.appendChild(wrapper)
@@ -365,13 +341,10 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         col.appendChild(lbl)
         val input = document.createElement("input") as HTMLInputElement
         input.type = "number"
         input.value = value?.toString() ?: ""
-        input.style.padding = "4px"
-        input.style.width = "100%"
         col.appendChild(input)
         parent.appendChild(col)
         return input
@@ -386,10 +359,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
     // --- Secondary Class row (3 columns) ---
     val secRow = document.createElement("div") as HTMLDivElement
-    secRow.style.setProperty("display", "grid")
-    secRow.style.setProperty("grid-template-columns", "2fr 2fr 1fr")
-    secRow.style.setProperty("gap", "12px")
-    secRow.style.marginBottom = "12px"
+    secRow.className = "main-tab-class-row"
 
     val secondaryClassSelect = addClassSelectTo(secRow, t("main.secondaryClass"), info.secondaryClass) { secondarySubClassWrapper }
     secondarySubClassWrapper = addSubClassSelectTo(secRow, t("main.subclass"), info.secondaryClass, info.secondarySubClass)
@@ -400,8 +370,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
     // Enforce sum <= 20
     val levelError = document.createElement("span") as HTMLSpanElement
-    levelError.style.color = "red"
-    levelError.style.display = "none"
+    levelError.className = "main-tab-level-error"
     levelError.textContent = t("main.levelSumError")
 
     fun validateLevels() {
@@ -424,8 +393,6 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun buildSubRaceSelect(raceName: String?, currentValue: String?): HTMLDivElement {
         val wrapper = document.createElement("div") as HTMLDivElement
         val select = document.createElement("select") as HTMLSelectElement
-        select.style.padding = "4px"
-        select.style.width = "100%"
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
@@ -456,15 +423,15 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customInput = document.createElement("input") as HTMLInputElement
         customInput.placeholder = "Enter custom sub-race"
-        customInput.style.padding = "4px"
-        customInput.style.width = "100%"
+        
+        
         customInput.style.display = "none"
-        customInput.style.marginTop = "4px"
+        
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
         addBtn.style.display = "none"
-        addBtn.style.marginTop = "4px"
+        
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
@@ -500,13 +467,10 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun addRaceSelect(label: String, value: String?): HTMLSelectElement {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         form.appendChild(lbl)
 
         val wrapper = document.createElement("div") as HTMLDivElement
         val select = document.createElement("select") as HTMLSelectElement
-        select.style.padding = "4px"
-        select.style.width = "100%"
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
@@ -536,15 +500,15 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customInput = document.createElement("input") as HTMLInputElement
         customInput.placeholder = "Enter custom race"
-        customInput.style.padding = "4px"
-        customInput.style.width = "100%"
+        
+        
         customInput.style.display = "none"
-        customInput.style.marginTop = "4px"
+        
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
         addBtn.style.display = "none"
-        addBtn.style.marginTop = "4px"
+        
 
         fun rebuildSubRace(raceName: String?) {
             val srw = subRaceWrapper ?: return
@@ -591,7 +555,6 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     fun addSubRaceSelect(label: String, raceName: String?, value: String?): HTMLDivElement {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
         form.appendChild(lbl)
         val wrapper = buildSubRaceSelect(raceName, value)
         form.appendChild(wrapper)
@@ -604,11 +567,8 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     // Alignment select
     val alignmentLbl = document.createElement("label") as HTMLLabelElement
     alignmentLbl.textContent = t("main.alignment")
-    alignmentLbl.style.fontWeight = "bold"
     form.appendChild(alignmentLbl)
     val alignmentSelect = document.createElement("select") as HTMLSelectElement
-    alignmentSelect.style.padding = "4px"
-    alignmentSelect.style.width = "100%"
     val alignEmptyOpt = document.createElement("option") as HTMLOptionElement
     alignEmptyOpt.value = ""
     alignEmptyOpt.textContent = "-- Select --"
@@ -626,24 +586,14 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     container.appendChild(levelError)
 
     // Auto-save status indicator
-    val statusEl = document.createElement("span") as HTMLSpanElement
-    statusEl.style.marginTop = "8px"
-    statusEl.style.display = "block"
-    statusEl.style.fontSize = "14px"
-    container.appendChild(statusEl)
-
-    var saveTimeout = 0
+    val autoSaveIndicator = com.dungeonsanddeigo.web.dnd.components.autoSaveIndicator.AutoSaveIndicator(container)
 
     fun autoSave() {
         val mainLevel = mainClassLevelInput.value.toIntOrNull() ?: 0
         val secLevel = secondaryClassLevelInput.value.toIntOrNull() ?: 0
         if (mainLevel + secLevel > 20) return
 
-        statusEl.textContent = "Saving..."
-        statusEl.style.color = "gray"
-
-        if (saveTimeout != 0) window.clearTimeout(saveTimeout)
-        saveTimeout = window.setTimeout({
+        autoSaveIndicator.schedule {
             val mainSubSelect = mainSubClassWrapper?.querySelector("select") as? HTMLSelectElement
             val secSubSelect = secondarySubClassWrapper?.querySelector("select") as? HTMLSelectElement
             val updated = DndMainInfo(
@@ -660,10 +610,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
                 alignment = alignmentSelect.value.ifBlank { null }
             )
             Repos.mainInfo.save(updated)
-            statusEl.textContent = "\u2713 Saved"
-            statusEl.style.color = "green"
-            null
-        }, 500)
+        }
     }
 
     // Attach auto-save to all inputs

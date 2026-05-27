@@ -20,33 +20,23 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
     fun refresh() {
         container.innerHTML = ""
         val grid = document.createElement("div") as HTMLDivElement
-        grid.style.setProperty("display", "grid")
-        grid.style.setProperty("grid-template-columns", "1fr 1fr 1fr")
-        grid.style.setProperty("gap", "16px")
+        grid.className = "inv-grid"
 
         sections.forEach { section ->
             val box = document.createElement("div") as HTMLDivElement
-            box.style.border = "1px solid #ccc"
-            box.style.borderRadius = "8px"
-            box.style.padding = "12px"
-            box.style.minHeight = "150px"
+            box.className = "inv-box"
 
-            // Header with title and Add button
             val header = document.createElement("div") as HTMLDivElement
-            header.style.display = "flex"
-            header.style.justifyContent = "space-between"
-            header.style.alignItems = "center"
-            header.style.marginBottom = "8px"
+            header.className = "inv-header"
 
             val title = document.createElement("h4") as HTMLHeadingElement
             title.textContent = tSection(section)
-            title.style.margin = "0"
             header.appendChild(title)
 
             if (section != "Money") {
                 val addBtn = document.createElement("button") as HTMLButtonElement
                 addBtn.textContent = t("inv.add")
-                addBtn.style.fontSize = "12px"
+                addBtn.className = "inv-add-btn"
                 addBtn.addEventListener("click", {
                     when (section) {
                         "Armor" -> showArmorModal(character, null) { refresh() }
@@ -66,29 +56,21 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 val money = Repos.money.getByCharacterId(character.id) ?: DndMoney(characterId = character.id)
 
                 val coinsGrid = document.createElement("div") as HTMLDivElement
-                coinsGrid.style.setProperty("display", "grid")
-                coinsGrid.style.setProperty("grid-template-columns", "1fr 1fr")
-                coinsGrid.style.setProperty("gap", "6px")
-                coinsGrid.style.fontSize = "13px"
+                coinsGrid.className = "inv-coins-grid"
 
                 fun addCoinField(label: String, abbr: String, value: Int): HTMLInputElement {
                     val lbl = document.createElement("label") as HTMLLabelElement
                     lbl.textContent = label
-                    lbl.style.fontWeight = "bold"
                     coinsGrid.appendChild(lbl)
                     val wrapper = document.createElement("div") as HTMLDivElement
-                    wrapper.style.display = "flex"
-                    wrapper.style.alignItems = "center"
-                    wrapper.style.setProperty("gap", "4px")
+                    wrapper.className = "inv-coin-wrapper"
                     val input = document.createElement("input") as HTMLInputElement
                     input.type = "number"; input.min = "0"
                     input.value = value.toString()
-                    input.style.width = "100%"; input.style.padding = "2px"
                     wrapper.appendChild(input)
                     val abbrSpan = document.createElement("span") as HTMLSpanElement
                     abbrSpan.textContent = abbr
-                    abbrSpan.style.fontSize = "12px"
-                    abbrSpan.style.color = "#666"
+                    abbrSpan.className = "inv-coin-abbr"
                     wrapper.appendChild(abbrSpan)
                     coinsGrid.appendChild(wrapper)
                     return input
@@ -102,10 +84,9 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 // Lifestyle
                 val lifeLbl = document.createElement("label") as HTMLLabelElement
-                lifeLbl.textContent = t("inv.lifestyle"); lifeLbl.style.fontWeight = "bold"
+                lifeLbl.textContent = t("inv.lifestyle")
                 coinsGrid.appendChild(lifeLbl)
                 val lifeSelect = document.createElement("select") as HTMLSelectElement
-                lifeSelect.style.width = "100%"
                 val emptyOpt = document.createElement("option") as HTMLOptionElement
                 emptyOpt.value = ""; emptyOpt.textContent = "--"
                 lifeSelect.appendChild(emptyOpt)
@@ -119,10 +100,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 // Cost per day label
                 val costLabel = document.createElement("span") as HTMLSpanElement
-                costLabel.style.setProperty("grid-column", "1 / -1")
-                costLabel.style.fontSize = "12px"
-                costLabel.style.color = "#555"
-                costLabel.style.marginTop = "4px"
+                costLabel.className = "inv-cost-label"
 
                 fun lifestyleCost(ls: String): String = when (ls) {
                     "Wretched" -> t("inv.noCost")
@@ -147,9 +125,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 // Auto-save for money
                 val moneyStatus = document.createElement("span") as HTMLSpanElement
-                moneyStatus.style.fontSize = "11px"
-                moneyStatus.style.display = "block"
-                moneyStatus.style.marginTop = "6px"
+                moneyStatus.className = "inv-money-status"
                 box.appendChild(moneyStatus)
 
                 var moneySaveTimeout = 0
@@ -227,22 +203,17 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 // Display AC with optional warning
                 val acRow = document.createElement("div") as HTMLDivElement
-                acRow.style.display = "flex"
-                acRow.style.alignItems = "center"
-                acRow.style.setProperty("gap", "12px")
-                acRow.style.marginBottom = "12px"
+                acRow.className = "inv-ac-row"
 
                 val acDisplay = document.createElement("div") as HTMLDivElement
-                acDisplay.style.textAlign = "center"
+                acDisplay.className = "inv-ac-display"
                 val acNumber = document.createElement("span") as HTMLSpanElement
                 acNumber.textContent = totalAC.toString()
-                acNumber.style.fontSize = "36px"
-                acNumber.style.fontWeight = "bold"
+                acNumber.className = "inv-ac-number"
                 acDisplay.appendChild(acNumber)
                 val acLabel = document.createElement("div") as HTMLDivElement
                 acLabel.textContent = t("stats.ac")
-                acLabel.style.fontSize = "12px"
-                acLabel.style.color = "#666"
+                acLabel.className = "inv-ac-label"
                 acDisplay.appendChild(acLabel)
                 acRow.appendChild(acDisplay)
 
@@ -253,32 +224,26 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 // Warnings column
                 val warningsDiv = document.createElement("div") as HTMLDivElement
-                warningsDiv.style.setProperty("flex", "1")
+                warningsDiv.className = "inv-warnings"
 
                 if (lacksAnyProf) {
                     val warning = document.createElement("div") as HTMLDivElement
                     warning.textContent = "\u26A0\uFE0F " + t("inv.lackProf")
-                    warning.style.color = "#c00"
-                    warning.style.fontSize = "12px"
-                    warning.style.marginBottom = "4px"
+                    warning.className = "inv-warning"
                     warningsDiv.appendChild(warning)
                 }
 
                 if (equippedArmor?.hasSneakDisadvantage == true) {
                     val sneakWarn = document.createElement("div") as HTMLDivElement
                     sneakWarn.textContent = "\u26A0\uFE0F " + t("inv.sneakDisadvWarn")
-                    sneakWarn.style.color = "#c00"
-                    sneakWarn.style.fontSize = "12px"
-                    sneakWarn.style.marginBottom = "4px"
+                    sneakWarn.className = "inv-warning"
                     warningsDiv.appendChild(sneakWarn)
                 }
 
                 if (lacksStrength) {
                     val strWarn = document.createElement("div") as HTMLDivElement
                     strWarn.textContent = "\u26A0\uFE0F " + t("inv.needStrength")
-                    strWarn.style.color = "#c00"
-                    strWarn.style.fontSize = "12px"
-                    strWarn.style.marginBottom = "4px"
+                    strWarn.className = "inv-warning"
                     warningsDiv.appendChild(strWarn)
                 }
 
@@ -286,18 +251,15 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 // Speed display
                 val speedDisplay = document.createElement("div") as HTMLDivElement
-                speedDisplay.style.textAlign = "center"
+                speedDisplay.className = "inv-speed-display"
                 val effectiveSpeed = if (lacksStrength) charSpeed - 3 else charSpeed
                 val speedNumber = document.createElement("span") as HTMLSpanElement
                 speedNumber.textContent = "${effectiveSpeed}m"
-                speedNumber.style.fontSize = "36px"
-                speedNumber.style.fontWeight = "bold"
-                if (lacksStrength) speedNumber.style.color = "#c00"
+                speedNumber.className = "inv-speed-number" + if (lacksStrength) " reduced" else ""
                 speedDisplay.appendChild(speedNumber)
                 val speedLabel = document.createElement("div") as HTMLDivElement
                 speedLabel.textContent = t("stats.speed")
-                speedLabel.style.fontSize = "12px"
-                speedLabel.style.color = "#666"
+                speedLabel.className = "inv-speed-label"
                 speedDisplay.appendChild(speedLabel)
                 acRow.appendChild(speedDisplay)
 
@@ -306,36 +268,36 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 if (armors.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
                     placeholder.textContent = t("inv.noArmor")
-                    placeholder.style.color = "#999"
-                    placeholder.style.fontSize = "13px"
+                    placeholder.className = "inv-placeholder"
+                    
                     box.appendChild(placeholder)
                 } else {
                     armors.forEach { armor ->
                         val row = document.createElement("div") as HTMLDivElement
-                        row.style.borderBottom = "1px solid #eee"
-                        row.style.padding = "6px 0"
-                        row.style.fontSize = "12px"
+                        row.className = "inv-row"
+                        
+                        
 
                         val line1 = document.createElement("div") as HTMLDivElement
-                        line1.style.display = "flex"
-                        line1.style.justifyContent = "space-between"
-                        line1.style.alignItems = "center"
+                        line1.className = "inv-row-line1"
+                        
+                        
 
                         val nameSpan = document.createElement("span") as HTMLSpanElement
                         val eqIcon = if (armor.isEquipped) "\u2705 " else ""
                         nameSpan.textContent = "$eqIcon${armor.name}"
-                        nameSpan.style.fontWeight = "bold"
+                        nameSpan.className = "inv-row-name"
                         line1.appendChild(nameSpan)
 
                         val actions = document.createElement("div") as HTMLDivElement
-                        actions.style.display = "flex"
-                        actions.style.setProperty("gap", "4px")
+                        actions.className = "inv-row-actions"
+                        
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.style.fontSize = "11px"
+                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { showArmorModal(character, armor) { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.style.fontSize = "11px"; delBtn.style.color = "red"
+                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.armor.delete(armor.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
@@ -353,7 +315,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         val hasStrWarning = armor.minimumStrength > 0 && charStrength < armor.minimumStrength
 
                         val line2 = document.createElement("div") as HTMLDivElement
-                        line2.style.color = "#666"
+                        line2.className = "inv-row-line2"
                         val warnings = StringBuilder()
                         if (!hasProficiency) warnings.append("\u26A0\uFE0F ")
                         if (hasStrWarning) warnings.append("\u26A0\uFE0F ")
@@ -404,10 +366,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                     val isRanged = equippedWeapon.range && !equippedWeapon.thrown
 
                     val atkTable = document.createElement("table") as HTMLTableElement
-                    atkTable.style.width = "100%"
-                    atkTable.style.fontSize = "12px"
-                    atkTable.style.borderCollapse = "collapse"
-                    atkTable.style.marginBottom = "10px"
+                    atkTable.className = "inv-atk-table"
 
                     // Header
                     val thead = document.createElement("thead")
@@ -415,11 +374,6 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                     listOf(t("inv.atkTable.name"), t("inv.atkTable.range"), t("inv.atkTable.test"), t("inv.atkTable.damage"), t("inv.atkTable.notes")).forEach { h ->
                         val th = document.createElement("th") as HTMLTableCellElement
                         th.textContent = h
-                        th.style.textAlign = "left"
-                        th.style.padding = "4px"
-                        th.style.borderBottom = "1px solid #ccc"
-                        th.style.fontSize = "11px"
-                        th.style.color = "#666"
                         headerRow.appendChild(th)
                     }
                     thead.appendChild(headerRow)
@@ -435,8 +389,6 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                         // Name
                         val tdName = document.createElement("td") as HTMLTableCellElement
-                        tdName.style.padding = "3px 4px"
-                        tdName.style.fontWeight = "bold"
                         val statLabel = if (equippedWeapon.finesse) " (${if (useDex) tStat("Dex") else tStat("Str")})" else ""
                         val handLabel = if (twoHanded) " [${t("inv.twoHandedShort")}]" else ""
                         val thrownLabel = if (thrown) " [${t("inv.thrownShort")}]" else ""
@@ -445,20 +397,17 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                         // Range
                         val tdRange = document.createElement("td") as HTMLTableCellElement
-                        tdRange.style.padding = "3px 4px"
                         tdRange.textContent = if (isRanged || thrown) "${equippedWeapon.rangeDistance}/${equippedWeapon.rangeLongDistance}m" else t("inv.melee")
                         tr.appendChild(tdRange)
 
                         // Test
                         val tdTest = document.createElement("td") as HTMLTableCellElement
-                        tdTest.style.padding = "3px 4px"
                         val testSign = if (atkMod >= 0) "+" else ""
                         tdTest.textContent = "$testSign$atkMod"
                         tr.appendChild(tdTest)
 
                         // Damage
                         val tdDmg = document.createElement("td") as HTMLTableCellElement
-                        tdDmg.style.padding = "3px 4px"
                         val dice = if (twoHanded) equippedWeapon.versatileDice else equippedWeapon.damageDice
                         val dmgStr = if (isRanged || thrown) {
                             "$dice ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
@@ -471,8 +420,6 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                         // Notes (icons + additional features)
                         val tdNotes = document.createElement("td") as HTMLTableCellElement
-                        tdNotes.style.padding = "3px 4px"
-                        tdNotes.style.color = "#888"
                         val icons = mutableListOf<String>()
                         if (equippedWeapon.silver) icons.add("\uD83E\uDD48")
                         if (equippedWeapon.heavy) icons.add("\u2693")
@@ -518,8 +465,8 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 if (weapons.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
                     placeholder.textContent = t("inv.noWeapons")
-                    placeholder.style.color = "#999"
-                    placeholder.style.fontSize = "13px"
+                    placeholder.className = "inv-placeholder"
+                    
                     box.appendChild(placeholder)
                 } else {
                     weapons.sortedByDescending { it.isEquipped }.forEach { weapon ->
@@ -527,38 +474,38 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                                 || weapon.weaponType in weaponSpecificProfs
 
                         val row = document.createElement("div") as HTMLDivElement
-                        row.style.borderBottom = "1px solid #eee"
-                        row.style.padding = "6px 0"
-                        row.style.fontSize = "12px"
+                        row.className = "inv-row"
+                        
+                        
 
                         val line1 = document.createElement("div") as HTMLDivElement
-                        line1.style.display = "flex"
-                        line1.style.justifyContent = "space-between"
-                        line1.style.alignItems = "center"
+                        line1.className = "inv-row-line1"
+                        
+                        
 
                         val nameSpan = document.createElement("span") as HTMLSpanElement
                         val eqIcon = if (weapon.isEquipped) "\u2705 " else ""
                         val warnIcon = if (!hasProficiency) "\u26A0\uFE0F " else ""
                         nameSpan.textContent = "$warnIcon$eqIcon${weapon.name}"
-                        nameSpan.style.fontWeight = "bold"
+                        nameSpan.className = "inv-row-name"
                         line1.appendChild(nameSpan)
 
                         val actions = document.createElement("div") as HTMLDivElement
-                        actions.style.display = "flex"
-                        actions.style.setProperty("gap", "4px")
+                        actions.className = "inv-row-actions"
+                        
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.style.fontSize = "11px"
+                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { showWeaponModal(character, weapon) { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.style.fontSize = "11px"; delBtn.style.color = "red"
+                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.weapon.delete(weapon.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
                         row.appendChild(line1)
 
                         val line2 = document.createElement("div") as HTMLDivElement
-                        line2.style.color = "#666"
+                        line2.className = "inv-row-line2"
                         val props = mutableListOf<String>()
                         props.add(when(weapon.category) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); else -> weapon.category })
                         props.add("${weapon.damageDice} ${when(weapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> weapon.damageType }}")
@@ -601,53 +548,51 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 // Synch counter
                 val synchedCount = magicItems.count { it.needSynch && it.isSynched }
                 val synchInfo = document.createElement("div") as HTMLDivElement
-                synchInfo.style.fontSize = "12px"
-                synchInfo.style.marginBottom = "8px"
-                synchInfo.style.color = if (synchedCount > 3) "#c00" else "#555"
+                synchInfo.className = "inv-synch-info" + if (synchedCount > 3) " over-limit" else ""
                 synchInfo.textContent = "${t("inv.synchedItems")}: $synchedCount / ${t("inv.max")}: 3"
                 box.appendChild(synchInfo)
 
                 if (magicItems.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
                     placeholder.textContent = t("inv.noMagicItems")
-                    placeholder.style.color = "#999"
-                    placeholder.style.fontSize = "13px"
+                    placeholder.className = "inv-placeholder"
+                    
                     box.appendChild(placeholder)
                 } else {
                     magicItems.forEach { item ->
                         val row = document.createElement("div") as HTMLDivElement
-                        row.style.borderBottom = "1px solid #eee"
-                        row.style.padding = "6px 0"
-                        row.style.fontSize = "12px"
+                        row.className = "inv-row"
+                        
+                        
 
                         val line1 = document.createElement("div") as HTMLDivElement
-                        line1.style.display = "flex"
-                        line1.style.justifyContent = "space-between"
-                        line1.style.alignItems = "center"
+                        line1.className = "inv-row-line1"
+                        
+                        
 
                         val nameSpan = document.createElement("span") as HTMLSpanElement
                         val synchIcon = if (!item.needSynch) "\uD83D\uDD35 "
                             else if (item.isSynched) "\u2705 " else ""
                         nameSpan.textContent = "$synchIcon${item.name}"
-                        nameSpan.style.fontWeight = "bold"
+                        nameSpan.className = "inv-row-name"
                         line1.appendChild(nameSpan)
 
                         val actions = document.createElement("div") as HTMLDivElement
-                        actions.style.display = "flex"
-                        actions.style.setProperty("gap", "4px")
+                        actions.className = "inv-row-actions"
+                        
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.style.fontSize = "11px"
+                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { showMagicItemModal(character, item) { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.style.fontSize = "11px"; delBtn.style.color = "red"
+                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.magicItem.delete(item.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
                         row.appendChild(line1)
 
                         val line2 = document.createElement("div") as HTMLDivElement
-                        line2.style.color = "#666"
+                        line2.className = "inv-row-line2"
                         val effectStr = if (item.effect.isNotEmpty()) {
                             val truncated = if (item.effect.length > 80) item.effect.take(80) + "..." else item.effect
                             "$truncated | "
@@ -663,43 +608,43 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 if (consumables.isEmpty()) {
                     val placeholder = document.createElement("p") as HTMLParagraphElement
                     placeholder.textContent = t("inv.noItems")
-                    placeholder.style.color = "#999"
-                    placeholder.style.fontSize = "13px"
+                    placeholder.className = "inv-placeholder"
+                    
                     box.appendChild(placeholder)
                 } else {
                     consumables.forEach { item ->
                         val row = document.createElement("div") as HTMLDivElement
-                        row.style.borderBottom = "1px solid #eee"
-                        row.style.padding = "6px 0"
-                        row.style.fontSize = "12px"
+                        row.className = "inv-row"
+                        
+                        
 
                         val line1 = document.createElement("div") as HTMLDivElement
-                        line1.style.display = "flex"
-                        line1.style.justifyContent = "space-between"
-                        line1.style.alignItems = "center"
+                        line1.className = "inv-row-line1"
+                        
+                        
 
                         val nameSpan = document.createElement("span") as HTMLSpanElement
                         val qtyStr = if (item.quantity > 1) " x${item.quantity}" else ""
                         nameSpan.textContent = "${item.name}$qtyStr"
-                        nameSpan.style.fontWeight = "bold"
+                        nameSpan.className = "inv-row-name"
                         line1.appendChild(nameSpan)
 
                         val actions = document.createElement("div") as HTMLDivElement
-                        actions.style.display = "flex"
-                        actions.style.setProperty("gap", "4px")
+                        actions.className = "inv-row-actions"
+                        
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.style.fontSize = "11px"
+                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { showConsumableModal(character, item) { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.style.fontSize = "11px"; delBtn.style.color = "red"
+                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.consumable.delete(item.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
                         row.appendChild(line1)
 
                         val line2 = document.createElement("div") as HTMLDivElement
-                        line2.style.color = "#666"
+                        line2.className = "inv-row-line2"
                         val effectStr = if (item.effect.isNotEmpty()) {
                             val truncated = if (item.effect.length > 50) item.effect.take(50) + "..." else item.effect
                             " | $truncated"
@@ -716,37 +661,37 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
             if (items.isEmpty()) {
                 val placeholder = document.createElement("p") as HTMLParagraphElement
                 placeholder.textContent = t("inv.noItems")
-                placeholder.style.color = "#999"
-                placeholder.style.fontSize = "13px"
+                placeholder.className = "inv-placeholder"
+                
                 box.appendChild(placeholder)
             } else {
                 items.forEach { item ->
                     val row = document.createElement("div") as HTMLDivElement
-                    row.style.borderBottom = "1px solid #eee"
-                    row.style.padding = "6px 0"
-                    row.style.fontSize = "12px"
+                    row.className = "inv-row"
+                    
+                    
 
                     val line1 = document.createElement("div") as HTMLDivElement
-                    line1.style.display = "flex"
-                    line1.style.justifyContent = "space-between"
-                    line1.style.alignItems = "center"
+                    line1.className = "inv-row-line1"
+                    
+                    
 
                     val nameSpan = document.createElement("span") as HTMLSpanElement
                     nameSpan.textContent = item.name
-                    nameSpan.style.fontWeight = "bold"
+                    nameSpan.className = "inv-row-name"
                     line1.appendChild(nameSpan)
 
                     val actions = document.createElement("div") as HTMLDivElement
-                    actions.style.display = "flex"
-                    actions.style.setProperty("gap", "4px")
+                    actions.className = "inv-row-actions"
+                    
                     val editBtn = document.createElement("button") as HTMLButtonElement
-                    editBtn.textContent = "\u270E"; editBtn.style.fontSize = "11px"
+                    editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
                     editBtn.addEventListener("click", {
                         showInventoryItemModal(character, section, item) { refresh() }
                     })
                     actions.appendChild(editBtn)
                     val delBtn = document.createElement("button") as HTMLButtonElement
-                    delBtn.textContent = "\u2716"; delBtn.style.fontSize = "11px"; delBtn.style.color = "red"
+                    delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
                     delBtn.addEventListener("click", { Repos.inventory.delete(item.id); refresh() })
                     actions.appendChild(delBtn)
                     line1.appendChild(actions)
@@ -754,7 +699,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                     if (item.description.isNotEmpty()) {
                         val line2 = document.createElement("div") as HTMLDivElement
-                        line2.style.color = "#666"
+                        line2.className = "inv-row-line2"
                         val truncated = if (item.description.length > 80) item.description.take(80) + "..." else item.description
                         line2.textContent = truncated
                         row.appendChild(line2)

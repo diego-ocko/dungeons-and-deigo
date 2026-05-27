@@ -1,0 +1,183 @@
+.inv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.inv-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 150px;
+}
+
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  h4 {
+    margin: 0;
+  }
+}
+
+.inv-add-btn {
+  font-size: 12px;
+}
+
+.inv-placeholder {
+  color: #999;
+  font-size: 13px;
+}
+
+.inv-row {
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+.inv-row-line1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inv-row-name {
+  font-weight: bold;
+}
+
+.inv-row-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.inv-row-btn {
+  font-size: 11px;
+}
+
+.inv-row-del-btn {
+  font-size: 11px;
+  color: red;
+}
+
+.inv-row-line2 {
+  color: #666;
+}
+
+.inv-warning {
+  color: #c00;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.inv-ac-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.inv-ac-display {
+  text-align: center;
+}
+
+.inv-ac-number {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.inv-ac-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.inv-warnings {
+  flex: 1;
+}
+
+.inv-speed-display {
+  text-align: center;
+}
+
+.inv-speed-number {
+  font-size: 36px;
+  font-weight: bold;
+
+  &.reduced {
+    color: #c00;
+  }
+}
+
+.inv-speed-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.inv-coins-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 13px;
+
+  label {
+    font-weight: bold;
+  }
+
+  input {
+    width: 100%;
+    padding: 2px;
+  }
+}
+
+.inv-coin-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inv-coin-abbr {
+  font-size: 12px;
+  color: #666;
+}
+
+.inv-cost-label {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.inv-money-status {
+  font-size: 11px;
+  display: block;
+  margin-top: 6px;
+}
+
+.inv-synch-info {
+  font-size: 12px;
+  margin-bottom: 8px;
+
+  &.over-limit {
+    color: #c00;
+  }
+}
+
+.inv-atk-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+
+  th {
+    text-align: left;
+    padding: 4px;
+    border-bottom: 1px solid #ccc;
+    font-size: 11px;
+    color: #666;
+  }
+
+  td {
+    padding: 3px 4px;
+  }
+}

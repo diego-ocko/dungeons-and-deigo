@@ -1,0 +1,66 @@
+.notes-add-btn {
+  margin-bottom: 16px;
+}
+
+.notes-empty {
+  color: #999;
+}
+
+.notes-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  max-width: 700px;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+
+  h4 {
+    margin: 0;
+  }
+}
+
+.notes-meta {
+  font-size: 11px;
+  color: #666;
+  text-align: right;
+}
+
+.notes-content {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.notes-tags {
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.notes-tag {
+  background-color: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.notes-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notes-btn {
+  font-size: 11px;
+}
+
+.notes-del-btn {
+  font-size: 11px;
+  color: red;
+}

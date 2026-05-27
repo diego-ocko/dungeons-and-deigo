@@ -20,7 +20,7 @@ import com.dungeonsanddeigo.web.dnd.modals.weapon.showWeaponModal
 import com.dungeonsanddeigo.web.dnd.modals.magicItem.showMagicItemModal
 import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.showInventoryItemModal
 import com.dungeonsanddeigo.web.dnd.modals.note.showNoteModal
-import com.dungeonsanddeigo.web.dnd.components.renderDndSearch
+import com.dungeonsanddeigo.web.dnd.components.dndSearch.renderDndSearch
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import kotlinx.browser.window

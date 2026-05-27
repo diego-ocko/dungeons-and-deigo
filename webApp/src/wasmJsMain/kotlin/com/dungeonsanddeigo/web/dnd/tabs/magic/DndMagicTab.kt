@@ -157,18 +157,13 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
     customClassesNeedingAbility.forEach { className ->
         val selectorBox = document.createElement("div") as HTMLDivElement
-        selectorBox.style.border = "1px solid #ccc"
-        selectorBox.style.borderRadius = "8px"
-        selectorBox.style.padding = "12px"
-        selectorBox.style.marginBottom = "16px"
+        selectorBox.className = "magic-selector-box"
 
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = "$className - ${t("magic.selectAbility")}:"
-        lbl.style.fontWeight = "bold"; lbl.style.marginRight = "8px"
         selectorBox.appendChild(lbl)
 
         val sel = document.createElement("select") as HTMLSelectElement
-        sel.style.padding = "4px"
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""; emptyOpt.textContent = t("magic.select")
         sel.appendChild(emptyOpt)
@@ -208,15 +203,13 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     if (casters.isEmpty() && customClassesNeedingAbility.isEmpty()) {
         val noMagic = document.createElement("p") as HTMLParagraphElement
         noMagic.textContent = t("magic.noSpellcasting")
-        noMagic.style.color = "#999"
+        noMagic.className = "magic-no-spellcasting"
         container.appendChild(noMagic)
 
         customClassesWithNone.forEach { className ->
             val changeBtn = document.createElement("button") as HTMLButtonElement
             changeBtn.textContent = "\u270E ${t("magic.changeAbility")} ($className)"
-            changeBtn.style.fontSize = "11px"
-            changeBtn.style.marginTop = "8px"
-            changeBtn.style.display = "block"
+            changeBtn.className = "magic-change-btn"
             changeBtn.addEventListener("click", {
                 localStorage.removeItem("dnd_custom_spell_ability_${character.id}_$className")
                 container.innerHTML = ""
@@ -231,26 +224,19 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     // Header for each caster
     casters.forEach { caster ->
         val box = document.createElement("div") as HTMLDivElement
-        box.style.border = "1px solid #ccc"
-        box.style.borderRadius = "8px"
-        box.style.padding = "12px"
-        box.style.marginBottom = "16px"
+        box.className = "magic-box"
 
         val titleRow = document.createElement("div") as HTMLDivElement
-        titleRow.style.display = "flex"
-        titleRow.style.justifyContent = "space-between"
-        titleRow.style.alignItems = "center"
-        titleRow.style.marginBottom = "10px"
+        titleRow.className = "magic-title-row"
 
         val titleEl = document.createElement("h4") as HTMLHeadingElement
         titleEl.textContent = "${caster.className} - ${t("magic.spellcasting")}"
-        titleEl.style.margin = "0"
         titleRow.appendChild(titleEl)
 
         if (caster.isCustom) {
             val changeBtn = document.createElement("button") as HTMLButtonElement
             changeBtn.textContent = "\u270E " + t("magic.changeAbility")
-            changeBtn.style.fontSize = "11px"
+            changeBtn.className = "magic-change-btn"
             changeBtn.addEventListener("click", {
                 localStorage.removeItem("dnd_custom_spell_ability_${character.id}_${caster.className}")
                 container.innerHTML = ""
@@ -264,27 +250,22 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         if (caster.ritualOnly) {
             val ritualMsg = document.createElement("p") as HTMLParagraphElement
             ritualMsg.textContent = "\u26A0\uFE0F " + t("magic.ritualOnly")
-            ritualMsg.style.color = "#c00"
-            ritualMsg.style.fontSize = "13px"
-            ritualMsg.style.margin = "0 0 10px 0"
+            ritualMsg.className = "magic-ritual-msg"
             box.appendChild(ritualMsg)
         }
 
         val grid = document.createElement("div") as HTMLDivElement
-        grid.style.setProperty("display", "grid")
-        grid.style.setProperty("grid-template-columns", "repeat(auto-fit, minmax(120px, 1fr))")
-        grid.style.setProperty("gap", "12px")
-        grid.style.textAlign = "center"
+        grid.className = "magic-stats-grid"
 
         fun addStat(label: String, value: String) {
             val col = document.createElement("div") as HTMLDivElement
             val valEl = document.createElement("div") as HTMLDivElement
             valEl.textContent = value
-            valEl.style.fontSize = "24px"; valEl.style.fontWeight = "bold"
+            valEl.className = "magic-stat-value"
             col.appendChild(valEl)
             val lblEl = document.createElement("div") as HTMLDivElement
             lblEl.textContent = label
-            lblEl.style.fontSize = "11px"; lblEl.style.color = "#666"
+            lblEl.className = "magic-stat-label"
             col.appendChild(lblEl)
             grid.appendChild(col)
         }
@@ -310,10 +291,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         val slots = DungeonsAndDragons.spellSlotsFor(caster.rawClassName, caster.subClassName, caster.level)
         if (slots.isNotEmpty()) {
             val slotsDiv = document.createElement("div") as HTMLDivElement
-            slotsDiv.style.display = "flex"
-            slotsDiv.style.setProperty("gap", "12px")
-            slotsDiv.style.marginTop = "10px"
-            slotsDiv.style.setProperty("flex-wrap", "wrap")
+            slotsDiv.className = "magic-slots-row"
 
             slots.forEachIndexed { idx, totalSlots ->
                 val circleNum = idx + 1
@@ -321,17 +299,16 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
                 val usedSlots = localStorage.getItem(slotKey)?.toIntOrNull() ?: 0
 
                 val slotCol = document.createElement("div") as HTMLDivElement
-                slotCol.style.textAlign = "center"
-                slotCol.style.fontSize = "12px"
+                slotCol.className = "magic-slot-col"
 
                 val slotLabel = document.createElement("div") as HTMLDivElement
                 slotLabel.textContent = "${circleNum}\u00BA"
-                slotLabel.style.fontWeight = "bold"
+                slotLabel.className = "magic-slot-label"
                 slotCol.appendChild(slotLabel)
 
                 val slotValue = document.createElement("div") as HTMLDivElement
                 slotValue.textContent = "$usedSlots / $totalSlots"
-                slotValue.style.color = if (usedSlots >= totalSlots) "#c00" else "#333"
+                slotValue.className = "magic-slot-value" + if (usedSlots >= totalSlots) " exhausted" else ""
                 slotCol.appendChild(slotValue)
 
                 slotsDiv.appendChild(slotCol)
@@ -346,7 +323,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     // Add Spell button
     val addSpellBtn = document.createElement("button") as HTMLButtonElement
     addSpellBtn.textContent = "\u2728 " + t("magic.addSpell")
-    addSpellBtn.style.marginBottom = "16px"
+    addSpellBtn.className = "magic-add-btn"
     addSpellBtn.addEventListener("click", {
         showSpellModal(character, null) {
             container.innerHTML = ""
@@ -360,35 +337,25 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     val spellsByCircle = allSpells.groupBy { it.circle }
 
     val spellGrid = document.createElement("div") as HTMLDivElement
-    spellGrid.style.setProperty("display", "grid")
-    spellGrid.style.setProperty("grid-template-columns", "repeat(auto-fill, minmax(250px, 1fr))")
-    spellGrid.style.setProperty("gap", "12px")
+    spellGrid.className = "magic-spell-grid"
 
     com.dungeonsanddeigo.model.DndSpell.circles.forEach { circle ->
         val spells = spellsByCircle[circle] ?: return@forEach
         val sorted = spells.sortedByDescending { it.isPrepared }
 
         val col = document.createElement("div") as HTMLDivElement
-        col.style.border = "1px solid #ccc"
-        col.style.borderRadius = "8px"
-        col.style.padding = "10px"
+        col.className = "magic-spell-col"
 
         val colTitle = document.createElement("h5") as HTMLHeadingElement
         colTitle.textContent = if (circle == "Cantrip") t("magic.cantrips") else tCircle(circle)
-        colTitle.style.margin = "0 0 8px 0"
         col.appendChild(colTitle)
 
         sorted.forEach { spell ->
             val row = document.createElement("div") as HTMLDivElement
-            row.style.padding = "6px 0"
-            row.style.borderBottom = "1px solid #eee"
-            row.style.fontSize = "12px"
+            row.className = "magic-spell-row"
 
-            // Line 1: prepared + name + school + buttons
             val line1 = document.createElement("div") as HTMLDivElement
-            line1.style.display = "flex"
-            line1.style.justifyContent = "space-between"
-            line1.style.alignItems = "center"
+            line1.className = "magic-spell-line1"
 
             val nameDiv = document.createElement("div") as HTMLDivElement
             val isCantrip = spell.circle == "Cantrip"
@@ -407,16 +374,15 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
                 else -> ""
             }
             nameDiv.textContent = "$prepIcon${spell.name} $schoolEmoji"
-            nameDiv.style.fontWeight = if (showPrepared) "bold" else "normal"
+            nameDiv.className = "magic-spell-name" + if (showPrepared) " prepared" else ""
             line1.appendChild(nameDiv)
 
             val btns = document.createElement("div") as HTMLDivElement
-            btns.style.display = "flex"
-            btns.style.setProperty("gap", "2px")
+            btns.className = "magic-spell-btns"
 
             val editBtn = document.createElement("button") as HTMLButtonElement
             editBtn.textContent = "\u270E"
-            editBtn.style.fontSize = "10px"
+            editBtn.className = "magic-spell-btn"
             editBtn.addEventListener("click", {
                 showSpellModal(character, spell) {
                     container.innerHTML = ""
@@ -427,7 +393,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
             val delBtn = document.createElement("button") as HTMLButtonElement
             delBtn.textContent = "\u2716"
-            delBtn.style.fontSize = "10px"; delBtn.style.color = "red"
+            delBtn.className = "magic-spell-del-btn"
             delBtn.addEventListener("click", {
                 Repos.spell.delete(character.id, spell.id)
                 container.innerHTML = ""
@@ -438,11 +404,8 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             line1.appendChild(btns)
             row.appendChild(line1)
 
-            // Line 2: Origin + Casting Time + Duration + Range + Ritual
             val line2 = document.createElement("div") as HTMLDivElement
-            line2.style.color = "#666"
-            line2.style.fontSize = "11px"
-            line2.style.marginTop = "2px"
+            line2.className = "magic-spell-line2"
             val originStr = "${tDnd("class", spell.originClass)} (${tOriginLevel(spell.originLevel)})"
             val rangeStr = if (spell.range.isNotEmpty()) "${spell.range}m" else ""
             val ritualStr = if (spell.canBeRitual) " | \uD83D\uDD2E ${t("magic.ritualShort")}" else ""

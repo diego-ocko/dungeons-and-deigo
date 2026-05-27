@@ -1,0 +1,144 @@
+.magic-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.magic-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+
+  h4 {
+    margin: 0;
+  }
+}
+
+.magic-change-btn {
+  font-size: 11px;
+}
+
+.magic-ritual-msg {
+  color: #c00;
+  font-size: 13px;
+  margin: 0 0 10px 0;
+}
+
+.magic-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  text-align: center;
+}
+
+.magic-stat-value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.magic-stat-label {
+  font-size: 11px;
+  color: #666;
+}
+
+.magic-slots-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.magic-slot-col {
+  text-align: center;
+  font-size: 12px;
+}
+
+.magic-slot-label {
+  font-weight: bold;
+}
+
+.magic-slot-value {
+  &.exhausted {
+    color: #c00;
+  }
+}
+
+.magic-add-btn {
+  margin-bottom: 16px;
+}
+
+.magic-spell-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.magic-spell-col {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+
+  h5 {
+    margin: 0 0 8px 0;
+  }
+}
+
+.magic-spell-row {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+}
+
+.magic-spell-line1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.magic-spell-name {
+  &.prepared {
+    font-weight: bold;
+  }
+}
+
+.magic-spell-btns {
+  display: flex;
+  gap: 2px;
+}
+
+.magic-spell-btn {
+  font-size: 10px;
+}
+
+.magic-spell-del-btn {
+  font-size: 10px;
+  color: red;
+}
+
+.magic-spell-line2 {
+  color: #666;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.magic-no-spellcasting {
+  color: #999;
+}
+
+.magic-selector-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+
+  label {
+    font-weight: bold;
+    margin-right: 8px;
+  }
+
+  select {
+    padding: 4px;
+  }
+}

@@ -1,4 +1,4 @@
-package com.dungeonsanddeigo.web.dnd.components
+package com.dungeonsanddeigo.web.dnd.components.dndSearch
 
 import com.dungeonsanddeigo.dnd.rules.calcModifier
 import com.dungeonsanddeigo.dnd.rules.calcProficiency
@@ -10,16 +10,11 @@ import org.w3c.dom.*
 
 fun renderDndSearch(character: Character, container: HTMLDivElement) {
     val searchRow = document.createElement("div") as HTMLDivElement
-    searchRow.style.display = "flex"
-    searchRow.style.setProperty("gap", "4px")
-    searchRow.style.marginBottom = "10px"
+    searchRow.className = "search-row"
 
     val searchInput = document.createElement("input") as HTMLInputElement
     searchInput.type = "text"
     searchInput.placeholder = "Search..."
-    searchInput.style.setProperty("flex", "1")
-    searchInput.style.padding = "8px"
-    searchInput.style.boxSizing = "border-box"
     searchRow.appendChild(searchInput)
 
     val clearBtn = document.createElement("button") as HTMLButtonElement
@@ -34,10 +29,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     fun addCheckbox(label: String, id: String) {
         val row = document.createElement("div") as HTMLDivElement
-        row.style.display = "flex"
-        row.style.alignItems = "center"
-        row.style.setProperty("gap", "6px")
-        row.style.marginBottom = "6px"
+        row.className = "search-checkbox"
 
         val cb = document.createElement("input") as HTMLInputElement
         cb.type = "checkbox"
@@ -47,7 +39,6 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
         lbl.htmlFor = id
-        lbl.style.fontSize = "13px"
         row.appendChild(lbl)
 
         container.appendChild(row)
@@ -57,7 +48,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
     addCheckbox(t("playing.search.plainCheckbox"), "search-plain")
 
     val resultsDiv = document.createElement("div") as HTMLDivElement
-    resultsDiv.style.marginTop = "10px"
+    resultsDiv.className = "search-results"
     container.appendChild(resultsDiv)
 
     val notesCheckbox = container.querySelector("#search-notes") as? HTMLInputElement
@@ -72,17 +63,14 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
     fun renderWeapon(weapon: DndWeapon, target: HTMLDivElement, indent: Boolean = false, weaponCatProfs: Set<String> = emptySet(), weaponSpecificProfs: Set<String> = emptySet(), onEquippedFound: () -> Unit = {}) {
         if (weapon.isEquipped) onEquippedFound()
         val wDiv = document.createElement("div") as HTMLDivElement
-        wDiv.style.fontSize = "12px"
-        wDiv.style.color = "#555"
-        wDiv.style.marginBottom = "4px"
-        if (indent) wDiv.style.paddingLeft = "12px"
+        wDiv.className = "search-item" + if (indent) " indent" else ""
 
         val hasProf = weapon.category in weaponCatProfs || weapon.weaponType in weaponSpecificProfs
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         val equippedStr = if (weapon.isEquipped) " [${t("playing.search.equipped")}]" else " [${t("playing.search.unequipped")}]"
         val warnStr = if (!hasProf) " \u26A0\uFE0F" else ""
         nameSpan.textContent = "\u2694\uFE0F ${weapon.name}$equippedStr$warnStr"
-        nameSpan.style.fontWeight = "bold"
         wDiv.appendChild(nameSpan)
 
         val props = mutableListOf<String>()
@@ -101,27 +89,21 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
         if (props.isNotEmpty()) {
             val propsSpan = document.createElement("div") as HTMLDivElement
+            propsSpan.className = "search-item-detail"
             propsSpan.textContent = props.joinToString(", ")
-            propsSpan.style.paddingLeft = "12px"
-            propsSpan.style.color = "#777"
             wDiv.appendChild(propsSpan)
         }
 
         if (weapon.additionalFeatures.isNotEmpty()) {
             val addSpan = document.createElement("div") as HTMLDivElement
+            addSpan.className = "search-item-desc"
             addSpan.textContent = weapon.additionalFeatures
-            addSpan.style.paddingLeft = "12px"
-            addSpan.style.color = "#777"
-            addSpan.style.fontStyle = "italic"
-            addSpan.style.whiteSpace = "pre-wrap"
             wDiv.appendChild(addSpan)
         }
 
         val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.className = "search-item-info"
         infoSpan.textContent = "${weapon.price} ${weapon.priceCurrency} | ${weapon.weight} kg"
-        infoSpan.style.paddingLeft = "12px"
-        infoSpan.style.color = "#999"
-        infoSpan.style.fontSize = "11px"
         wDiv.appendChild(infoSpan)
 
         target.appendChild(wDiv)
@@ -129,10 +111,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     fun renderArmor(armor: DndArmor, target: HTMLDivElement, indent: Boolean = false, armorProfs: Set<String> = emptySet(), strValue: Int? = null) {
         val aDiv = document.createElement("div") as HTMLDivElement
-        aDiv.style.fontSize = "12px"
-        aDiv.style.color = "#555"
-        aDiv.style.marginBottom = "4px"
-        if (indent) aDiv.style.paddingLeft = "12px"
+        aDiv.className = "search-item" + if (indent) " indent" else ""
 
         val profKey = when (armor.type) {
             "Light Armor" -> "Light"
@@ -157,33 +136,27 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         val warnStr = if (showWarning) " \u26A0\uFE0F" else ""
 
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         nameSpan.textContent = "\uD83D\uDEE1\uFE0F ${armor.name} ($typeStr)$equippedStr$warnStr"
-        nameSpan.style.fontWeight = "bold"
         aDiv.appendChild(nameSpan)
 
         if (armor.hasSneakDisadvantage) {
             val sneakSpan = document.createElement("div") as HTMLDivElement
+            sneakSpan.className = "search-item-warn"
             sneakSpan.textContent = t("inv.sneakDisadvShort")
-            sneakSpan.style.paddingLeft = "12px"
-            sneakSpan.style.color = "#c00"
             aDiv.appendChild(sneakSpan)
         }
 
         if (armor.additionalFeatures.isNotEmpty()) {
             val addSpan = document.createElement("div") as HTMLDivElement
+            addSpan.className = "search-item-desc"
             addSpan.textContent = armor.additionalFeatures
-            addSpan.style.paddingLeft = "12px"
-            addSpan.style.color = "#777"
-            addSpan.style.fontStyle = "italic"
-            addSpan.style.whiteSpace = "pre-wrap"
             aDiv.appendChild(addSpan)
         }
 
         val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.className = "search-item-info"
         infoSpan.textContent = "${armor.price} ${armor.priceCurrency} | ${armor.weight} kg"
-        infoSpan.style.paddingLeft = "12px"
-        infoSpan.style.color = "#999"
-        infoSpan.style.fontSize = "11px"
         aDiv.appendChild(infoSpan)
 
         target.appendChild(aDiv)
@@ -191,34 +164,26 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     fun renderMagicItem(item: DndMagicItem, target: HTMLDivElement, indent: Boolean = false) {
         val mDiv = document.createElement("div") as HTMLDivElement
-        mDiv.style.fontSize = "12px"
-        mDiv.style.color = "#555"
-        mDiv.style.marginBottom = "4px"
-        if (indent) mDiv.style.paddingLeft = "12px"
+        mDiv.className = "search-item" + if (indent) " indent" else ""
 
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         val synchStr = if (item.needSynch) {
             if (item.isSynched) " [${t("playing.search.synched")}]" else " [${t("playing.search.needsSynch")}] \u26A0\uFE0F"
         } else ""
         nameSpan.textContent = "\u2728 ${item.name}$synchStr"
-        nameSpan.style.fontWeight = "bold"
         mDiv.appendChild(nameSpan)
 
         if (item.effect.isNotEmpty()) {
             val effectSpan = document.createElement("div") as HTMLDivElement
+            effectSpan.className = "search-item-desc"
             effectSpan.textContent = item.effect
-            effectSpan.style.paddingLeft = "12px"
-            effectSpan.style.color = "#777"
-            effectSpan.style.fontStyle = "italic"
-            effectSpan.style.whiteSpace = "pre-wrap"
             mDiv.appendChild(effectSpan)
         }
 
         val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.className = "search-item-info"
         infoSpan.textContent = "${item.price} ${item.priceCurrency} | ${item.weight} kg"
-        infoSpan.style.paddingLeft = "12px"
-        infoSpan.style.color = "#999"
-        infoSpan.style.fontSize = "11px"
         mDiv.appendChild(infoSpan)
 
         target.appendChild(mDiv)
@@ -226,10 +191,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     fun renderConsumable(item: DndConsumable, target: HTMLDivElement, indent: Boolean = false) {
         val cDiv = document.createElement("div") as HTMLDivElement
-        cDiv.style.fontSize = "12px"
-        cDiv.style.color = "#555"
-        cDiv.style.marginBottom = "4px"
-        if (indent) cDiv.style.paddingLeft = "12px"
+        cDiv.className = "search-item" + if (indent) " indent" else ""
 
         val typeStr = when (item.type) {
             "Healing Potion" -> t("inv.consumable.healingPotion")
@@ -247,25 +209,20 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         }
 
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         nameSpan.textContent = "$icon ${item.name} ($typeStr)"
-        nameSpan.style.fontWeight = "bold"
         cDiv.appendChild(nameSpan)
 
         if (item.effect.isNotEmpty()) {
             val effectSpan = document.createElement("div") as HTMLDivElement
+            effectSpan.className = "search-item-desc"
             effectSpan.textContent = item.effect
-            effectSpan.style.paddingLeft = "12px"
-            effectSpan.style.color = "#777"
-            effectSpan.style.fontStyle = "italic"
-            effectSpan.style.whiteSpace = "pre-wrap"
             cDiv.appendChild(effectSpan)
         }
 
         val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.className = "search-item-info"
         infoSpan.textContent = "${item.price} ${item.priceCurrency} | ${item.weight} kg"
-        infoSpan.style.paddingLeft = "12px"
-        infoSpan.style.color = "#999"
-        infoSpan.style.fontSize = "11px"
         cDiv.appendChild(infoSpan)
 
         target.appendChild(cDiv)
@@ -273,31 +230,23 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     fun renderKeyItem(item: DndInventoryItem, target: HTMLDivElement, indent: Boolean = false) {
         val kDiv = document.createElement("div") as HTMLDivElement
-        kDiv.style.fontSize = "12px"
-        kDiv.style.color = "#555"
-        kDiv.style.marginBottom = "4px"
-        if (indent) kDiv.style.paddingLeft = "12px"
+        kDiv.className = "search-item" + if (indent) " indent" else ""
 
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         nameSpan.textContent = "\uD83D\uDD11 ${item.name}"
-        nameSpan.style.fontWeight = "bold"
         kDiv.appendChild(nameSpan)
 
         if (item.description.isNotEmpty()) {
             val descSpan = document.createElement("div") as HTMLDivElement
+            descSpan.className = "search-item-desc"
             descSpan.textContent = item.description
-            descSpan.style.paddingLeft = "12px"
-            descSpan.style.color = "#777"
-            descSpan.style.fontStyle = "italic"
-            descSpan.style.whiteSpace = "pre-wrap"
             kDiv.appendChild(descSpan)
         }
 
         val infoSpan = document.createElement("div") as HTMLDivElement
+        infoSpan.className = "search-item-info"
         infoSpan.textContent = "${item.price} ${item.priceCurrency} | ${item.weight} kg"
-        infoSpan.style.paddingLeft = "12px"
-        infoSpan.style.color = "#999"
-        infoSpan.style.fontSize = "11px"
         kDiv.appendChild(infoSpan)
 
         target.appendChild(kDiv)
@@ -306,15 +255,12 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
     fun renderSpell(spell: DndSpell, target: HTMLDivElement, indent: Boolean = false, spellDC: Int = 0, onAttackFound: () -> Unit = {}, onNonAttackFound: () -> Unit = {}) {
         if (spell.isAttack) onAttackFound() else onNonAttackFound()
         val sDiv = document.createElement("div") as HTMLDivElement
-        sDiv.style.fontSize = "12px"
-        sDiv.style.color = "#555"
-        sDiv.style.marginBottom = "4px"
-        if (indent) sDiv.style.paddingLeft = "12px"
+        sDiv.className = "search-item" + if (indent) " indent" else ""
 
         val circleStr = if (spell.circle == "Cantrip") t("magic.cantrips") else tCircle(spell.circle)
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         nameSpan.textContent = "\u2728 ${spell.name} ($circleStr)"
-        nameSpan.style.fontWeight = "bold"
         sDiv.appendChild(nameSpan)
 
         val details = mutableListOf<String>()
@@ -324,9 +270,8 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         if (spell.range.isNotEmpty()) details.add("${spell.range}m")
         if (details.isNotEmpty()) {
             val detailSpan = document.createElement("div") as HTMLDivElement
+            detailSpan.className = "search-item-detail"
             detailSpan.textContent = details.joinToString(" | ")
-            detailSpan.style.paddingLeft = "12px"
-            detailSpan.style.color = "#777"
             sDiv.appendChild(detailSpan)
         }
 
@@ -341,39 +286,29 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
         if (spell.higherCircles.isNotEmpty()) flags.add("\u2B06\uFE0F ${t("magic.higherShort")}")
         if (flags.isNotEmpty()) {
             val flagSpan = document.createElement("div") as HTMLDivElement
+            flagSpan.className = "search-item-flags"
             flagSpan.textContent = flags.joinToString(", ")
-            flagSpan.style.paddingLeft = "12px"
-            flagSpan.style.color = "#999"
-            flagSpan.style.fontSize = "11px"
             sDiv.appendChild(flagSpan)
         }
 
         if (spell.description.isNotEmpty()) {
             val descSpan = document.createElement("div") as HTMLDivElement
+            descSpan.className = "search-item-desc"
             descSpan.textContent = spell.description
-            descSpan.style.paddingLeft = "12px"
-            descSpan.style.color = "#777"
-            descSpan.style.fontStyle = "italic"
-            descSpan.style.whiteSpace = "pre-wrap"
             sDiv.appendChild(descSpan)
         }
 
         if (spell.higherCircles.isNotEmpty()) {
             val higherSpan = document.createElement("div") as HTMLDivElement
+            higherSpan.className = "search-item-flags"
             higherSpan.textContent = "\u2B06\uFE0F ${t("magic.higherShort")}: ${spell.higherCircles}"
-            higherSpan.style.paddingLeft = "12px"
-            higherSpan.style.color = "#666"
-            higherSpan.style.fontSize = "11px"
             sDiv.appendChild(higherSpan)
         }
 
         if (spell.needsSavingThrow && spell.savingThrowAbility.isNotEmpty()) {
             val saveSpan = document.createElement("div") as HTMLDivElement
+            saveSpan.className = "search-item-save"
             saveSpan.textContent = "${t("playing.search.spellSave")} ${tStat(spell.savingThrowAbility)} (${t("playing.dc")} $spellDC)"
-            saveSpan.style.paddingLeft = "12px"
-            saveSpan.style.color = "#c00"
-            saveSpan.style.fontWeight = "bold"
-            saveSpan.style.fontSize = "11px"
             sDiv.appendChild(saveSpan)
         }
 
@@ -382,12 +317,10 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
     fun renderFeature(feat: DndFeature, target: HTMLDivElement, indent: Boolean = false) {
         val fDiv = document.createElement("div") as HTMLDivElement
-        fDiv.style.fontSize = "12px"
-        fDiv.style.color = "#555"
-        fDiv.style.marginBottom = "4px"
-        if (indent) fDiv.style.paddingLeft = "12px"
+        fDiv.className = "search-item" + if (indent) " indent" else ""
 
         val nameSpan = document.createElement("div") as HTMLDivElement
+        nameSpan.className = "search-item-name"
         val displayName = when (feat.type) {
             "Idiom" -> t("features.idiom")
             "Tool Proficiency" -> t("features.toolProf")
@@ -400,9 +333,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
 
         if (feat.description.isNotEmpty()) {
             val descSpan = document.createElement("div") as HTMLDivElement
-            descSpan.style.paddingLeft = "12px"
-            descSpan.style.color = "#777"
-            descSpan.style.whiteSpace = "pre-wrap"
+            descSpan.className = "search-item-desc"
 
             descSpan.textContent = when (feat.type) {
                 "Idiom" -> {
@@ -598,8 +529,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             val saveStr = if (saveVal >= 0) "+$saveVal" else "$saveVal"
 
             val div = document.createElement("div") as HTMLDivElement
-            div.style.marginBottom = "4px"
-            div.style.fontSize = "13px"
+            div.className = "search-stat"
 
             val testLine = document.createElement("div") as HTMLDivElement
             testLine.textContent = "${t("playing.search.test")} ${entry.name}: $modStr"
@@ -624,8 +554,7 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             val trainedStr = if (entry.isTrained) t("playing.search.trained") else t("playing.search.untrained")
 
             val div = document.createElement("div") as HTMLDivElement
-            div.style.marginBottom = "4px"
-            div.style.fontSize = "13px"
+            div.className = "search-stat"
             div.textContent = "${t("playing.search.test")} $translated ($trainedStr): $valStr"
             resultsDiv.appendChild(div)
             renderFeaturesByTag(translated)
@@ -649,17 +578,14 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             matching.forEach { alreadyRendered.add(it.id) }
 
             val fDiv = document.createElement("div") as HTMLDivElement
-            fDiv.style.fontSize = "12px"
-            fDiv.style.color = "#555"
-            fDiv.style.marginBottom = "4px"
+            fDiv.className = "search-item"
 
             val nameSpan = document.createElement("div") as HTMLDivElement
+            nameSpan.className = "search-item-name"
             nameSpan.textContent = "\u2022 $translatedType"
-            nameSpan.style.fontWeight = "bold"
             fDiv.appendChild(nameSpan)
             val descSpan = document.createElement("div") as HTMLDivElement
-            descSpan.style.paddingLeft = "12px"
-            descSpan.style.color = "#777"
+            descSpan.className = "search-item-detail"
 
             descSpan.textContent = when (type) {
                 "Idiom" -> {
@@ -821,17 +747,14 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 )
                 appFields.filter { it.value.isNotEmpty() && (it.label.lowercase().contains(query) || (plainSearch && it.value.lowercase().contains(query))) }.forEach { field ->
                     val div = document.createElement("div") as HTMLDivElement
-                    div.style.marginBottom = "4px"
-                    div.style.fontSize = "13px"
+                    div.className = "search-stat"
                     val lbl = document.createElement("div") as HTMLDivElement
+                    lbl.className = "search-field-label"
                     lbl.textContent = "\uD83D\uDC64 ${field.label}"
-                    lbl.style.fontWeight = "bold"
                     div.appendChild(lbl)
                     val val_ = document.createElement("div") as HTMLDivElement
+                    val_.className = "search-field-value"
                     val_.textContent = field.value
-                    val_.style.paddingLeft = "12px"
-                    val_.style.color = "#777"
-                    val_.style.whiteSpace = "pre-wrap"
                     div.appendChild(val_)
                     resultsDiv.appendChild(div)
                 }
@@ -853,17 +776,14 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
                 )
                 bsFields.filter { it.value.isNotEmpty() && (it.label.lowercase().contains(query) || (plainSearch && it.value.lowercase().contains(query))) }.forEach { field ->
                     val div = document.createElement("div") as HTMLDivElement
-                    div.style.marginBottom = "4px"
-                    div.style.fontSize = "13px"
+                    div.className = "search-stat"
                     val lbl = document.createElement("div") as HTMLDivElement
+                    lbl.className = "search-field-label"
                     lbl.textContent = "\uD83D\uDCDC ${field.label}"
-                    lbl.style.fontWeight = "bold"
                     div.appendChild(lbl)
                     val val_ = document.createElement("div") as HTMLDivElement
+                    val_.className = "search-field-value"
                     val_.textContent = field.value
-                    val_.style.paddingLeft = "12px"
-                    val_.style.color = "#777"
-                    val_.style.whiteSpace = "pre-wrap"
                     div.appendChild(val_)
                     resultsDiv.appendChild(div)
                 }
@@ -873,26 +793,21 @@ fun renderDndSearch(character: Character, container: HTMLDivElement) {
             val notes = Repos.note.getByCharacterId(character.id)
             notes.filter { it.title.lowercase().contains(query) || it.tags.any { tag -> tag.lowercase().contains(query) } || (plainSearch && it.note.lowercase().contains(query)) }.forEach { note ->
                 val div = document.createElement("div") as HTMLDivElement
-                div.style.marginBottom = "4px"
-                div.style.fontSize = "13px"
+                div.className = "search-stat"
                 val titleSpan = document.createElement("div") as HTMLDivElement
+                titleSpan.className = "search-note-title"
                 titleSpan.textContent = "\uD83D\uDCDD ${note.title}"
-                titleSpan.style.fontWeight = "bold"
                 div.appendChild(titleSpan)
                 if (note.session.isNotEmpty()) {
                     val sessionSpan = document.createElement("div") as HTMLDivElement
+                    sessionSpan.className = "search-note-session"
                     sessionSpan.textContent = note.session
-                    sessionSpan.style.paddingLeft = "12px"
-                    sessionSpan.style.color = "#999"
-                    sessionSpan.style.fontSize = "11px"
                     div.appendChild(sessionSpan)
                 }
                 if (note.note.isNotEmpty()) {
                     val noteSpan = document.createElement("div") as HTMLDivElement
+                    noteSpan.className = "search-note-content"
                     noteSpan.textContent = note.note
-                    noteSpan.style.paddingLeft = "12px"
-                    noteSpan.style.color = "#777"
-                    noteSpan.style.whiteSpace = "pre-wrap"
                     div.appendChild(noteSpan)
                 }
                 resultsDiv.appendChild(div)

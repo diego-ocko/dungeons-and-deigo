@@ -10,8 +10,8 @@ import com.dungeonsanddeigo.model.DndBaseStats
 import com.dungeonsanddeigo.model.DndSkills
 import com.dungeonsanddeigo.model.DndSkillEntry
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.autoSaveIndicator.AutoSaveIndicator
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.w3c.dom.*
 
 fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
@@ -207,10 +207,7 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
 
     resRows.forEach { r ->
         val line = document.createElement("div") as HTMLDivElement
-        line.style.display = "flex"
-        line.style.alignItems = "center"
-        line.style.setProperty("gap", "8px")
-        line.style.marginBottom = "6px"
+        line.className = "stats-res-row"
 
         val cb = document.createElement("input") as HTMLInputElement
         cb.type = "checkbox"
@@ -219,11 +216,11 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
 
         val name = document.createElement("span") as HTMLSpanElement
         name.textContent = tStat(r.label)
-        name.style.width = "30px"
-        name.style.fontWeight = "bold"
+        name.className = "stats-res-name"
         line.appendChild(name)
 
         val valLabel = document.createElement("span") as HTMLSpanElement
+        valLabel.className = "stats-res-value"
         fun calcResValue(): String {
             val statVal = valueInputs[r.statIndex].value.toIntOrNull()
             val mod = statVal?.let { calcModifier(it) } ?: 0
@@ -258,20 +255,10 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     container.appendChild(resBox)
 
     // Auto-save status
-    val statusEl = document.createElement("span") as HTMLSpanElement
-    statusEl.style.marginTop = "8px"
-    statusEl.style.display = "block"
-    statusEl.style.fontSize = "14px"
-    container.appendChild(statusEl)
-
-    var saveTimeout = 0
+    val autoSaveIndicator = AutoSaveIndicator(container)
 
     fun autoSave() {
-        statusEl.textContent = "Saving..."
-        statusEl.style.color = "gray"
-
-        if (saveTimeout != 0) window.clearTimeout(saveTimeout)
-        saveTimeout = window.setTimeout({
+        autoSaveIndicator.schedule {
             fun v(i: Int) = valueInputs[i].value.toIntOrNull()
             fun m(i: Int) = v(i)?.let { calcModifier(it) }
             val updated = DndBaseStats(
@@ -297,10 +284,7 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
                 hasChaRes = resCheckboxes[5].checked
             )
             Repos.baseStats.save(updated)
-            statusEl.textContent = "\u2713 Saved"
-            statusEl.style.color = "green"
-            null
-        }, 500)
+        }
     }
 
     container.addEventListener("input", { autoSave() })
@@ -333,14 +317,10 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
     }
 
     val box = document.createElement("div") as HTMLDivElement
-    box.style.border = "1px solid #ccc"
-    box.style.borderRadius = "8px"
-    box.style.padding = "12px"
-    box.style.maxWidth = "650px"
+    box.className = "stats-skills-box"
 
     val title = document.createElement("h3") as HTMLHeadingElement
     title.textContent = t("stats.skills")
-    title.style.marginTop = "0"
     box.appendChild(title)
 
     data class SkillRow(
@@ -359,10 +339,7 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         val currentMod = entry.modifier.ifEmpty { defaultMod }
 
         val line = document.createElement("div") as HTMLDivElement
-        line.style.display = "flex"
-        line.style.alignItems = "center"
-        line.style.setProperty("gap", "8px")
-        line.style.marginBottom = "6px"
+        line.className = "stats-skill-row"
 
         // Trained checkbox
         val cb = document.createElement("input") as HTMLInputElement
@@ -373,14 +350,12 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         // Skill name
         val nameSpan = document.createElement("span") as HTMLSpanElement
         nameSpan.textContent = t("skill.$skillName")
-        nameSpan.style.width = "130px"
-        nameSpan.style.fontWeight = "bold"
-        nameSpan.style.fontSize = "13px"
+        nameSpan.className = "stats-skill-name"
         line.appendChild(nameSpan)
 
         // Modifier select
         val modSelect = document.createElement("select") as HTMLSelectElement
-        modSelect.style.padding = "2px"
+        modSelect.className = "stats-skill-mod"
         statAbbreviations.forEach { abbr ->
             val opt = document.createElement("option") as HTMLOptionElement
             opt.value = abbr
@@ -399,15 +374,12 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         val addInput = document.createElement("input") as HTMLInputElement
         addInput.type = "number"
         addInput.value = entry.additionalValue.toString()
-        addInput.style.width = "45px"
-        addInput.style.padding = "2px"
-        addInput.style.textAlign = "center"
+        addInput.className = "stats-skill-add"
         line.appendChild(addInput)
 
         // Equals + total
         val totalLabel = document.createElement("span") as HTMLSpanElement
-        totalLabel.style.fontWeight = "bold"
-        totalLabel.style.minWidth = "50px"
+        totalLabel.className = "stats-skill-total"
 
         fun calcTotal(): Int {
             val mod = statModValue(modSelect.value)
@@ -435,20 +407,10 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
     container.appendChild(box)
 
     // Auto-save
-    val statusEl = document.createElement("span") as HTMLSpanElement
-    statusEl.style.marginTop = "8px"
-    statusEl.style.display = "block"
-    statusEl.style.fontSize = "14px"
-    container.appendChild(statusEl)
-
-    var saveTimeout = 0
+    val autoSaveIndicator = AutoSaveIndicator(container)
 
     fun autoSave() {
-        statusEl.textContent = "Saving..."
-        statusEl.style.color = "gray"
-
-        if (saveTimeout != 0) window.clearTimeout(saveTimeout)
-        saveTimeout = window.setTimeout({
+        autoSaveIndicator.schedule {
             var updated = skills.copy(characterId = character.id)
             skillRows.forEach { r ->
                 val mod = statModValue(r.modSelect.value)
@@ -463,14 +425,9 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
                 updated = updated.withEntry(r.name, entry)
             }
             Repos.skills.save(updated)
-            statusEl.textContent = "\u2713 Saved"
-            statusEl.style.color = "green"
-            null
-        }, 500)
+        }
     }
 
     container.addEventListener("input", { autoSave() })
     container.addEventListener("change", { autoSave() })
 }
-
-

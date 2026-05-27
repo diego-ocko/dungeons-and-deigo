@@ -7,6 +7,19 @@
 
 // DnD Sheet
 @use 'dnd/sheet/dndSheet';
+
+// DnD Tabs
 @use 'dnd/tabs/tabs';
+@use 'dnd/tabs/playing/dndplayingtab';
+@use 'dnd/tabs/main/dndmaintab';
+@use 'dnd/tabs/stats/dndstatstab';
+@use 'dnd/tabs/features/dndfeaturestab';
+@use 'dnd/tabs/magic/dndmagictab';
+@use 'dnd/tabs/inventory/dndinventorytab';
+@use 'dnd/tabs/background/dndbackgroundtab';
+@use 'dnd/tabs/notes/dndnotestab';
+
+// DnD Components and Modals
 @use 'dnd/modals/modals';
-@use 'dnd/components/dndplayingtab';
+@use 'dnd/components/dndSearch/dndsearch';
+@use 'dnd/components/autoSaveIndicator/autosave';

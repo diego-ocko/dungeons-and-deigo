@@ -1,0 +1,50 @@
+.main-tab-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 600px;
+
+  label {
+    font-weight: bold;
+  }
+
+  input, select {
+    padding: 4px;
+    width: 100%;
+  }
+}
+
+.main-tab-class-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  label {
+    font-weight: bold;
+  }
+
+  input, select {
+    padding: 4px;
+    width: 100%;
+  }
+}
+
+.main-tab-custom-input {
+  display: none;
+  margin-top: 4px;
+  padding: 4px;
+  width: 100%;
+}
+
+.main-tab-custom-btn {
+  display: none;
+  margin-top: 4px;
+}
+
+.main-tab-level-error {
+  color: red;
+  display: none;
+}
+
+

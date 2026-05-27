@@ -1,0 +1,175 @@
+.bg-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.bg-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  flex: 1;
+
+  h4 {
+    margin: 0 0 12px 0;
+  }
+}
+
+.bg-content {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.bg-img-container {
+  text-align: center;
+}
+
+.bg-img {
+  max-width: 300px;
+  border-radius: 8px;
+}
+
+.bg-img-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.bg-change-img-btn {
+  font-size: 11px;
+  margin-top: 8px;
+  display: block;
+}
+
+.bg-name-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.bg-name-input {
+  font-size: 24px;
+  font-weight: bold;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  outline: none;
+  width: 100%;
+}
+
+.bg-details-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+
+  label {
+    font-weight: bold;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  input {
+    width: 100%;
+    padding: 4px;
+  }
+}
+
+.bg-color-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.bg-color-picker {
+  width: 30px;
+  height: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+.bg-color-label {
+  font-size: 14px;
+}
+
+.bg-desc-label {
+  font-weight: bold;
+  font-size: 12px;
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.bg-personality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  label {
+    font-weight: bold;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 4px;
+  }
+}
+
+.bg-faction-section {
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+  margin-bottom: 12px;
+}
+
+.bg-faction-check-label {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.bg-faction-cb {
+  margin-right: 6px;
+}
+
+.bg-faction-details {
+  margin-top: 10px;
+
+  label {
+    font-weight: bold;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  input {
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 10px;
+  }
+}
+
+.bg-faction-symbol-img {
+  max-width: 100px;
+  border-radius: 4px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.bg-char-backstory-label {
+  font-weight: bold;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.bg-status {
+  font-size: 11px;
+  display: block;
+  margin-top: 6px;
+}

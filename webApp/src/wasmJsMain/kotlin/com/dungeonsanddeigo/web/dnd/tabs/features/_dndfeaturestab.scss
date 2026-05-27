@@ -1,0 +1,89 @@
+.features-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.features-card-name {
+  margin: 0 0 6px 0;
+}
+
+.features-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.features-source-badge {
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 8px;
+
+  &.source-class { background-color: #4a90d9; }
+  &.source-origin { background-color: #d9a34a; }
+  &.source-race { background-color: #4ad97a; }
+  &.source-custom { background-color: #999; }
+}
+
+.features-source-detail {
+  font-size: 13px;
+  color: #666;
+}
+
+.features-type-badge {
+  font-size: 12px;
+  font-style: italic;
+}
+
+.features-desc {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.features-recharge-info {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 8px 0;
+}
+
+.features-tags {
+  margin-bottom: 8px;
+}
+
+.features-tag {
+  background-color: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+.features-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.features-delete-btn {
+  color: red;
+}
+
+.features-add-btn {
+  margin-bottom: 16px;
+}
+
+.features-columns {
+  display: flex;
+  gap: 16px;
+}
+
+.features-col {
+  flex: 1;
+
+  h3 {
+    margin-top: 0;
+  }
+}
