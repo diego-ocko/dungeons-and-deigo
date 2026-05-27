@@ -8,14 +8,9 @@ import org.w3c.dom.*
 
 fun showRestoreSlotModal(character: Character, className: String, slots: List<Int>, onDone: () -> Unit) {
     val overlay = document.createElement("div") as HTMLDivElement
-    overlay.style.position = "fixed"; overlay.style.top = "0"; overlay.style.left = "0"
-    overlay.style.width = "100%"; overlay.style.height = "100%"
-    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"; overlay.style.display = "flex"
-    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
-    overlay.style.setProperty("z-index", "1000")
+    overlay.className = "modal-overlay"
     val modal = document.createElement("div") as HTMLDivElement
-    modal.style.backgroundColor = "white"; modal.style.borderRadius = "8px"; modal.style.padding = "24px"
-    modal.style.maxWidth = "300px"; modal.style.width = "90%"
+    modal.className = "modal modal--sm"
     val title = document.createElement("h3") as HTMLHeadingElement
     title.textContent = t("magic.restoreSlot"); modal.appendChild(title)
     slots.forEachIndexed { idx, _ ->
@@ -25,7 +20,7 @@ fun showRestoreSlotModal(character: Character, className: String, slots: List<In
         if (used > 0) {
             val btn = document.createElement("button") as HTMLButtonElement
             btn.textContent = "${circleNum}\u00BA Circle ($used used)"
-            btn.style.display = "block"; btn.style.width = "100%"; btn.style.marginBottom = "6px"
+            btn.className = "modal__slot-btn"
             btn.addEventListener("click", {
                 localStorage.setItem(slotKey, (used - 1).toString())
                 document.body?.removeChild(overlay); onDone()
@@ -34,7 +29,7 @@ fun showRestoreSlotModal(character: Character, className: String, slots: List<In
         }
     }
     val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = t("btn.cancel"); cancelBtn.style.width = "100%"; cancelBtn.style.marginTop = "8px"
+    cancelBtn.textContent = t("btn.cancel"); cancelBtn.className = "modal__full-btn"
     cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
     modal.appendChild(cancelBtn)
     overlay.appendChild(modal); document.body?.appendChild(overlay)

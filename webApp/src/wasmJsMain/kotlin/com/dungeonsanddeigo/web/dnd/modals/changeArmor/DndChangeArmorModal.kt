@@ -10,19 +10,10 @@ import org.w3c.dom.*
 
 fun showChangeArmorModal(character: Character, onDone: () -> Unit) {
     val overlay = document.createElement("div") as HTMLDivElement
-    overlay.style.position = "fixed"
-    overlay.style.top = "0"; overlay.style.left = "0"
-    overlay.style.width = "100%"; overlay.style.height = "100%"
-    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
-    overlay.style.display = "flex"
-    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
-    overlay.style.setProperty("z-index", "1000")
+    overlay.className = "modal-overlay"
 
     val modal = document.createElement("div") as HTMLDivElement
-    modal.style.backgroundColor = "white"
-    modal.style.borderRadius = "8px"; modal.style.padding = "24px"
-    modal.style.maxWidth = "400px"; modal.style.width = "90%"
-    modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
+    modal.className = "modal"
 
     val title = document.createElement("h3") as HTMLHeadingElement
     title.textContent = t("playing.changeArmor")
@@ -35,11 +26,10 @@ fun showChangeArmorModal(character: Character, onDone: () -> Unit) {
 
     fun buildSelect(label: String, items: List<DndArmor>): HTMLSelectElement {
         val lbl = document.createElement("label") as HTMLLabelElement
-        lbl.textContent = label; lbl.style.fontWeight = "bold"; lbl.style.display = "block"
-        lbl.style.marginBottom = "4px"; lbl.style.marginTop = "10px"
+        lbl.className = "modal__section-label"
         modal.appendChild(lbl)
         val sel = document.createElement("select") as HTMLSelectElement
-        sel.style.width = "100%"; sel.style.padding = "4px"
+        
         val noneOpt = document.createElement("option") as HTMLOptionElement
         noneOpt.value = "-1"; noneOpt.textContent = "-- None --"
         sel.appendChild(noneOpt)
@@ -59,8 +49,8 @@ fun showChangeArmorModal(character: Character, onDone: () -> Unit) {
     val clothesSelect = buildSelect("Clothes", clothes)
 
     val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.style.display = "flex"; btnRow.style.setProperty("gap", "8px")
-    btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
+    btnRow.className = "modal__buttons"
+    
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
     cancelBtn.textContent = t("btn.cancel")

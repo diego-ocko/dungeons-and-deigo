@@ -11,18 +11,10 @@ fun showChangeWeaponModal(
     onSave: () -> Unit
 ) {
     val overlay = document.createElement("div") as HTMLDivElement
-    overlay.style.position = "fixed"
-    overlay.style.top = "0"; overlay.style.left = "0"
-    overlay.style.width = "100%"; overlay.style.height = "100%"
-    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
-    overlay.style.display = "flex"
-    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
-    overlay.style.setProperty("z-index", "1000")
+    overlay.className = "modal-overlay"
 
     val modal = document.createElement("div") as HTMLDivElement
-    modal.style.backgroundColor = "white"
-    modal.style.borderRadius = "8px"; modal.style.padding = "24px"
-    modal.style.maxWidth = "400px"; modal.style.width = "90%"
+    modal.className = "modal"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
     titleEl.textContent = t("playing.changeWeapon")
@@ -32,7 +24,7 @@ fun showChangeWeaponModal(
     val currentEquipped = weapons.firstOrNull { it.isEquipped }
 
     val select = document.createElement("select") as HTMLSelectElement
-    select.style.width = "100%"; select.style.padding = "8px"; select.style.fontSize = "14px"
+    select.className = "modal__select"
 
     val noneOpt = document.createElement("option") as HTMLOptionElement
     noneOpt.value = ""; noneOpt.textContent = t("inv.none")
@@ -48,8 +40,8 @@ fun showChangeWeaponModal(
     modal.appendChild(select)
 
     val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.style.display = "flex"; btnRow.style.setProperty("gap", "8px")
-    btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
+    btnRow.className = "modal__buttons"
+    
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
     cancelBtn.textContent = t("btn.cancel")

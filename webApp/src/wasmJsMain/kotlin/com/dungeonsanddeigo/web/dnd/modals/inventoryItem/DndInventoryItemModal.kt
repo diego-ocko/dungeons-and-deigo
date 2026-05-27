@@ -15,79 +15,59 @@ fun showInventoryItemModal(
     onSave: () -> Unit
 ) {
     val overlay = document.createElement("div") as HTMLDivElement
-    overlay.style.position = "fixed"
-    overlay.style.top = "0"; overlay.style.left = "0"
-    overlay.style.width = "100%"; overlay.style.height = "100%"
-    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
-    overlay.style.display = "flex"
-    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
-    overlay.style.setProperty("z-index", "1000")
+    overlay.className = "modal-overlay"
 
     val modal = document.createElement("div") as HTMLDivElement
-    modal.style.backgroundColor = "white"
-    modal.style.borderRadius = "8px"; modal.style.padding = "24px"
-    modal.style.maxWidth = "450px"; modal.style.width = "90%"
-    modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
+    modal.className = "modal modal--lg"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
     titleEl.textContent = if (existing != null) t("inv.editItem") else t("inv.addItem")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
-    form.style.setProperty("display", "grid")
-    form.style.setProperty("grid-template-columns", "1fr 1fr")
-    form.style.setProperty("gap", "10px")
+    form.className = "modal__form"
 
     fun lbl(text: String) {
         val l = document.createElement("label") as HTMLLabelElement
-        l.textContent = text; l.style.fontWeight = "bold"
         form.appendChild(l)
     }
 
     // Name (full width)
     val nameLbl = document.createElement("label") as HTMLLabelElement
-    nameLbl.textContent = t("label.name"); nameLbl.style.fontWeight = "bold"
-    nameLbl.style.setProperty("grid-column", "1 / -1")
+    nameLbl.className = "modal__full-width"
     form.appendChild(nameLbl)
     val nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = existing?.name ?: ""
-    nameInput.style.setProperty("grid-column", "1 / -1")
+    nameInput.className = "modal__full-width"
     form.appendChild(nameInput)
 
     // Description
     val descLbl = document.createElement("label") as HTMLLabelElement
-    descLbl.textContent = t("label.description"); descLbl.style.fontWeight = "bold"
-    descLbl.style.setProperty("grid-column", "1 / -1")
+    descLbl.className = "modal__full-width"
     form.appendChild(descLbl)
     val descInput = document.createElement("textarea") as HTMLTextAreaElement
     descInput.value = existing?.description ?: ""
-    descInput.rows = 3; descInput.style.width = "100%"
-    descInput.style.setProperty("grid-column", "1 / -1")
+    descInput.className = "modal__full-width"
     form.appendChild(descInput)
 
     // Weight
     lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
-    weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
-    weightRow.style.setProperty("gap", "4px")
+    weightRow.className = "modal__checkbox-row"
     val weightInput = document.createElement("input") as HTMLInputElement
     weightInput.type = "number"; weightInput.step = "0.1"; weightInput.min = "0"
     weightInput.value = (existing?.weight ?: 0.0).toString()
-    weightInput.style.width = "100%"
     weightRow.appendChild(weightInput)
     val kgLabel = document.createElement("span") as HTMLSpanElement
-    kgLabel.textContent = "Kg"; kgLabel.style.fontSize = "12px"; kgLabel.style.color = "#666"
     weightRow.appendChild(kgLabel)
     form.appendChild(weightRow)
 
     // Price
     lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
-    priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
     priceInput.type = "number"; priceInput.min = "0"
     priceInput.value = (existing?.price ?: 0).toString()
-    priceInput.style.width = "70%"
     priceRow.appendChild(priceInput)
     val currSelect = document.createElement("select") as HTMLSelectElement
     listOf("pc", "ps", "pe", "pg", "pp").forEach { c ->
@@ -103,28 +83,19 @@ fun showInventoryItemModal(
     if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
 
     val tagsContainer = document.createElement("div") as HTMLDivElement
-    tagsContainer.style.setProperty("grid-column", "1 / -1")
+    tagsContainer.className = "modal__full-width"
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
-    tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
     val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-    tagBadgesDiv.style.marginBottom = "8px"
-    tagBadgesDiv.style.display = "flex"
-    tagBadgesDiv.style.setProperty("flex-wrap", "wrap")
-    tagBadgesDiv.style.setProperty("gap", "4px")
+    tagBadgesDiv.className = "modal__tags"
 
     fun refreshTagBadges() {
         tagBadgesDiv.innerHTML = ""
         selectedTags.forEach { tag ->
             val badge = document.createElement("span") as HTMLSpanElement
             badge.textContent = "$tag \u00D7"
-            badge.style.backgroundColor = "#e0e0e0"
-            badge.style.padding = "2px 8px"
-            badge.style.borderRadius = "4px"
-            badge.style.fontSize = "13px"
-            badge.style.cursor = "pointer"
+            badge.className = "modal__tag"
             badge.addEventListener("click", { selectedTags.remove(tag); refreshTagBadges() })
             tagBadgesDiv.appendChild(badge)
         }
@@ -133,11 +104,8 @@ fun showInventoryItemModal(
     tagsContainer.appendChild(tagBadgesDiv)
 
     val tagAddRow = document.createElement("div") as HTMLDivElement
-    tagAddRow.style.display = "flex"
-    tagAddRow.style.setProperty("gap", "8px")
-    tagAddRow.style.alignItems = "center"
+    tagAddRow.className = "modal__tag-add-row"
     val tagInput = document.createElement("input") as HTMLInputElement
-    tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
     tagAddBtn.textContent = t("btn.add")
@@ -154,8 +122,8 @@ fun showInventoryItemModal(
 
     // Buttons
     val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.style.display = "flex"; btnRow.style.setProperty("gap", "8px")
-    btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
+    btnRow.className = "modal__buttons"
+    
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
     cancelBtn.textContent = t("btn.cancel")

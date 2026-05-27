@@ -20,7 +20,23 @@
   max-height: 80vh;
   overflow-y: auto;
 
+  &--sm {
+    max-width: 300px;
+  }
+
+  &--md {
+    max-width: 350px;
+  }
+
+  &--lg {
+    max-width: 450px;
+  }
+
   &--wide {
+    max-width: 550px;
+  }
+
+  &--xl {
     max-width: 700px;
   }
 
@@ -32,6 +48,16 @@
   &__form {
     display: grid;
     gap: 10px;
+
+    label {
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      padding: 4px;
+      width: 100%;
+    }
   }
 
   &__buttons {
@@ -39,5 +65,83 @@
     gap: 8px;
     margin-top: 16px;
     justify-content: flex-end;
+  }
+
+  &__select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  &__slot-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 6px;
+  }
+
+  &__full-btn {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  &__desc {
+    font-size: 14px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  &__row-info {
+    font-size: 13px;
+  }
+
+  &__empty {
+    color: #999;
+  }
+
+  &__section-label {
+    margin-bottom: 4px;
+    margin-top: 10px;
+  }
+
+  &__custom-input {
+    display: none;
+    margin-bottom: 8px;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  &__tag {
+    background-color: #e0e0e0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  &__tag-add-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  &__full-width {
+    grid-column: 1 / -1;
   }
 }

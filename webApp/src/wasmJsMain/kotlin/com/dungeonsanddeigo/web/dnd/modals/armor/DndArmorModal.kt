@@ -16,32 +16,20 @@ fun showArmorModal(
     onSave: () -> Unit
 ) {
     val overlay = document.createElement("div") as HTMLDivElement
-    overlay.style.position = "fixed"
-    overlay.style.top = "0"; overlay.style.left = "0"
-    overlay.style.width = "100%"; overlay.style.height = "100%"
-    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
-    overlay.style.display = "flex"
-    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
-    overlay.style.setProperty("z-index", "1000")
+    overlay.className = "modal-overlay"
 
     val modal = document.createElement("div") as HTMLDivElement
-    modal.style.backgroundColor = "white"
-    modal.style.borderRadius = "8px"; modal.style.padding = "24px"
-    modal.style.maxWidth = "450px"; modal.style.width = "90%"
-    modal.style.maxHeight = "80vh"; modal.style.overflowY = "auto"
+    modal.className = "modal modal--lg"
 
     val titleEl = document.createElement("h3") as HTMLHeadingElement
     titleEl.textContent = if (existing != null) t("inv.editArmor") else t("inv.addArmor")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
-    form.style.setProperty("display", "grid")
-    form.style.setProperty("grid-template-columns", "1fr 1fr")
-    form.style.setProperty("gap", "10px")
+    form.className = "modal__form"
 
     fun lbl(text: String) {
         val l = document.createElement("label") as HTMLLabelElement
-        l.textContent = text; l.style.fontWeight = "bold"
         form.appendChild(l)
     }
 
@@ -63,7 +51,6 @@ fun showArmorModal(
 
     // Base AC
     val acLbl = document.createElement("label") as HTMLLabelElement
-    acLbl.textContent = t("inv.baseAC"); acLbl.style.fontWeight = "bold"
     form.appendChild(acLbl)
     val acInput = document.createElement("input") as HTMLInputElement
     acInput.type = "number"; acInput.value = (existing?.baseAC ?: 10).toString()
@@ -72,7 +59,6 @@ fun showArmorModal(
     // AC Modifier
     // AC Modifier
     val acModLbl = document.createElement("label") as HTMLLabelElement
-    acModLbl.textContent = t("inv.acModifier"); acModLbl.style.fontWeight = "bold"
     form.appendChild(acModLbl)
     val acModSelect = document.createElement("select") as HTMLSelectElement
     DndArmor.acModifiers.forEach { m ->
@@ -84,7 +70,6 @@ fun showArmorModal(
 
     // Minimum Strength
     val minStrLbl = document.createElement("label") as HTMLLabelElement
-    minStrLbl.textContent = t("inv.minStrength"); minStrLbl.style.fontWeight = "bold"
     form.appendChild(minStrLbl)
     val minStrInput = document.createElement("input") as HTMLInputElement
     minStrInput.type = "number"; minStrInput.min = "0"; minStrInput.max = "20"
@@ -98,7 +83,6 @@ fun showArmorModal(
     val sneakLbl = document.createElement("label") as HTMLLabelElement
     val sneakCb = document.createElement("input") as HTMLInputElement
     sneakCb.type = "checkbox"; sneakCb.checked = existing?.hasSneakDisadvantage ?: false
-    sneakCb.style.marginRight = "6px"
     sneakLbl.appendChild(sneakCb); sneakLbl.append(t("inv.sneakDisadv"))
     form.appendChild(sneakLbl)
 
@@ -123,26 +107,21 @@ fun showArmorModal(
     // Weight
     lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
-    weightRow.style.display = "flex"; weightRow.style.alignItems = "center"
-    weightRow.style.setProperty("gap", "4px")
+    weightRow.className = "modal__checkbox-row"
     val weightInput = document.createElement("input") as HTMLInputElement
     weightInput.type = "number"; weightInput.step = "0.1"; weightInput.min = "0"
     weightInput.value = (existing?.weight ?: 0.0).toString()
-    weightInput.style.width = "100%"
     weightRow.appendChild(weightInput)
     val kgLabel = document.createElement("span") as HTMLSpanElement
-    kgLabel.textContent = "Kg"; kgLabel.style.fontSize = "12px"; kgLabel.style.color = "#666"
     weightRow.appendChild(kgLabel)
     form.appendChild(weightRow)
 
     // Price
     lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
-    priceRow.style.display = "flex"; priceRow.style.setProperty("gap", "4px")
     val priceInput = document.createElement("input") as HTMLInputElement
     priceInput.type = "number"; priceInput.min = "0"
     priceInput.value = (existing?.price ?: 0).toString()
-    priceInput.style.width = "70%"
     priceRow.appendChild(priceInput)
     val currSelect = document.createElement("select") as HTMLSelectElement
     DndArmor.currencies.forEach { c ->
@@ -155,13 +134,11 @@ fun showArmorModal(
 
     // Additional Features
     val addFeatLbl = document.createElement("label") as HTMLLabelElement
-    addFeatLbl.textContent = t("features.additionalFeatures"); addFeatLbl.style.fontWeight = "bold"
-    addFeatLbl.style.setProperty("grid-column", "1 / -1")
+    addFeatLbl.className = "modal__full-width"
     form.appendChild(addFeatLbl)
     val addFeatInput = document.createElement("textarea") as HTMLTextAreaElement
     addFeatInput.value = existing?.additionalFeatures ?: ""
-    addFeatInput.rows = 3; addFeatInput.style.width = "100%"
-    addFeatInput.style.setProperty("grid-column", "1 / -1")
+    addFeatInput.className = "modal__full-width"
     form.appendChild(addFeatInput)
 
     // Tags
@@ -169,28 +146,19 @@ fun showArmorModal(
     if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
 
     val tagsContainer = document.createElement("div") as HTMLDivElement
-    tagsContainer.style.setProperty("grid-column", "1 / -1")
+    tagsContainer.className = "modal__full-width"
     val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = t("label.tags"); tagsLbl.style.fontWeight = "bold"
-    tagsLbl.style.display = "block"; tagsLbl.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLbl)
 
     val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-    tagBadgesDiv.style.marginBottom = "8px"
-    tagBadgesDiv.style.display = "flex"
-    tagBadgesDiv.style.setProperty("flex-wrap", "wrap")
-    tagBadgesDiv.style.setProperty("gap", "4px")
+    tagBadgesDiv.className = "modal__tags"
 
     fun refreshArmorTagBadges() {
         tagBadgesDiv.innerHTML = ""
         selectedTags.forEach { tag ->
             val badge = document.createElement("span") as HTMLSpanElement
             badge.textContent = "$tag \u00D7"
-            badge.style.backgroundColor = "#e0e0e0"
-            badge.style.padding = "2px 8px"
-            badge.style.borderRadius = "4px"
-            badge.style.fontSize = "13px"
-            badge.style.cursor = "pointer"
+            badge.className = "modal__tag"
             badge.addEventListener("click", { selectedTags.remove(tag); refreshArmorTagBadges() })
             tagBadgesDiv.appendChild(badge)
         }
@@ -199,11 +167,8 @@ fun showArmorModal(
     tagsContainer.appendChild(tagBadgesDiv)
 
     val tagAddRow = document.createElement("div") as HTMLDivElement
-    tagAddRow.style.display = "flex"
-    tagAddRow.style.setProperty("gap", "8px")
-    tagAddRow.style.alignItems = "center"
+    tagAddRow.className = "modal__tag-add-row"
     val tagInput = document.createElement("input") as HTMLInputElement
-    tagInput.placeholder = "Add tag..."; tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
     tagAddBtn.textContent = t("btn.add")
@@ -218,13 +183,11 @@ fun showArmorModal(
 
     // Equipped (last field)
     val eqContainer = document.createElement("div") as HTMLDivElement
-    eqContainer.style.setProperty("grid-column", "1 / -1")
+    eqContainer.className = "modal__full-width"
     val eqLbl = document.createElement("label") as HTMLLabelElement
     val eqCb = document.createElement("input") as HTMLInputElement
     eqCb.type = "checkbox"; eqCb.checked = existing?.isEquipped ?: false
-    eqCb.style.marginRight = "6px"
     eqLbl.appendChild(eqCb); eqLbl.append(t("features.equipped"))
-    eqLbl.style.fontWeight = "bold"
     eqContainer.appendChild(eqLbl)
     form.appendChild(eqContainer)
 
@@ -232,8 +195,8 @@ fun showArmorModal(
 
     // Buttons
     val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.style.display = "flex"; btnRow.style.setProperty("gap", "8px")
-    btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
+    btnRow.className = "modal__buttons"
+    
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
     cancelBtn.textContent = t("btn.cancel")

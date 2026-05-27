@@ -18,39 +18,21 @@ fun showFeatureModal(
 ) {
     // Overlay
     val overlay = document.createElement("div") as HTMLDivElement
-    overlay.style.position = "fixed"
-    overlay.style.top = "0"
-    overlay.style.left = "0"
-    overlay.style.width = "100%"
-    overlay.style.height = "100%"
-    overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
-    overlay.style.display = "flex"
-    overlay.style.justifyContent = "center"
-    overlay.style.alignItems = "center"
-    overlay.style.setProperty("z-index", "1000")
+    overlay.className = "modal-overlay"
 
     val modal = document.createElement("div") as HTMLDivElement
-    modal.style.backgroundColor = "white"
-    modal.style.borderRadius = "8px"
-    modal.style.padding = "24px"
-    modal.style.maxWidth = "500px"
-    modal.style.width = "90%"
-    modal.style.maxHeight = "80vh"
-    modal.style.overflowY = "auto"
+    modal.className = "modal"
 
     val titleEl = document.createElement("h2") as HTMLHeadingElement
     titleEl.textContent = if (existing != null) t("features.editFeature") else t("features.addNew")
     modal.appendChild(titleEl)
 
     val form = document.createElement("div") as HTMLDivElement
-    form.style.setProperty("display", "grid")
-    form.style.setProperty("grid-template-columns", "1fr 1fr")
-    form.style.setProperty("gap", "10px")
+    form.className = "modal__form"
 
     fun addLabel(text: String) {
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = text
-        lbl.style.fontWeight = "bold"
         form.appendChild(lbl)
     }
 
@@ -82,7 +64,7 @@ fun showFeatureModal(
 
     // Source Extended container
     val sourceExtDiv = document.createElement("div") as HTMLDivElement
-    sourceExtDiv.style.setProperty("grid-column", "1 / -1")
+    sourceExtDiv.className = "modal__full-width"
 
     // Source extended fields (will be rebuilt on source change)
     var sourceClassSelect: HTMLSelectElement? = null
@@ -95,14 +77,11 @@ fun showFeatureModal(
     fun buildSourceExtended() {
         sourceExtDiv.innerHTML = ""
         val inner = document.createElement("div") as HTMLDivElement
-        inner.style.setProperty("display", "grid")
-        inner.style.setProperty("grid-template-columns", "1fr 1fr")
-        inner.style.setProperty("gap", "10px")
 
         when (sourceSelect.value) {
             "Class" -> {
                 val lbl1 = document.createElement("label") as HTMLLabelElement
-                lbl1.textContent = t("main.class"); lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
+                lbl1.textContent = t("main.class"); inner.appendChild(lbl1)
 
                 val mainClass = mainInfo?.mainClass
                 val secClass = mainInfo?.secondaryClass
@@ -139,7 +118,7 @@ fun showFeatureModal(
                 }
 
                 val lbl2 = document.createElement("label") as HTMLLabelElement
-                lbl2.textContent = t("main.level"); lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
+                lbl2.textContent = t("main.level"); inner.appendChild(lbl2)
                 val lvl = document.createElement("input") as HTMLInputElement
                 lvl.type = "number"; lvl.min = "1"; lvl.max = "20"
                 lvl.value = existing?.sourceClassLevel?.toString() ?: "1"
@@ -148,7 +127,6 @@ fun showFeatureModal(
             }
             "Origin" -> {
                 val lbl = document.createElement("label") as HTMLLabelElement
-                lbl.textContent = t("main.origin"); lbl.style.fontWeight = "bold"; inner.appendChild(lbl)
                 val valSpan = document.createElement("span") as HTMLSpanElement
                 val originVal = existing?.sourceOrigin ?: (mainInfo?.origin ?: "")
                 valSpan.textContent = originVal
@@ -161,7 +139,7 @@ fun showFeatureModal(
             }
             "Race" -> {
                 val lbl1 = document.createElement("label") as HTMLLabelElement
-                lbl1.textContent = t("main.race"); lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
+                lbl1.textContent = t("main.race"); inner.appendChild(lbl1)
                 val raceVal = existing?.sourceRace ?: (mainInfo?.race ?: "")
                 val raceSpan = document.createElement("span") as HTMLSpanElement
                 raceSpan.textContent = tDnd("race", raceVal)
@@ -172,7 +150,7 @@ fun showFeatureModal(
                 sourceRaceInput = inp1
 
                 val lbl2 = document.createElement("label") as HTMLLabelElement
-                lbl2.textContent = t("main.subrace"); lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
+                lbl2.textContent = t("main.subrace"); inner.appendChild(lbl2)
                 val subRaceVal = existing?.sourceSubRace ?: (mainInfo?.subRace ?: "")
                 val subRaceSpan = document.createElement("span") as HTMLSpanElement
                 subRaceSpan.textContent = tDnd("subrace", subRaceVal)
@@ -184,7 +162,6 @@ fun showFeatureModal(
             }
             "Custom" -> {
                 val lbl = document.createElement("label") as HTMLLabelElement
-                lbl.textContent = t("features.source"); lbl.style.fontWeight = "bold"; inner.appendChild(lbl)
                 val inp = document.createElement("input") as HTMLInputElement
                 inp.value = existing?.sourceCustom ?: ""
                 inner.appendChild(inp)
@@ -199,7 +176,7 @@ fun showFeatureModal(
 
     // Rechargable fields container
     val rechargeDiv = document.createElement("div") as HTMLDivElement
-    rechargeDiv.style.setProperty("grid-column", "1 / -1")
+    rechargeDiv.className = "modal__full-width"
 
     var maxQtyInput: HTMLInputElement? = null
     var reloadSelect: HTMLSelectElement? = null
@@ -208,19 +185,16 @@ fun showFeatureModal(
         rechargeDiv.innerHTML = ""
         if (typeSelect.value == "Rechargable Feature") {
             val inner = document.createElement("div") as HTMLDivElement
-            inner.style.setProperty("display", "grid")
-            inner.style.setProperty("grid-template-columns", "1fr 1fr")
-            inner.style.setProperty("gap", "10px")
 
             val lbl1 = document.createElement("label") as HTMLLabelElement
-            lbl1.textContent = t("features.maxQuantity"); lbl1.style.fontWeight = "bold"; inner.appendChild(lbl1)
+            lbl1.textContent = t("features.maxQuantity"); inner.appendChild(lbl1)
             val qty = document.createElement("input") as HTMLInputElement
             qty.type = "number"; qty.value = existing?.maxQuantity?.toString() ?: "1"
             inner.appendChild(qty)
             maxQtyInput = qty
 
             val lbl2 = document.createElement("label") as HTMLLabelElement
-            lbl2.textContent = t("features.reloadRule"); lbl2.style.fontWeight = "bold"; inner.appendChild(lbl2)
+            lbl2.textContent = t("features.reloadRule"); inner.appendChild(lbl2)
             val sel = document.createElement("select") as HTMLSelectElement
             DndFeature.reloadRules.forEach { r ->
                 val o = document.createElement("option") as HTMLOptionElement
@@ -239,7 +213,7 @@ fun showFeatureModal(
 
     // Dynamic content area (changes based on type)
     val dynamicDiv = document.createElement("div") as HTMLDivElement
-    dynamicDiv.style.setProperty("grid-column", "1 / -1")
+    dynamicDiv.className = "modal__full-width"
 
     val defaultIdioms = listOf("Common", "Dwarvish", "Elvish", "Giant", "Gnomish", "Goblin", "Halfling", "Orc", "Draconic")
     val defaultTools = listOf("Alchemist's Supplies", "Brewer's Supplies", "Calligrapher's Supplies", "Carpenter's Tools", "Cartographer's Tools", "Cobbler's Tools", "Cook's Utensils", "Glassblower's Tools", "Jeweler's Tools", "Leatherworker's Tools", "Mason's Tools", "Painter's Supplies", "Potter's Tools", "Smith's Tools", "Tinker's Tools", "Weaver's Tools", "Woodcarver's Tools", "Disguise Kit", "Forgery Kit", "Herbalism Kit", "Navigator's Tools", "Poisoner's Kit", "Thieves' Tools")
@@ -282,16 +256,10 @@ fun showFeatureModal(
 
             val label = document.createElement("label") as HTMLLabelElement
             label.textContent = itemLabel
-            label.style.fontWeight = "bold"
-            label.style.display = "block"
-            label.style.marginBottom = "6px"
             dynamicDiv.appendChild(label)
 
             val selectedDiv = document.createElement("div") as HTMLDivElement
-            selectedDiv.style.marginBottom = "8px"
-            selectedDiv.style.display = "flex"
-            selectedDiv.style.setProperty("flex-wrap", "wrap")
-            selectedDiv.style.setProperty("gap", "4px")
+            selectedDiv.className = "modal__tags"
 
             val translateBadge: (String) -> String = if (isIdiomType) ::tIdiom else ::tTool
             fun refreshTags() {
@@ -299,11 +267,7 @@ fun showFeatureModal(
                 selectedItems.forEach { item ->
                     val badge = document.createElement("span") as HTMLSpanElement
                     badge.textContent = "${translateBadge(item)} \u00D7"
-                    badge.style.backgroundColor = "#e0e0e0"
-                    badge.style.padding = "2px 8px"
-                    badge.style.borderRadius = "4px"
-                    badge.style.fontSize = "13px"
-                    badge.style.cursor = "pointer"
+                    badge.className = "modal__tag"
                     badge.addEventListener("click", {
                         selectedItems.remove(item)
                         refreshTags()
@@ -315,9 +279,7 @@ fun showFeatureModal(
             dynamicDiv.appendChild(selectedDiv)
 
             val addRow = document.createElement("div") as HTMLDivElement
-            addRow.style.display = "flex"
-            addRow.style.setProperty("gap", "8px")
-            addRow.style.alignItems = "center"
+            addRow.className = "modal__tag-add-row"
 
             val itemSelect = document.createElement("select") as HTMLSelectElement
             val emptyOpt = document.createElement("option") as HTMLOptionElement
@@ -337,7 +299,6 @@ fun showFeatureModal(
             val customInput = document.createElement("input") as HTMLInputElement
             customInput.placeholder = placeholder
             customInput.style.display = "none"
-            customInput.style.padding = "4px"
             addRow.appendChild(customInput)
 
             val addBtn = document.createElement("button") as HTMLButtonElement
@@ -367,15 +328,10 @@ fun showFeatureModal(
             // Armor checkboxes
             val armorLabel = document.createElement("label") as HTMLLabelElement
             armorLabel.textContent = t("features.armor")
-            armorLabel.style.fontWeight = "bold"
-            armorLabel.style.display = "block"
-            armorLabel.style.marginBottom = "6px"
             dynamicDiv.appendChild(armorLabel)
 
             val armorRow = document.createElement("div") as HTMLDivElement
-            armorRow.style.display = "flex"
-            armorRow.style.setProperty("gap", "16px")
-            armorRow.style.marginBottom = "12px"
+            armorRow.className = "modal__checkbox-row"
 
             val armorCbs = mutableMapOf<String, HTMLInputElement>()
             listOf("Light", "Medium", "Heavy", "Shields").forEach { armor ->
@@ -384,7 +340,6 @@ fun showFeatureModal(
                 val cb = document.createElement("input") as HTMLInputElement
                 cb.type = "checkbox"
                 cb.checked = armorChecks[armor] == true
-                cb.style.marginRight = "4px"
                 lbl.appendChild(cb)
                 lbl.append(armorDisplay)
                 armorRow.appendChild(lbl)
@@ -395,16 +350,10 @@ fun showFeatureModal(
             // Weapon category checkboxes
             val weaponCatLabel = document.createElement("label") as HTMLLabelElement
             weaponCatLabel.textContent = t("features.weaponCategories")
-            weaponCatLabel.style.fontWeight = "bold"
-            weaponCatLabel.style.display = "block"
-            weaponCatLabel.style.marginBottom = "6px"
             dynamicDiv.appendChild(weaponCatLabel)
 
             val weaponCatRow = document.createElement("div") as HTMLDivElement
-            weaponCatRow.style.display = "flex"
-            weaponCatRow.style.setProperty("gap", "16px")
-            weaponCatRow.style.alignItems = "center"
-            weaponCatRow.style.marginBottom = "8px"
+            weaponCatRow.className = "modal__checkbox-row"
 
             val weaponCatCbs = mutableMapOf<String, HTMLInputElement>()
             listOf("Simple", "Martial").forEach { cat ->
@@ -413,7 +362,6 @@ fun showFeatureModal(
                 val cb = document.createElement("input") as HTMLInputElement
                 cb.type = "checkbox"
                 cb.checked = weaponCatChecks[cat] == true
-                cb.style.marginRight = "4px"
                 lbl.appendChild(cb)
                 lbl.append(catDisplay)
                 weaponCatRow.appendChild(lbl)
@@ -425,7 +373,6 @@ fun showFeatureModal(
             val othersCb = document.createElement("input") as HTMLInputElement
             othersCb.type = "checkbox"
             othersCb.checked = weaponCatOther.isNotEmpty()
-            othersCb.style.marginRight = "4px"
             othersLbl.appendChild(othersCb)
             othersLbl.append(t("features.weapon.others"))
             weaponCatRow.appendChild(othersLbl)
@@ -433,7 +380,6 @@ fun showFeatureModal(
             val othersInput = document.createElement("input") as HTMLInputElement
             othersInput.value = weaponCatOther
             othersInput.placeholder = "Specify..."
-            othersInput.style.padding = "4px"
             othersInput.style.display = if (weaponCatOther.isNotEmpty()) "inline" else "none"
             weaponCatRow.appendChild(othersInput)
 
@@ -447,28 +393,17 @@ fun showFeatureModal(
             // Individual weapons list
             val weaponListLabel = document.createElement("label") as HTMLLabelElement
             weaponListLabel.textContent = t("features.individualWeapons")
-            weaponListLabel.style.fontWeight = "bold"
-            weaponListLabel.style.display = "block"
-            weaponListLabel.style.marginBottom = "6px"
-            weaponListLabel.style.marginTop = "8px"
             dynamicDiv.appendChild(weaponListLabel)
 
             val weaponSelectedDiv = document.createElement("div") as HTMLDivElement
-            weaponSelectedDiv.style.marginBottom = "8px"
-            weaponSelectedDiv.style.display = "flex"
-            weaponSelectedDiv.style.setProperty("flex-wrap", "wrap")
-            weaponSelectedDiv.style.setProperty("gap", "4px")
+            weaponSelectedDiv.className = "modal__tags"
 
             fun refreshWeaponTags() {
                 weaponSelectedDiv.innerHTML = ""
                 selectedWeapons.forEach { w ->
                     val badge = document.createElement("span") as HTMLSpanElement
                     badge.textContent = "${tWeapon(w)} \u00D7"
-                    badge.style.backgroundColor = "#e0e0e0"
-                    badge.style.padding = "2px 8px"
-                    badge.style.borderRadius = "4px"
-                    badge.style.fontSize = "13px"
-                    badge.style.cursor = "pointer"
+                    badge.className = "modal__tag"
                     badge.addEventListener("click", {
                         selectedWeapons.remove(w)
                         refreshWeaponTags()
@@ -480,9 +415,7 @@ fun showFeatureModal(
             dynamicDiv.appendChild(weaponSelectedDiv)
 
             val weaponAddRow = document.createElement("div") as HTMLDivElement
-            weaponAddRow.style.display = "flex"
-            weaponAddRow.style.setProperty("gap", "8px")
-            weaponAddRow.style.alignItems = "center"
+            weaponAddRow.className = "modal__tag-add-row"
 
             val weaponSelect = document.createElement("select") as HTMLSelectElement
             val wEmptyOpt = document.createElement("option") as HTMLOptionElement
@@ -501,7 +434,6 @@ fun showFeatureModal(
             val wCustomInput = document.createElement("input") as HTMLInputElement
             wCustomInput.placeholder = "Custom weapon"
             wCustomInput.style.display = "none"
-            wCustomInput.style.padding = "4px"
             weaponAddRow.appendChild(wCustomInput)
 
             val wAddBtn = document.createElement("button") as HTMLButtonElement
@@ -535,21 +467,16 @@ fun showFeatureModal(
             // Name field
             val nameLbl = document.createElement("label") as HTMLLabelElement
             nameLbl.textContent = t("label.name")
-            nameLbl.style.fontWeight = "bold"
             dynamicDiv.appendChild(nameLbl)
-            nameInput.style.width = "100%"
-            nameInput.style.marginBottom = "8px"
             dynamicDiv.appendChild(nameInput)
 
             // Description textarea
             val lbl = document.createElement("label") as HTMLLabelElement
             lbl.textContent = t("label.description")
-            lbl.style.fontWeight = "bold"
             dynamicDiv.appendChild(lbl)
             val ta = document.createElement("textarea") as HTMLTextAreaElement
             ta.value = if (existing?.type != "Idiom") (existing?.description ?: "") else ""
             ta.rows = 4
-            ta.style.width = "100%"
             dynamicDiv.appendChild(ta)
             descInput = ta
         }
@@ -563,31 +490,21 @@ fun showFeatureModal(
     if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
 
     val tagsContainer = document.createElement("div") as HTMLDivElement
-    tagsContainer.style.setProperty("grid-column", "1 / -1")
+    tagsContainer.className = "modal__full-width"
 
     val tagsLabel = document.createElement("label") as HTMLLabelElement
     tagsLabel.textContent = t("label.tags")
-    tagsLabel.style.fontWeight = "bold"
-    tagsLabel.style.display = "block"
-    tagsLabel.style.marginBottom = "6px"
     tagsContainer.appendChild(tagsLabel)
 
     val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-    tagBadgesDiv.style.marginBottom = "8px"
-    tagBadgesDiv.style.display = "flex"
-    tagBadgesDiv.style.setProperty("flex-wrap", "wrap")
-    tagBadgesDiv.style.setProperty("gap", "4px")
+    tagBadgesDiv.className = "modal__tags"
 
     fun refreshTagBadges() {
         tagBadgesDiv.innerHTML = ""
         selectedTags.forEach { tag ->
             val badge = document.createElement("span") as HTMLSpanElement
             badge.textContent = "$tag \u00D7"
-            badge.style.backgroundColor = "#e0e0e0"
-            badge.style.padding = "2px 8px"
-            badge.style.borderRadius = "4px"
-            badge.style.fontSize = "13px"
-            badge.style.cursor = "pointer"
+            badge.className = "modal__tag"
             badge.addEventListener("click", {
                 selectedTags.remove(tag)
                 refreshTagBadges()
@@ -599,13 +516,10 @@ fun showFeatureModal(
     tagsContainer.appendChild(tagBadgesDiv)
 
     val tagAddRow = document.createElement("div") as HTMLDivElement
-    tagAddRow.style.display = "flex"
-    tagAddRow.style.setProperty("gap", "8px")
-    tagAddRow.style.alignItems = "center"
+    tagAddRow.className = "modal__tag-add-row"
 
     val tagInput = document.createElement("input") as HTMLInputElement
     tagInput.placeholder = "Add tag..."
-    tagInput.style.padding = "4px"
     tagAddRow.appendChild(tagInput)
 
     val tagAddBtn = document.createElement("button") as HTMLButtonElement
@@ -634,10 +548,7 @@ fun showFeatureModal(
 
     // Buttons
     val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.style.display = "flex"
-    btnRow.style.setProperty("gap", "8px")
-    btnRow.style.marginTop = "16px"
-    btnRow.style.justifyContent = "flex-end"
+    
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
     cancelBtn.textContent = t("btn.cancel")
