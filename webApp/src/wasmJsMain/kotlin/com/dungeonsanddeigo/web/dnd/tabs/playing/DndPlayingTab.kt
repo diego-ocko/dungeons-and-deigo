@@ -20,7 +20,7 @@ import com.dungeonsanddeigo.web.dnd.modals.weapon.showWeaponModal
 import com.dungeonsanddeigo.web.dnd.modals.magicItem.showMagicItemModal
 import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.showInventoryItemModal
 import com.dungeonsanddeigo.web.dnd.modals.note.showNoteModal
-import com.dungeonsanddeigo.web.dnd.components.dndSearch.renderDndSearch
+import com.dungeonsanddeigo.web.dnd.components.dndSearch.DndSearch
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
@@ -1580,7 +1580,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     leftPanel.appendChild(bottomRow)
 
     // === RIGHT PANEL (Search) ===
-    renderDndSearch(character, rightPanel)
+    DndSearch(character, rightPanel)
 
     layout.appendChild(leftPanel)
     layout.appendChild(rightPanel)
