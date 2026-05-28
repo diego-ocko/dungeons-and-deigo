@@ -7,7 +7,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndBaseStats
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.modals.spell.showSpellModal
+import com.dungeonsanddeigo.web.dnd.modals.spell.DndSpellModal
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.w3c.dom.*
@@ -325,7 +325,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     addSpellBtn.textContent = "\u2728 " + t("magic.addSpell")
     addSpellBtn.className = "magic-add-btn"
     addSpellBtn.addEventListener("click", {
-        showSpellModal(character, null) {
+        DndSpellModal(character, null).show {
             container.innerHTML = ""
             renderDndMagicTab(character, container)
         }
@@ -384,7 +384,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             editBtn.textContent = "\u270E"
             editBtn.className = "magic-spell-btn"
             editBtn.addEventListener("click", {
-                showSpellModal(character, spell) {
+                DndSpellModal(character, spell).show {
                     container.innerHTML = ""
                     renderDndMagicTab(character, container)
                 }

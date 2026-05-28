@@ -3,7 +3,7 @@ package com.dungeonsanddeigo.web.dnd.tabs.notes
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.modals.note.showNoteModal
+import com.dungeonsanddeigo.web.dnd.modals.note.DndNoteModal
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -15,7 +15,7 @@ fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
         addBtn.textContent = "\uD83D\uDCDD " + t("notes.addNote")
         addBtn.className = "notes-add-btn"
         addBtn.addEventListener("click", {
-            showNoteModal(character, null) { refresh() }
+            DndNoteModal(character, null).show { refresh() }
         })
         container.appendChild(addBtn)
 
@@ -77,7 +77,7 @@ fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
             val editBtn = document.createElement("button") as HTMLButtonElement
             editBtn.textContent = t("btn.edit")
             editBtn.className = "notes-btn"
-            editBtn.addEventListener("click", { showNoteModal(character, note) { refresh() } })
+            editBtn.addEventListener("click", { DndNoteModal(character, note).show { refresh() } })
             actions.appendChild(editBtn)
 
             val deleteBtn = document.createElement("button") as HTMLButtonElement

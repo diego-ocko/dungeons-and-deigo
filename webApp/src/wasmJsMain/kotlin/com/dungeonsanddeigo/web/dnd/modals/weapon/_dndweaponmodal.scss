@@ -1,0 +1,17 @@
+.weapon-modal {
+  .modal__form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.weapon-modal__props-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+.weapon-modal__range-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}

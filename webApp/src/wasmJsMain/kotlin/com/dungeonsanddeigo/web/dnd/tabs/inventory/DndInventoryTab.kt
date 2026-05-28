@@ -5,11 +5,11 @@ import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.*
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.modals.armor.showArmorModal
-import com.dungeonsanddeigo.web.dnd.modals.weapon.showWeaponModal
-import com.dungeonsanddeigo.web.dnd.modals.magicItem.showMagicItemModal
-import com.dungeonsanddeigo.web.dnd.modals.consumable.showConsumableModal
-import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.showInventoryItemModal
+import com.dungeonsanddeigo.web.dnd.modals.armor.DndArmorModal
+import com.dungeonsanddeigo.web.dnd.modals.weapon.DndWeaponModal
+import com.dungeonsanddeigo.web.dnd.modals.magicItem.DndMagicItemModal
+import com.dungeonsanddeigo.web.dnd.modals.consumable.DndConsumableModal
+import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.DndInventoryItemModal
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.*
@@ -39,11 +39,11 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 addBtn.className = "inv-add-btn"
                 addBtn.addEventListener("click", {
                     when (section) {
-                        "Armor" -> showArmorModal(character, null) { refresh() }
-                        "Weapons" -> showWeaponModal(character, null) { refresh() }
-                        "Magic Items" -> showMagicItemModal(character, null) { refresh() }
-                        "Potions Ammo and Ration" -> showConsumableModal(character, null) { refresh() }
-                        else -> showInventoryItemModal(character, section, null) { refresh() }
+                        "Armor" -> DndArmorModal(character, null).show { refresh() }
+                        "Weapons" -> DndWeaponModal(character, null).show { refresh() }
+                        "Magic Items" -> DndMagicItemModal(character, null).show { refresh() }
+                        "Potions Ammo and Ration" -> DndConsumableModal(character, null).show { refresh() }
+                        else -> DndInventoryItemModal(character, section, null).show { refresh() }
                     }
                 })
                 header.appendChild(addBtn)
@@ -294,7 +294,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
                         editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
-                        editBtn.addEventListener("click", { showArmorModal(character, armor) { refresh() } })
+                        editBtn.addEventListener("click", { DndArmorModal(character, armor).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
                         delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
@@ -495,7 +495,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
                         editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
-                        editBtn.addEventListener("click", { showWeaponModal(character, weapon) { refresh() } })
+                        editBtn.addEventListener("click", { DndWeaponModal(character, weapon).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
                         delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
@@ -582,7 +582,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
                         editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
-                        editBtn.addEventListener("click", { showMagicItemModal(character, item) { refresh() } })
+                        editBtn.addEventListener("click", { DndMagicItemModal(character, item).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
                         delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
@@ -634,7 +634,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
                         editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
-                        editBtn.addEventListener("click", { showConsumableModal(character, item) { refresh() } })
+                        editBtn.addEventListener("click", { DndConsumableModal(character, item).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
                         delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
@@ -687,7 +687,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                     val editBtn = document.createElement("button") as HTMLButtonElement
                     editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
                     editBtn.addEventListener("click", {
-                        showInventoryItemModal(character, section, item) { refresh() }
+                        DndInventoryItemModal(character, section, item).show { refresh() }
                     })
                     actions.appendChild(editBtn)
                     val delBtn = document.createElement("button") as HTMLButtonElement

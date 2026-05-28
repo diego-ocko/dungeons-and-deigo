@@ -9,7 +9,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndFeature
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.modals.feature.showFeatureModal
+import com.dungeonsanddeigo.web.dnd.modals.feature.DndFeatureModal
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.*
@@ -97,7 +97,7 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
 
         val editBtn = document.createElement("button") as HTMLButtonElement
         editBtn.textContent = t("btn.edit")
-        editBtn.addEventListener("click", { showFeatureModal(character, f, mainInfo) { onRefresh() } })
+        editBtn.addEventListener("click", { DndFeatureModal(character, f, mainInfo).show { onRefresh() } })
         actions.appendChild(editBtn)
 
         val deleteBtn = document.createElement("button") as HTMLButtonElement
@@ -119,7 +119,7 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = t("features.addNew")
         addBtn.className = "features-add-btn"
-        addBtn.addEventListener("click", { showFeatureModal(character, null, mainInfo) { refreshList() } })
+        addBtn.addEventListener("click", { DndFeatureModal(character, null, mainInfo).show { refreshList() } })
         container.appendChild(addBtn)
 
         val featureSort = compareBy<DndFeature> { featureTypeSortOrder(it) }

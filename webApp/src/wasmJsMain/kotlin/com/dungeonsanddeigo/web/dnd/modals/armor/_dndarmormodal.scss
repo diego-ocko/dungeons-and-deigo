@@ -1,0 +1,12 @@
+.armor-modal {
+  .modal__form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.armor-modal__weight-row,
+.armor-modal__price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

@@ -7,28 +7,41 @@ import com.dungeonsanddeigo.model.DndFeature
 import com.dungeonsanddeigo.model.DndMainInfo
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
 import kotlinx.browser.document
 import org.w3c.dom.*
 
-fun showFeatureModal(
-    character: Character,
-    existing: DndFeature?,
-    mainInfo: DndMainInfo?,
-    onSave: () -> Unit
+class DndFeatureModal(
+    private val character: Character,
+    private val existing: DndFeature?,
+    private val mainInfo: DndMainInfo?
+) : DndModal(
+    title = if (existing != null) t("features.editFeature") else t("features.addNew")
 ) {
-    // Overlay
-    val overlay = document.createElement("div") as HTMLDivElement
-    overlay.className = "modal-overlay"
+    private lateinit var typeSelect: HTMLSelectElement
+    private lateinit var sourceSelect: HTMLSelectElement
+    private lateinit var nameInput: HTMLInputElement
+    private var descInput: HTMLTextAreaElement? = null
+    private var sourceClassSelect: HTMLSelectElement? = null
+    private var sourceClassLevelInput: HTMLInputElement? = null
+    private var sourceOriginInput: HTMLInputElement? = null
+    private var sourceRaceInput: HTMLInputElement? = null
+    private var sourceSubRaceInput: HTMLInputElement? = null
+    private var sourceCustomInput: HTMLInputElement? = null
+    private var maxQtyInput: HTMLInputElement? = null
+    private var reloadSelect: HTMLSelectElement? = null
+    private val selectedTags = mutableListOf<String>()
+    private val selectedItems = mutableListOf<String>()
+    private val armorChecks = mutableMapOf("Light" to false, "Medium" to false, "Heavy" to false, "Shields" to false)
+    private val weaponCatChecks = mutableMapOf("Simple" to false, "Martial" to false)
+    private val selectedWeapons = mutableListOf<String>()
+    private lateinit var dynamicDiv: HTMLDivElement
 
-    val modal = document.createElement("div") as HTMLDivElement
-    modal.className = "modal"
+    init {
+        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
+    }
 
-    val titleEl = document.createElement("h2") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) t("features.editFeature") else t("features.addNew")
-    modal.appendChild(titleEl)
-
-    val form = document.createElement("div") as HTMLDivElement
-    form.className = "modal__form"
+    override fun buildForm(form: HTMLDivElement) {
 
     fun addLabel(text: String) {
         val lbl = document.createElement("label") as HTMLLabelElement
@@ -38,7 +51,7 @@ fun showFeatureModal(
 
     // Type (first field)
     addLabel(t("features.type"))
-    val typeSelect = document.createElement("select") as HTMLSelectElement
+    typeSelect = document.createElement("select") as HTMLSelectElement
     DndFeature.types.forEach { tp ->
         val opt = document.createElement("option") as HTMLOptionElement
         opt.value = tp; opt.textContent = tFeatureType(tp); typeSelect.appendChild(opt)
@@ -48,13 +61,13 @@ fun showFeatureModal(
     form.appendChild(typeSelect)
 
     // Name input (will be placed in dynamic content area)
-    val nameInput = document.createElement("input") as HTMLInputElement
+    nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = existing?.name ?: ""
     nameInput.placeholder = "Feature name"
 
     // Source
     addLabel(t("features.source"))
-    val sourceSelect = document.createElement("select") as HTMLSelectElement
+    sourceSelect = document.createElement("select") as HTMLSelectElement
     DndFeature.sources.forEach { s ->
         val opt = document.createElement("option") as HTMLOptionElement
         opt.value = s; opt.textContent = tSource(s); sourceSelect.appendChild(opt)
@@ -212,23 +225,19 @@ fun showFeatureModal(
     form.appendChild(rechargeDiv)
 
     // Dynamic content area (changes based on type)
-    val dynamicDiv = document.createElement("div") as HTMLDivElement
+    dynamicDiv = document.createElement("div") as HTMLDivElement
     dynamicDiv.className = "modal__full-width"
 
     val defaultIdioms = listOf("Common", "Dwarvish", "Elvish", "Giant", "Gnomish", "Goblin", "Halfling", "Orc", "Draconic")
     val defaultTools = listOf("Alchemist's Supplies", "Brewer's Supplies", "Calligrapher's Supplies", "Carpenter's Tools", "Cartographer's Tools", "Cobbler's Tools", "Cook's Utensils", "Glassblower's Tools", "Jeweler's Tools", "Leatherworker's Tools", "Mason's Tools", "Painter's Supplies", "Potter's Tools", "Smith's Tools", "Tinker's Tools", "Weaver's Tools", "Woodcarver's Tools", "Disguise Kit", "Forgery Kit", "Herbalism Kit", "Navigator's Tools", "Poisoner's Kit", "Thieves' Tools")
     val defaultWeapons = listOf("Club", "Dagger", "Greatclub", "Handaxe", "Javelin", "Light Hammer", "Mace", "Quarterstaff", "Sickle", "Spear", "Crossbow (Light)", "Dart", "Shortbow", "Sling", "Battleaxe", "Flail", "Glaive", "Greataxe", "Greatsword", "Halberd", "Lance", "Longsword", "Maul", "Morningstar", "Pike", "Rapier", "Scimitar", "Shortsword", "Trident", "War Pick", "Warhammer", "Whip", "Blowgun", "Crossbow (Hand)", "Crossbow (Heavy)", "Longbow", "Net")
-    val selectedItems = mutableListOf<String>()
     val isListType = existing?.type == "Idiom" || existing?.type == "Tool Proficiency"
     if (isListType && existing?.description?.isNotBlank() == true) {
         selectedItems.addAll(existing.description.split(",").map { it.trim() }.filter { it.isNotEmpty() })
     }
 
     // Weapon/Armor proficiency state
-    val armorChecks = mutableMapOf("Light" to false, "Medium" to false, "Heavy" to false, "Shields" to false)
-    val weaponCatChecks = mutableMapOf("Simple" to false, "Martial" to false)
     var weaponCatOther = ""
-    val selectedWeapons = mutableListOf<String>()
     if (existing?.type == "Weapon/Armor Proficiency" && existing.description.isNotBlank()) {
         existing.description.split(",").map { it.trim() }.forEach { entry ->
             when {
@@ -486,8 +495,6 @@ fun showFeatureModal(
     form.appendChild(dynamicDiv)
 
     // Tags (hidden for Idiom/Tool/Weapon-Armor)
-    val selectedTags = mutableListOf<String>()
-    if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
 
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.className = "modal__full-width"
@@ -544,20 +551,9 @@ fun showFeatureModal(
     updateTagsVisibility()
     typeSelect.addEventListener("change", { updateTagsVisibility() })
 
-    modal.appendChild(form)
+    }
 
-    // Buttons
-    val btnRow = document.createElement("div") as HTMLDivElement
-    
-
-    val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = t("btn.cancel")
-    cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
-    btnRow.appendChild(cancelBtn)
-
-    val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = t("btn.save")
-    saveBtn.addEventListener("click", {
+    override fun onSave(close: () -> Unit) {
         val isListType = typeSelect.value == "Idiom" || typeSelect.value == "Tool Proficiency"
         val isWeaponArmor = typeSelect.value == "Weapon/Armor Proficiency"
         val tags = if (isListType || isWeaponArmor) emptyList() else selectedTags.toList()
@@ -592,13 +588,7 @@ fun showFeatureModal(
             tags = tags
         )
         Repos.features.save(feature)
-        document.body?.removeChild(overlay)
-        onSave()
-    })
-    btnRow.appendChild(saveBtn)
-
-    modal.appendChild(btnRow)
-    overlay.appendChild(modal)
-    document.body?.appendChild(overlay)
+        close()
+    }
 }
 

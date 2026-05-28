@@ -5,21 +5,18 @@ import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.*
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.modals.changeWeapon.showChangeWeaponModal
-import com.dungeonsanddeigo.web.dnd.modals.changeArmor.showChangeArmorModal
-import com.dungeonsanddeigo.web.dnd.modals.addConsumableLoot.showAddConsumableLootModal
-import com.dungeonsanddeigo.web.dnd.modals.useSlot.showUseSlotModal
-import com.dungeonsanddeigo.web.dnd.modals.restoreSlot.showRestoreSlotModal
-import com.dungeonsanddeigo.web.dnd.modals.tempSlot.showTempSlotModal
-import com.dungeonsanddeigo.web.dnd.modals.preparedSpells.showPreparedSpellsModal
-import com.dungeonsanddeigo.web.dnd.modals.money.showMoneyModal
-import com.dungeonsanddeigo.web.dnd.modals.addStatus.showAddStatusModal
-import com.dungeonsanddeigo.web.dnd.modals.hitDice.showHitDiceModal
-import com.dungeonsanddeigo.web.dnd.modals.armor.showArmorModal
-import com.dungeonsanddeigo.web.dnd.modals.weapon.showWeaponModal
-import com.dungeonsanddeigo.web.dnd.modals.magicItem.showMagicItemModal
-import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.showInventoryItemModal
-import com.dungeonsanddeigo.web.dnd.modals.note.showNoteModal
+import com.dungeonsanddeigo.web.dnd.modals.changeWeapon.DndChangeWeaponModal
+import com.dungeonsanddeigo.web.dnd.modals.changeArmor.DndChangeArmorModal
+import com.dungeonsanddeigo.web.dnd.modals.addConsumableLoot.DndAddConsumableLootModal
+import com.dungeonsanddeigo.web.dnd.modals.preparedSpells.DndPreparedSpellsModal
+import com.dungeonsanddeigo.web.dnd.modals.money.DndMoneyModal
+import com.dungeonsanddeigo.web.dnd.modals.addStatus.DndAddStatusModal
+import com.dungeonsanddeigo.web.dnd.modals.hitDice.DndHitDiceModal
+import com.dungeonsanddeigo.web.dnd.modals.armor.DndArmorModal
+import com.dungeonsanddeigo.web.dnd.modals.weapon.DndWeaponModal
+import com.dungeonsanddeigo.web.dnd.modals.magicItem.DndMagicItemModal
+import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.DndInventoryItemModal
+import com.dungeonsanddeigo.web.dnd.modals.note.DndNoteModal
 import com.dungeonsanddeigo.web.dnd.components.search.DndSearch
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
@@ -412,7 +409,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             useHdBtn.style.fontSize = "11px"
             useHdBtn.disabled = remaining <= 0
             useHdBtn.addEventListener("click", {
-                showHitDiceModal(hd.die, hd.storageKey, usedDice, character) {
+                DndHitDiceModal(hd.die, hd.storageKey, usedDice, character).show {
                     container.innerHTML = ""
                     renderDndPlayingTab(character, container)
                 }
@@ -467,7 +464,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     changeWeaponBtn.textContent = t("playing.changeWeapon")
     changeWeaponBtn.style.fontSize = "11px"
     changeWeaponBtn.addEventListener("click", {
-        showChangeWeaponModal(character) {
+        DndChangeWeaponModal(character).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -1128,7 +1125,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     changeArmorBtn.textContent = t("playing.changeArmor")
     changeArmorBtn.style.fontSize = "11px"
     changeArmorBtn.addEventListener("click", {
-        showChangeArmorModal(character) {
+        DndChangeArmorModal(character).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -1206,7 +1203,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     addStatusBtn.textContent = t("inv.add")
     addStatusBtn.style.fontSize = "11px"
     addStatusBtn.addEventListener("click", {
-        showAddStatusModal(character) {
+        DndAddStatusModal(character).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -1396,7 +1393,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         val classNeedsPrepared = (magicMainClass ?: "") in DungeonsAndDragons.preparedCasters
         prepBtn.disabled = !classNeedsPrepared
         prepBtn.addEventListener("click", {
-            showPreparedSpellsModal(character) {
+            DndPreparedSpellsModal(character).show {
                 container.innerHTML = ""
                 renderDndPlayingTab(character, container)
             }
@@ -1479,7 +1476,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     addMoneyBtn.textContent = "\uD83D\uDCB0 " + t("btn.add")
     addMoneyBtn.style.fontSize = "11px"
     addMoneyBtn.addEventListener("click", {
-        showMoneyModal(character, t("playing.addMoney"), true) {
+        DndMoneyModal(character, t("playing.addMoney"), true).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -1490,7 +1487,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     subMoneyBtn.textContent = "\uD83D\uDCB8 " + t("playing.spend")
     subMoneyBtn.style.fontSize = "11px"
     subMoneyBtn.addEventListener("click", {
-        showMoneyModal(character, t("playing.spendMoney"), false) {
+        DndMoneyModal(character, t("playing.spendMoney"), false).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -1526,35 +1523,35 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     }
 
     addLootBtn("\uD83E\uDE96 " + t("inventory.armor")) {
-        showArmorModal(character, null) {
+        DndArmorModal(character, null).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
     addLootBtn("\u2694\uFE0F " + t("inventory.weapons")) {
-        showWeaponModal(character, null) {
+        DndWeaponModal(character, null).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
     addLootBtn("\u2728 " + t("inventory.magicItems")) {
-        showMagicItemModal(character, null) {
+        DndMagicItemModal(character, null).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
     }
 
     addLootBtn("\uD83E\uDDEA " + t("inv.addConsumable")) {
-        showAddConsumableLootModal(character) {
+        DndAddConsumableLootModal(character, onItemAdded = {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
-        }
+        }).show()
     }
 
     addLootBtn("\uD83D\uDCE6 " + t("inventory.other")) {
-        showInventoryItemModal(character, "Key Items, Loot and others", null) {
+        DndInventoryItemModal(character, "Key Items, Loot and others", null).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }
@@ -1568,7 +1565,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     addNoteBtn.style.fontSize = "10px"
     addNoteBtn.style.marginTop = "8px"
     addNoteBtn.addEventListener("click", {
-        showNoteModal(character, null) {
+        DndNoteModal(character, null).show {
             container.innerHTML = ""
             renderDndPlayingTab(character, container)
         }

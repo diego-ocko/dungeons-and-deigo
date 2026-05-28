@@ -221,6 +221,7 @@ object EnStrings {
         "inv.acModifier" to "AC Modifier",
         "inv.minStrength" to "Min. Strength",
         "inv.sneakDisadv" to "Sneak Disadvantage",
+        "inv.additionalFeatures" to "Additional Actions",
         "inv.weight" to "Weight",
         "inv.price" to "Price",
         "inv.quantity" to "Quantity",
@@ -374,6 +375,7 @@ object EnStrings {
         "magic.concShort" to "Conc.",
         "magic.ritualShort" to "Ritual",
         "magic.higherShort" to "Higher",
+        "magic.needsSavingThrow" to "Need saving throw?",
 
         // Playing tab
         "playing.changeWeapon" to "Change Weapon",

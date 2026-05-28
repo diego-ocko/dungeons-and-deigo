@@ -5,154 +5,98 @@ import com.dungeonsanddeigo.i18n.tCurrency
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndMagicItem
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
 import kotlinx.browser.document
 import org.w3c.dom.*
 
-fun showMagicItemModal(
-    character: Character,
-    existing: DndMagicItem?,
-    onSave: () -> Unit
+class DndMagicItemModal(
+    private val character: Character,
+    private val existing: DndMagicItem?
+) : DndModal(
+    title = if (existing != null) t("inv.editMagicItem") else t("inv.addMagicItem"),
+    size = "lg"
 ) {
-    val overlay = document.createElement("div") as HTMLDivElement
-    overlay.className = "modal-overlay"
+    private lateinit var nameInput: HTMLInputElement
+    private lateinit var needSynchCb: HTMLInputElement
+    private lateinit var isSynchedCb: HTMLInputElement
+    private lateinit var isSynchedLbl: HTMLLabelElement
+    private lateinit var effectInput: HTMLTextAreaElement
+    private lateinit var weightInput: HTMLInputElement
+    private lateinit var priceInput: HTMLInputElement
+    private lateinit var currSelect: HTMLSelectElement
+    private val selectedTags = mutableListOf<String>()
 
-    val modal = document.createElement("div") as HTMLDivElement
-    modal.className = "modal modal--lg"
-
-    val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) t("inv.editMagicItem") else t("inv.addMagicItem")
-    modal.appendChild(titleEl)
-
-    val form = document.createElement("div") as HTMLDivElement
-    form.className = "modal__form"
-
-    fun lbl(text: String) {
-        val l = document.createElement("label") as HTMLLabelElement
-        form.appendChild(l)
+    init {
+        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
     }
 
-    // Name
-    lbl(t("label.name"))
-    val nameInput = document.createElement("input") as HTMLInputElement
-    nameInput.value = existing?.name ?: ""
-    form.appendChild(nameInput)
+    override fun buildForm(form: HTMLDivElement) {
+        nameInput = addInput(form, t("label.name"), existing?.name ?: "").input
 
-    // Need Synch + Is Synched
-    val synchDiv = document.createElement("div") as HTMLDivElement
-    synchDiv.className = "modal__full-width"
-    synchDiv.className = "modal__checkbox-row"
+        // Synch checkboxes
+        val synchDiv = document.createElement("div") as HTMLDivElement
+        synchDiv.className = "modal__checkbox-row modal__full-width"
+        val needSynchLbl = document.createElement("label") as HTMLLabelElement
+        needSynchCb = document.createElement("input") as HTMLInputElement
+        needSynchCb.type = "checkbox"; needSynchCb.checked = existing?.needSynch ?: false
+        needSynchLbl.appendChild(needSynchCb); needSynchLbl.append(t("inv.needSynch"))
+        synchDiv.appendChild(needSynchLbl)
 
-    val needSynchLbl = document.createElement("label") as HTMLLabelElement
-    val needSynchCb = document.createElement("input") as HTMLInputElement
-    needSynchCb.type = "checkbox"; needSynchCb.checked = existing?.needSynch ?: false
-    needSynchLbl.appendChild(needSynchCb); needSynchLbl.append(t("inv.needSynch"))
-    synchDiv.appendChild(needSynchLbl)
+        isSynchedLbl = document.createElement("label") as HTMLLabelElement
+        isSynchedCb = document.createElement("input") as HTMLInputElement
+        isSynchedCb.type = "checkbox"; isSynchedCb.checked = existing?.isSynched ?: false
+        isSynchedLbl.appendChild(isSynchedCb); isSynchedLbl.append(t("inv.isSynched"))
+        synchDiv.appendChild(isSynchedLbl)
+        needSynchCb.addEventListener("change", {
+            isSynchedLbl.style.display = if (needSynchCb.checked) "" else "none"
+        })
+        isSynchedLbl.style.display = if (existing?.needSynch == true) "" else "none"
+        form.appendChild(synchDiv)
 
-    val isSynchedLbl = document.createElement("label") as HTMLLabelElement
-    val isSynchedCb = document.createElement("input") as HTMLInputElement
-    isSynchedCb.type = "checkbox"; isSynchedCb.checked = existing?.isSynched ?: false
-    isSynchedLbl.appendChild(isSynchedCb); isSynchedLbl.append(t("inv.isSynched"))
-    synchDiv.appendChild(isSynchedLbl)
+        effectInput = addTextarea(form, t("inv.effect"), existing?.effect ?: "", rows = 3, classes = arrayOf("modal__full-width")).input
+        weightInput = addNumberInput(form, t("inv.weight"), (existing?.weight ?: 0.0).toString()).input
+        weightInput.step = "0.1"
+        priceInput = addNumberInput(form, t("inv.price"), (existing?.price ?: 0).toString()).input
 
-    fun updateSynchedVisibility() {
-        isSynchedLbl.style.display = if (needSynchCb.checked) "" else "none"
-    }
-    updateSynchedVisibility()
-    needSynchCb.addEventListener("change", { updateSynchedVisibility() })
-    form.appendChild(synchDiv)
+        val currencies = DndMagicItem.currencies.map { it to tCurrency(it) }
+        currSelect = addSelect(form, "", currencies, existing?.priceCurrency ?: "pg").input
 
-    // Effect
-    val effectLbl = document.createElement("label") as HTMLLabelElement
-    effectLbl.className = "modal__full-width"
-    form.appendChild(effectLbl)
-    val effectInput = document.createElement("textarea") as HTMLTextAreaElement
-    effectInput.value = existing?.effect ?: ""
-    effectInput.className = "modal__full-width"
-    form.appendChild(effectInput)
-
-    // Weight
-    lbl(t("inv.weight"))
-    val weightRow = document.createElement("div") as HTMLDivElement
-    weightRow.className = "modal__checkbox-row"
-    val weightInput = document.createElement("input") as HTMLInputElement
-    weightInput.type = "number"; weightInput.step = "0.1"; weightInput.min = "0"
-    weightInput.value = (existing?.weight ?: 0.0).toString()
-    weightRow.appendChild(weightInput)
-    val kgLabel = document.createElement("span") as HTMLSpanElement
-    weightRow.appendChild(kgLabel)
-    form.appendChild(weightRow)
-
-    // Price
-    lbl(t("inv.price"))
-    val priceRow = document.createElement("div") as HTMLDivElement
-    val priceInput = document.createElement("input") as HTMLInputElement
-    priceInput.type = "number"; priceInput.min = "0"
-    priceInput.value = (existing?.price ?: 0).toString()
-    priceRow.appendChild(priceInput)
-    val currSelect = document.createElement("select") as HTMLSelectElement
-    DndMagicItem.currencies.forEach { c ->
-        val o = document.createElement("option") as HTMLOptionElement
-        o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
-    }
-    currSelect.value = existing?.priceCurrency ?: "pg"
-    priceRow.appendChild(currSelect)
-    form.appendChild(priceRow)
-
-    // Tags
-    val selectedTags = mutableListOf<String>()
-    if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
-
-    val tagsContainer = document.createElement("div") as HTMLDivElement
-    tagsContainer.className = "modal__full-width"
-    val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsContainer.appendChild(tagsLbl)
-
-    val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-    tagBadgesDiv.className = "modal__tags"
-
-    fun refreshTagBadges() {
-        tagBadgesDiv.innerHTML = ""
-        selectedTags.forEach { tag ->
-            val badge = document.createElement("span") as HTMLSpanElement
-            badge.textContent = "$tag \u00D7"
-            badge.className = "modal__tag"
-            badge.addEventListener("click", { selectedTags.remove(tag); refreshTagBadges() })
-            tagBadgesDiv.appendChild(badge)
+        // Tags
+        val tagsLbl = document.createElement("label") as HTMLLabelElement
+        tagsLbl.textContent = t("label.tags")
+        tagsLbl.className = "modal__full-width"
+        form.appendChild(tagsLbl)
+        val tagBadgesDiv = document.createElement("div") as HTMLDivElement
+        tagBadgesDiv.className = "modal__tags"
+        fun refreshTags() {
+            tagBadgesDiv.innerHTML = ""
+            selectedTags.forEach { tag ->
+                val badge = document.createElement("span") as HTMLSpanElement
+                badge.textContent = "$tag \u00D7"
+                badge.className = "modal__tag"
+                badge.addEventListener("click", { selectedTags.remove(tag); refreshTags() })
+                tagBadgesDiv.appendChild(badge)
+            }
         }
+        refreshTags()
+        form.appendChild(tagBadgesDiv)
+        val tagAddRow = document.createElement("div") as HTMLDivElement
+        tagAddRow.className = "modal__tag-add-row"
+        val tagInput = document.createElement("input") as HTMLInputElement
+        tagInput.placeholder = "Add tag..."
+        tagAddRow.appendChild(tagInput)
+        val tagAddBtn = document.createElement("button") as HTMLButtonElement
+        tagAddBtn.textContent = t("btn.add")
+        tagAddBtn.addEventListener("click", {
+            val tag = tagInput.value.trim()
+            if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTags() }
+            tagInput.value = ""
+        })
+        tagAddRow.appendChild(tagAddBtn)
+        form.appendChild(tagAddRow)
     }
-    refreshTagBadges()
-    tagsContainer.appendChild(tagBadgesDiv)
 
-    val tagAddRow = document.createElement("div") as HTMLDivElement
-    tagAddRow.className = "modal__tag-add-row"
-    val tagInput = document.createElement("input") as HTMLInputElement
-    tagAddRow.appendChild(tagInput)
-    val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = t("btn.add")
-    tagAddBtn.addEventListener("click", {
-        val tag = tagInput.value.trim()
-        if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTagBadges() }
-        tagInput.value = ""
-    })
-    tagAddRow.appendChild(tagAddBtn)
-    tagsContainer.appendChild(tagAddRow)
-    form.appendChild(tagsContainer)
-
-    modal.appendChild(form)
-
-    // Buttons
-    val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.className = "modal__buttons"
-    
-
-    val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = t("btn.cancel")
-    cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
-    btnRow.appendChild(cancelBtn)
-
-    val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = t("btn.save")
-    saveBtn.addEventListener("click", {
+    override fun onSave(close: () -> Unit) {
         val item = DndMagicItem(
             id = existing?.id ?: 0,
             characterId = character.id,
@@ -166,13 +110,6 @@ fun showMagicItemModal(
             tags = selectedTags.toList()
         )
         Repos.magicItem.save(item)
-        document.body?.removeChild(overlay)
-        onSave()
-    })
-    btnRow.appendChild(saveBtn)
-
-    modal.appendChild(btnRow)
-    overlay.appendChild(modal)
-    document.body?.appendChild(overlay)
+        close()
+    }
 }
-

@@ -1,0 +1,30 @@
+.spell-modal__row3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 10px;
+}
+
+.spell-modal__row4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 10px;
+}
+
+.spell-modal__components {
+  display: grid;
+  grid-template-columns: auto auto auto auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.spell-modal__attack-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.spell-modal__details-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}

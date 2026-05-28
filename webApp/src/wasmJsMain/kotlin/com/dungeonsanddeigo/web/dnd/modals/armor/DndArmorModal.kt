@@ -7,29 +7,39 @@ import com.dungeonsanddeigo.i18n.tCurrency
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndArmor
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
 import kotlinx.browser.document
 import org.w3c.dom.*
 
-fun showArmorModal(
-    character: Character,
-    existing: DndArmor?,
-    onSave: () -> Unit
+class DndArmorModal(
+    private val character: Character,
+    private val existing: DndArmor?
+) : DndModal(
+    title = if (existing != null) t("inv.editArmor") else t("inv.addArmor"),
+    size = "lg"
 ) {
-    val overlay = document.createElement("div") as HTMLDivElement
-    overlay.className = "modal-overlay"
+    private lateinit var nameInput: HTMLInputElement
+    private lateinit var typeSelect: HTMLSelectElement
+    private lateinit var acInput: HTMLInputElement
+    private lateinit var acModSelect: HTMLSelectElement
+    private lateinit var minStrInput: HTMLInputElement
+    private lateinit var sneakCb: HTMLInputElement
+    private lateinit var weightInput: HTMLInputElement
+    private lateinit var priceInput: HTMLInputElement
+    private lateinit var currSelect: HTMLSelectElement
+    private lateinit var addFeatInput: HTMLTextAreaElement
+    private lateinit var eqCb: HTMLInputElement
+    private val selectedTags = mutableListOf<String>()
 
-    val modal = document.createElement("div") as HTMLDivElement
-    modal.className = "modal modal--lg"
+    init {
+        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
+    }
 
-    val titleEl = document.createElement("h3") as HTMLHeadingElement
-    titleEl.textContent = if (existing != null) t("inv.editArmor") else t("inv.addArmor")
-    modal.appendChild(titleEl)
-
-    val form = document.createElement("div") as HTMLDivElement
-    form.className = "modal__form"
-
+    override fun buildForm(form: HTMLDivElement) {
+        form.classList.add("armor-modal")
     fun lbl(text: String) {
         val l = document.createElement("label") as HTMLLabelElement
+        l.textContent = text
         form.appendChild(l)
     }
 
@@ -51,14 +61,15 @@ fun showArmorModal(
 
     // Base AC
     val acLbl = document.createElement("label") as HTMLLabelElement
+    acLbl.textContent = t("inv.baseAC")
     form.appendChild(acLbl)
     val acInput = document.createElement("input") as HTMLInputElement
     acInput.type = "number"; acInput.value = (existing?.baseAC ?: 10).toString()
     form.appendChild(acInput)
 
     // AC Modifier
-    // AC Modifier
     val acModLbl = document.createElement("label") as HTMLLabelElement
+    acModLbl.textContent = t("inv.acModifier")
     form.appendChild(acModLbl)
     val acModSelect = document.createElement("select") as HTMLSelectElement
     DndArmor.acModifiers.forEach { m ->
@@ -70,6 +81,7 @@ fun showArmorModal(
 
     // Minimum Strength
     val minStrLbl = document.createElement("label") as HTMLLabelElement
+    minStrLbl.textContent = t("inv.minStr")
     form.appendChild(minStrLbl)
     val minStrInput = document.createElement("input") as HTMLInputElement
     minStrInput.type = "number"; minStrInput.min = "0"; minStrInput.max = "20"
@@ -107,7 +119,7 @@ fun showArmorModal(
     // Weight
     lbl(t("inv.weight"))
     val weightRow = document.createElement("div") as HTMLDivElement
-    weightRow.className = "modal__checkbox-row"
+    weightRow.className = "armor-modal__weight-row"
     val weightInput = document.createElement("input") as HTMLInputElement
     weightInput.type = "number"; weightInput.step = "0.1"; weightInput.min = "0"
     weightInput.value = (existing?.weight ?: 0.0).toString()
@@ -119,6 +131,7 @@ fun showArmorModal(
     // Price
     lbl(t("inv.price"))
     val priceRow = document.createElement("div") as HTMLDivElement
+    priceRow.className = "armor-modal__price-row"
     val priceInput = document.createElement("input") as HTMLInputElement
     priceInput.type = "number"; priceInput.min = "0"
     priceInput.value = (existing?.price ?: 0).toString()
@@ -134,6 +147,7 @@ fun showArmorModal(
 
     // Additional Features
     val addFeatLbl = document.createElement("label") as HTMLLabelElement
+    addFeatLbl.textContent = t("inv.additionalFeatures")
     addFeatLbl.className = "modal__full-width"
     form.appendChild(addFeatLbl)
     val addFeatInput = document.createElement("textarea") as HTMLTextAreaElement
@@ -148,6 +162,7 @@ fun showArmorModal(
     val tagsContainer = document.createElement("div") as HTMLDivElement
     tagsContainer.className = "modal__full-width"
     val tagsLbl = document.createElement("label") as HTMLLabelElement
+    tagsLbl.textContent = t("label.tags")
     tagsContainer.appendChild(tagsLbl)
 
     val tagBadgesDiv = document.createElement("div") as HTMLDivElement
@@ -190,22 +205,9 @@ fun showArmorModal(
     eqLbl.appendChild(eqCb); eqLbl.append(t("features.equipped"))
     eqContainer.appendChild(eqLbl)
     form.appendChild(eqContainer)
+    }
 
-    modal.appendChild(form)
-
-    // Buttons
-    val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.className = "modal__buttons"
-    
-
-    val cancelBtn = document.createElement("button") as HTMLButtonElement
-    cancelBtn.textContent = t("btn.cancel")
-    cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
-    btnRow.appendChild(cancelBtn)
-
-    val saveBtn = document.createElement("button") as HTMLButtonElement
-    saveBtn.textContent = t("btn.save")
-    saveBtn.addEventListener("click", {
+    override fun onSave(close: () -> Unit) {
         val armor = DndArmor(
             id = existing?.id ?: 0,
             characterId = character.id,
@@ -245,13 +247,8 @@ fun showArmorModal(
             }
         }
         Repos.armor.save(armor)
-        document.body?.removeChild(overlay)
-        onSave()
-    })
-    btnRow.appendChild(saveBtn)
-
-    modal.appendChild(btnRow)
-    overlay.appendChild(modal)
-    document.body?.appendChild(overlay)
+        close()
+    }
 }
+
 

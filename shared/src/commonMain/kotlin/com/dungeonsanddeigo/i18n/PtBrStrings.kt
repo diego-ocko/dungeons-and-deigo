@@ -221,6 +221,7 @@ object PtBrStrings {
         "inv.acModifier" to "Modificador de CA",
         "inv.minStrength" to "Força Mínima",
         "inv.sneakDisadv" to "Desvantagem em Furtividade",
+        "inv.additionalFeatures" to "Ações Adicionais",
         "inv.weight" to "Peso",
         "inv.price" to "Preço",
         "inv.quantity" to "Quantidade",
@@ -374,6 +375,7 @@ object PtBrStrings {
         "magic.concShort" to "Conc.",
         "magic.ritualShort" to "Ritual",
         "magic.higherShort" to "Superior",
+        "magic.needsSavingThrow" to "Precisa de teste de resistência?",
 
         // Playing tab
         "playing.changeWeapon" to "Trocar Arma",

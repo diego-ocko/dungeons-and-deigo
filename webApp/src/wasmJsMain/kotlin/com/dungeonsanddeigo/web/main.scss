@@ -21,5 +21,8 @@
 
 // DnD Components and Modals
 @use 'dnd/modals/modals';
+@use 'dnd/modals/weapon/dndweaponmodal';
+@use 'dnd/modals/armor/dndarmormodal';
+@use 'dnd/modals/spell/dndspellmodal';
 @use 'dnd/components/search/dndsearch';
 @use 'dnd/components/autoSaveIndicator/autosave';
