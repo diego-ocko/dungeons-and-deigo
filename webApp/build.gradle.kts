@@ -20,3 +20,14 @@ kotlin {
         }
     }
 }
+
+// Copy fonts from project root to webApp resources
+val copyFonts by tasks.registering(Copy::class) {
+    from(rootProject.file("fonts"))
+    into(file("src/wasmJsMain/resources/fonts"))
+    include("**/*.ttf", "**/*.otf", "**/*.woff", "**/*.woff2")
+}
+
+tasks.named("wasmJsProcessResources") {
+    dependsOn(copyFonts)
+}

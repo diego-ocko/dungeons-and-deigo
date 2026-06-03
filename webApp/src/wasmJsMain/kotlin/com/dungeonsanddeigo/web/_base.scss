@@ -1,12 +1,18 @@
 // Variables
-$font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-$color-primary: #4a90d9;
-$color-danger: #c00;
-$color-success: green;
-$color-text: #333;
-$color-muted: #666;
-$color-border: #ccc;
-$color-bg-muted: #eee;
+$font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$font-heading: 'Cormorant Garamond', Georgia, serif;
+$font-display: 'Cinzel', serif;
+$color-bg-primary: #12141A;
+$color-bg-secondary: #1D212B;
+$color-cards: #2A3040;
+$color-accent: #8B5CF6;
+$color-accent-hover: #A78BFA;
+$color-gold: palegoldenrod;
+$color-text: #F3F4F6;
+$color-text-muted: #A1A1AA;
+$color-success: #22C55E;
+$color-danger: #DC2626;
+$color-border: #3A4050;
 $radius: 8px;
 $radius-sm: 4px;
 $spacing: 16px;
@@ -22,6 +28,7 @@ body {
   margin: 0;
   padding: $spacing;
   color: $color-text;
+  background-color: $color-bg-primary;
 }
 
 // Buttons
@@ -30,21 +37,22 @@ button {
   padding: 6px 12px;
   border: 1px solid $color-border;
   border-radius: $radius-sm;
-  background: white;
+  background: $color-bg-secondary;
+  color: $color-text;
   font-size: 14px;
 
   &:hover {
-    background: #f5f5f5;
+    background: $color-cards;
   }
 }
 
 .btn-primary {
-  background: $color-primary;
+  background: $color-accent;
   color: white;
-  border-color: $color-primary;
+  border-color: $color-accent;
 
   &:hover {
-    background: darken($color-primary, 10%);
+    background: $color-accent-hover;
   }
 }
 
@@ -64,11 +72,21 @@ input, select, textarea {
   border: 1px solid $color-border;
   border-radius: $radius-sm;
   font-size: 14px;
+  background: $color-bg-secondary;
+  color: $color-text;
+}
+
+// Headings
+h1, h2, h3, h4 {
+  font-family: $font-heading;
+  color: $color-accent;
+  text-shadow: 2px 0 $color-gold, -2px 0 $color-gold, 0 2px $color-gold, 0 -2px $color-gold,
+               1px 1px $color-gold, -1px -1px $color-gold, 1px -1px $color-gold, -1px 1px $color-gold;
 }
 
 // Utilities
 .text-muted {
-  color: $color-muted;
+  color: $color-text-muted;
 }
 
 .text-danger {
