@@ -31,39 +31,107 @@ body {
   background-color: $color-bg-primary;
 }
 
-// Buttons
+// Buttons — stone/cracked texture
 button {
   cursor: pointer;
-  padding: 6px 12px;
-  border: 1px solid $color-border;
+  padding: 8px 14px;
+  border: 1px solid #5a5a5a;
   border-radius: $radius-sm;
-  background: $color-bg-secondary;
   color: $color-text;
   font-size: 14px;
+  font-family: $font-display;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, transparent 2%, rgba(0,0,0,0.15) 2.5%, transparent 3%),
+    linear-gradient(225deg, transparent 4%, rgba(0,0,0,0.12) 4.5%, transparent 5%),
+    linear-gradient(45deg, transparent 6%, rgba(255,255,255,0.04) 6.5%, transparent 7%),
+    linear-gradient(180deg, #4a4a52 0%, #3a3a42 30%, #2e2e36 70%, #3a3a42 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.3),
+              0 2px 4px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(62deg, transparent 30%, rgba(0,0,0,0.2) 30.5%, transparent 31%),
+      linear-gradient(148deg, transparent 55%, rgba(0,0,0,0.15) 55.5%, transparent 56%),
+      linear-gradient(95deg, transparent 70%, rgba(0,0,0,0.1) 70.3%, transparent 71%);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(0,0,0,0.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
 
   &:hover {
-    background: $color-cards;
+    background:
+      linear-gradient(135deg, transparent 2%, rgba(0,0,0,0.15) 2.5%, transparent 3%),
+      linear-gradient(225deg, transparent 4%, rgba(0,0,0,0.12) 4.5%, transparent 5%),
+      linear-gradient(45deg, transparent 6%, rgba(255,255,255,0.04) 6.5%, transparent 7%),
+      linear-gradient(180deg, #55555d 0%, #45454d 30%, #383842 70%, #45454d 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.3),
+                0 3px 6px rgba(0,0,0,0.5);
+  }
+
+  &:active {
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    filter: grayscale(0.4);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    transform: none;
+
+    &:hover {
+      background:
+        linear-gradient(135deg, transparent 2%, rgba(0,0,0,0.15) 2.5%, transparent 3%),
+        linear-gradient(225deg, transparent 4%, rgba(0,0,0,0.12) 4.5%, transparent 5%),
+        linear-gradient(45deg, transparent 6%, rgba(255,255,255,0.04) 6.5%, transparent 7%),
+        linear-gradient(180deg, #4a4a52 0%, #3a3a42 30%, #2e2e36 70%, #3a3a42 100%);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+      transform: none;
+    }
   }
 }
 
 .btn-primary {
-  background: $color-accent;
+  background:
+    linear-gradient(135deg, transparent 2%, rgba(0,0,0,0.15) 2.5%, transparent 3%),
+    linear-gradient(225deg, transparent 4%, rgba(0,0,0,0.12) 4.5%, transparent 5%),
+    linear-gradient(180deg, #7c4ddb 0%, #6b3fc7 30%, #5a32b0 70%, #6b3fc7 100%);
   color: white;
-  border-color: $color-accent;
+  border-color: #5a32b0;
 
   &:hover {
-    background: $color-accent-hover;
+    background:
+      linear-gradient(135deg, transparent 2%, rgba(0,0,0,0.15) 2.5%, transparent 3%),
+      linear-gradient(225deg, transparent 4%, rgba(0,0,0,0.12) 4.5%, transparent 5%),
+      linear-gradient(180deg, #8b5cf6 0%, #7c4ddb 30%, #6b3fc7 70%, #7c4ddb 100%);
   }
 }
 
 .btn-danger {
   color: $color-danger;
   border-color: $color-danger;
+  text-shadow: 0 0 4px rgba($color-danger, 0.4);
 }
 
 .btn-sm {
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 4px 9px;
 }
 
 // Form elements

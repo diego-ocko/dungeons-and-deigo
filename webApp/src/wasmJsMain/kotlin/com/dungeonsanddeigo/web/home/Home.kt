@@ -10,6 +10,7 @@ import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
 import com.dungeonsanddeigo.web.dnd.sheet.showCharacterDetail
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
+import kotlinx.dom.addClass
 import org.w3c.dom.*
 
 fun showListScreen() {
@@ -87,6 +88,7 @@ fun showListScreen() {
     // Create button
     val createBtn = document.createElement("button") as HTMLButtonElement
     createBtn.textContent = t("char.create")
+    createBtn.addClass("btn", "btn-primary")
     createBtn.addEventListener("click", { showAddCharSheet() })
     app.appendChild(createBtn)
 }
