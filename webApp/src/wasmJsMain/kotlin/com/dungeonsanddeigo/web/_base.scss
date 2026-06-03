@@ -1,13 +1,13 @@
 // Variables
-$font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-$font-heading: 'Cormorant Garamond', Georgia, serif;
+$font-family: 'Inter', sans-serif;
+$font-heading: 'Cormorant Garamond', serif;
 $font-display: 'Cinzel', serif;
-$color-bg-primary: #12141A;
+$color-bg-primary: #2A3040;
 $color-bg-secondary: #1D212B;
-$color-cards: #2A3040;
+$color-cards: #12141A;
 $color-accent: #8B5CF6;
 $color-accent-hover: #A78BFA;
-$color-gold: palegoldenrod;
+$color-gold: #eee8aa8c;
 $color-text: #F3F4F6;
 $color-text-muted: #A1A1AA;
 $color-success: #22C55E;
@@ -80,6 +80,7 @@ input, select, textarea {
 h1, h2, h3, h4 {
   font-family: $font-heading;
   color: $color-accent;
+  letter-spacing: 2px;
   text-shadow: 2px 0 $color-gold, -2px 0 $color-gold, 0 2px $color-gold, 0 -2px $color-gold,
                1px 1px $color-gold, -1px -1px $color-gold, 1px -1px $color-gold, -1px 1px $color-gold;
 }
