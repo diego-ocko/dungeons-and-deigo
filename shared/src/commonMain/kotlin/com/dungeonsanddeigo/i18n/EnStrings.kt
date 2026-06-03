@@ -19,6 +19,11 @@ object EnStrings {
 
         // Character creation
         "char.create" to "Create a new Character",
+        "char.delete" to "Delete",
+        "char.deleteTitle" to "Delete Character",
+        "char.deleteConfirm" to "Are you sure you want to delete",
+        "char.deleteWarning" to "This action cannot be undone!",
+        "char.confirmDelete" to "Delete",
         "char.name" to "Character Name",
         "char.model" to "Character Model",
         "char.image" to "Character Image",

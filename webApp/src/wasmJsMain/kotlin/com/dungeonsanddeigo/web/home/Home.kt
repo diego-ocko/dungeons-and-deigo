@@ -6,6 +6,7 @@ import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.addCharSheet.showAddCharSheet
 import com.dungeonsanddeigo.web.app
+import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
 import com.dungeonsanddeigo.web.dnd.sheet.showCharacterDetail
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
@@ -62,10 +63,22 @@ fun showListScreen() {
                 img.style.borderRadius = "4px"
                 li.appendChild(img)
             }
-            val span = document.createElement("span")
+            val span = document.createElement("span") as HTMLSpanElement
             span.textContent = "${c.name} (${c.sheetModel.name})"
+            span.style.setProperty("flex", "1")
+            span.style.cursor = "pointer"
+            span.addEventListener("click", { showCharacterDetail(c) })
             li.appendChild(span)
-            li.addEventListener("click", { showCharacterDetail(c) })
+
+            val deleteBtn = document.createElement("button") as HTMLButtonElement
+            deleteBtn.textContent = "\uD83D\uDDD1\uFE0F"
+            deleteBtn.title = t("char.delete")
+            deleteBtn.addEventListener("click", { e ->
+                e.stopPropagation()
+                DeleteCharacterModal(c.id, c.name).show { showListScreen() }
+            })
+            li.appendChild(deleteBtn)
+
             ul.appendChild(li)
         }
         app.appendChild(ul)
@@ -76,4 +89,24 @@ fun showListScreen() {
     createBtn.textContent = t("char.create")
     createBtn.addEventListener("click", { showAddCharSheet() })
     app.appendChild(createBtn)
+}
+
+private class DeleteCharacterModal(
+    private val characterId: Long,
+    private val characterName: String
+) : DndModal(
+    title = t("char.deleteTitle"),
+    size = "md",
+    saveLabel = t("char.confirmDelete")
+) {
+    override fun buildForm(form: HTMLDivElement) {
+        val msg = document.createElement("p") as HTMLParagraphElement
+        msg.textContent = "${t("char.deleteConfirm")} $characterName? ${t("char.deleteWarning")}"
+        form.appendChild(msg)
+    }
+
+    override fun onSave(close: () -> Unit) {
+        Repos.character.delete(characterId)
+        close()
+    }
 }

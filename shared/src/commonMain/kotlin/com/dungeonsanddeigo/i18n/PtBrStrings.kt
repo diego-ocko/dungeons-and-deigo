@@ -19,6 +19,11 @@ object PtBrStrings {
 
         // Character creation
         "char.create" to "Criar novo Personagem",
+        "char.delete" to "Deletar",
+        "char.deleteTitle" to "Deletar Personagem",
+        "char.deleteConfirm" to "Você tem certeza que quer deletar",
+        "char.deleteWarning" to "Essa ação não pode ser desfeita!",
+        "char.confirmDelete" to "Deletar",
         "char.name" to "Nome do Personagem",
         "char.model" to "Modelo do Personagem",
         "char.image" to "Imagem do Personagem",
