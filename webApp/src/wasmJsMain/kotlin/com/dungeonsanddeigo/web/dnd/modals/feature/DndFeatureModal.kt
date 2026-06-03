@@ -8,6 +8,7 @@ import com.dungeonsanddeigo.model.DndMainInfo
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -30,16 +31,13 @@ class DndFeatureModal(
     private var sourceCustomInput: HTMLInputElement? = null
     private var maxQtyInput: HTMLInputElement? = null
     private var reloadSelect: HTMLSelectElement? = null
-    private val selectedTags = mutableListOf<String>()
+    private lateinit var tagsField: TagsField
     private val selectedItems = mutableListOf<String>()
     private val armorChecks = mutableMapOf("Light" to false, "Medium" to false, "Heavy" to false, "Shields" to false)
     private val weaponCatChecks = mutableMapOf("Simple" to false, "Martial" to false)
     private val selectedWeapons = mutableListOf<String>()
     private lateinit var dynamicDiv: HTMLDivElement
 
-    init {
-        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
-    }
 
     override fun buildForm(form: HTMLDivElement) {
 
@@ -495,58 +493,11 @@ class DndFeatureModal(
     form.appendChild(dynamicDiv)
 
     // Tags (hidden for Idiom/Tool/Weapon-Armor)
-
-    val tagsContainer = document.createElement("div") as HTMLDivElement
-    tagsContainer.className = "modal__full-width"
-
-    val tagsLabel = document.createElement("label") as HTMLLabelElement
-    tagsLabel.textContent = t("label.tags")
-    tagsContainer.appendChild(tagsLabel)
-
-    val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-    tagBadgesDiv.className = "modal__tags"
-
-    fun refreshTagBadges() {
-        tagBadgesDiv.innerHTML = ""
-        selectedTags.forEach { tag ->
-            val badge = document.createElement("span") as HTMLSpanElement
-            badge.textContent = "$tag \u00D7"
-            badge.className = "modal__tag"
-            badge.addEventListener("click", {
-                selectedTags.remove(tag)
-                refreshTagBadges()
-            })
-            tagBadgesDiv.appendChild(badge)
-        }
-    }
-    refreshTagBadges()
-    tagsContainer.appendChild(tagBadgesDiv)
-
-    val tagAddRow = document.createElement("div") as HTMLDivElement
-    tagAddRow.className = "modal__tag-add-row"
-
-    val tagInput = document.createElement("input") as HTMLInputElement
-    tagInput.placeholder = "Add tag..."
-    tagAddRow.appendChild(tagInput)
-
-    val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = t("btn.add")
-    tagAddBtn.addEventListener("click", {
-        val tag = tagInput.value.trim()
-        if (tag.isNotEmpty() && tag !in selectedTags) {
-            selectedTags.add(tag)
-            refreshTagBadges()
-        }
-        tagInput.value = ""
-    })
-    tagAddRow.appendChild(tagAddBtn)
-    tagsContainer.appendChild(tagAddRow)
-
-    form.appendChild(tagsContainer)
+    tagsField = TagsField(form, existing?.tags ?: emptyList())
 
     fun updateTagsVisibility() {
         val hideTagsAndName = typeSelect.value == "Idiom" || typeSelect.value == "Tool Proficiency" || typeSelect.value == "Weapon/Armor Proficiency"
-        tagsContainer.style.display = if (hideTagsAndName) "none" else ""
+        tagsField.setVisible(!hideTagsAndName)
     }
     updateTagsVisibility()
     typeSelect.addEventListener("change", { updateTagsVisibility() })
@@ -556,7 +507,7 @@ class DndFeatureModal(
     override fun onSave(close: () -> Unit) {
         val isListType = typeSelect.value == "Idiom" || typeSelect.value == "Tool Proficiency"
         val isWeaponArmor = typeSelect.value == "Weapon/Armor Proficiency"
-        val tags = if (isListType || isWeaponArmor) emptyList() else selectedTags.toList()
+        val tags = if (isListType || isWeaponArmor) emptyList() else tagsField.getTags()
         val descriptionValue = when {
             isListType -> selectedItems.joinToString(", ")
             isWeaponArmor -> {

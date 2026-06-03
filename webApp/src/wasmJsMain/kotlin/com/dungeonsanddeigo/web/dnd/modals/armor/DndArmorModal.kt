@@ -8,6 +8,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndArmor
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -29,11 +30,7 @@ class DndArmorModal(
     private lateinit var currSelect: HTMLSelectElement
     private lateinit var addFeatInput: HTMLTextAreaElement
     private lateinit var eqCb: HTMLInputElement
-    private val selectedTags = mutableListOf<String>()
-
-    init {
-        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
-    }
+    private lateinit var tagsField: TagsField
 
     override fun buildForm(form: HTMLDivElement) {
         form.classList.add("armor-modal")
@@ -156,45 +153,7 @@ class DndArmorModal(
     form.appendChild(addFeatInput)
 
     // Tags
-    val selectedTags = mutableListOf<String>()
-    if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
-
-    val tagsContainer = document.createElement("div") as HTMLDivElement
-    tagsContainer.className = "modal__full-width"
-    val tagsLbl = document.createElement("label") as HTMLLabelElement
-    tagsLbl.textContent = t("label.tags")
-    tagsContainer.appendChild(tagsLbl)
-
-    val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-    tagBadgesDiv.className = "modal__tags"
-
-    fun refreshArmorTagBadges() {
-        tagBadgesDiv.innerHTML = ""
-        selectedTags.forEach { tag ->
-            val badge = document.createElement("span") as HTMLSpanElement
-            badge.textContent = "$tag \u00D7"
-            badge.className = "modal__tag"
-            badge.addEventListener("click", { selectedTags.remove(tag); refreshArmorTagBadges() })
-            tagBadgesDiv.appendChild(badge)
-        }
-    }
-    refreshArmorTagBadges()
-    tagsContainer.appendChild(tagBadgesDiv)
-
-    val tagAddRow = document.createElement("div") as HTMLDivElement
-    tagAddRow.className = "modal__tag-add-row"
-    val tagInput = document.createElement("input") as HTMLInputElement
-    tagAddRow.appendChild(tagInput)
-    val tagAddBtn = document.createElement("button") as HTMLButtonElement
-    tagAddBtn.textContent = t("btn.add")
-    tagAddBtn.addEventListener("click", {
-        val tag = tagInput.value.trim()
-        if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshArmorTagBadges() }
-        tagInput.value = ""
-    })
-    tagAddRow.appendChild(tagAddBtn)
-    tagsContainer.appendChild(tagAddRow)
-    form.appendChild(tagsContainer)
+    tagsField = TagsField(form, existing?.tags ?: emptyList())
 
     // Equipped (last field)
     val eqContainer = document.createElement("div") as HTMLDivElement
@@ -221,7 +180,7 @@ class DndArmorModal(
             price = priceInput.value.toIntOrNull() ?: 0,
             priceCurrency = currSelect.value,
             isEquipped = eqCb.checked,
-            tags = selectedTags.toList(),
+            tags = tagsField.getTags(),
             additionalFeatures = addFeatInput.value
         )
         // Unequip other items in same slot if equipping this one

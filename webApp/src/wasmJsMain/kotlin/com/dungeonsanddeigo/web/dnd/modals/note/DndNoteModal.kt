@@ -6,6 +6,7 @@ import com.dungeonsanddeigo.model.DndNote
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.currentTimestamp
 import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -18,11 +19,7 @@ class DndNoteModal(
     private lateinit var titleInput: HTMLInputElement
     private lateinit var sessionInput: HTMLInputElement
     private lateinit var noteInput: HTMLTextAreaElement
-    private val selectedTags = mutableListOf<String>()
-
-    init {
-        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
-    }
+    private lateinit var tagsField: TagsField
 
     override fun buildForm(form: HTMLDivElement) {
         titleInput = addInput(form, t("notes.title"), existing?.title ?: "").input
@@ -31,40 +28,7 @@ class DndNoteModal(
         noteInput = addTextarea(form, t("notes.note"), existing?.note ?: "", rows = 6).input
 
         // Tags
-        val tagsLbl = document.createElement("label") as HTMLLabelElement
-        tagsLbl.textContent = t("label.tags")
-        form.appendChild(tagsLbl)
-
-        val tagBadgesDiv = document.createElement("div") as HTMLDivElement
-        tagBadgesDiv.className = "modal__tags"
-
-        fun refreshTags() {
-            tagBadgesDiv.innerHTML = ""
-            selectedTags.forEach { tag ->
-                val badge = document.createElement("span") as HTMLSpanElement
-                badge.textContent = "$tag \u00D7"
-                badge.className = "modal__tag"
-                badge.addEventListener("click", { selectedTags.remove(tag); refreshTags() })
-                tagBadgesDiv.appendChild(badge)
-            }
-        }
-        refreshTags()
-        form.appendChild(tagBadgesDiv)
-
-        val tagAddRow = document.createElement("div") as HTMLDivElement
-        tagAddRow.className = "modal__tag-add-row"
-        val tagInput = document.createElement("input") as HTMLInputElement
-        tagInput.placeholder = "Add tag..."
-        tagAddRow.appendChild(tagInput)
-        val tagAddBtn = document.createElement("button") as HTMLButtonElement
-        tagAddBtn.textContent = t("btn.add")
-        tagAddBtn.addEventListener("click", {
-            val tag = tagInput.value.trim()
-            if (tag.isNotEmpty() && tag !in selectedTags) { selectedTags.add(tag); refreshTags() }
-            tagInput.value = ""
-        })
-        tagAddRow.appendChild(tagAddBtn)
-        form.appendChild(tagAddRow)
+        tagsField = TagsField(form, existing?.tags ?: emptyList())
     }
 
     override fun onSave(close: () -> Unit) {
@@ -76,7 +40,7 @@ class DndNoteModal(
             timestamp = if (existing != null) existing.timestamp else now,
             session = sessionInput.value,
             note = noteInput.value,
-            tags = selectedTags.toList()
+            tags = tagsField.getTags()
         )
         Repos.note.save(note)
         close()

@@ -6,6 +6,7 @@ import com.dungeonsanddeigo.model.DndSpell
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -38,11 +39,7 @@ class DndSpellModal(
     private lateinit var diceInput: HTMLInputElement
     private lateinit var dmgTypeSel: HTMLSelectElement
     private lateinit var saveSel: HTMLSelectElement
-    private val selectedTags = mutableListOf<String>()
-
-    init {
-        if (existing?.tags?.isNotEmpty() == true) selectedTags.addAll(existing.tags)
-    }
+    private lateinit var tagsField: TagsField
 
     private fun labeledInput(parent: HTMLDivElement, label: String, value: String): HTMLInputElement {
         val col = document.createElement("div") as HTMLDivElement
@@ -188,37 +185,7 @@ class DndSpellModal(
         savingThrowCb.addEventListener("change", { saveDetailsRow.style.display = if (savingThrowCb.checked) "grid" else "none" })
 
         // Tags
-        val tagsLbl = document.createElement("label") as HTMLLabelElement
-        tagsLbl.textContent = t("label.tags")
-        form.appendChild(tagsLbl)
-        val tagBadges = document.createElement("div") as HTMLDivElement
-        tagBadges.className = "modal__tags"
-        fun refreshTags() {
-            tagBadges.innerHTML = ""
-            selectedTags.forEach { tag ->
-                val badge = document.createElement("span") as HTMLSpanElement
-                badge.textContent = "$tag \u00D7"
-                badge.className = "modal__tag"
-                badge.addEventListener("click", { selectedTags.remove(tag); refreshTags() })
-                tagBadges.appendChild(badge)
-            }
-        }
-        refreshTags()
-        form.appendChild(tagBadges)
-        val tagRow = document.createElement("div") as HTMLDivElement
-        tagRow.className = "modal__tag-add-row"
-        val tagInput = document.createElement("input") as HTMLInputElement
-        tagInput.placeholder = "Add tag..."
-        tagRow.appendChild(tagInput)
-        val tagAddBtn = document.createElement("button") as HTMLButtonElement
-        tagAddBtn.textContent = t("btn.add")
-        tagAddBtn.addEventListener("click", {
-            val tg = tagInput.value.trim()
-            if (tg.isNotEmpty() && tg !in selectedTags) { selectedTags.add(tg); refreshTags() }
-            tagInput.value = ""
-        })
-        tagRow.appendChild(tagAddBtn)
-        form.appendChild(tagRow)
+        tagsField = TagsField(form, existing?.tags ?: emptyList())
     }
 
     override fun onSave(close: () -> Unit) {
@@ -248,7 +215,7 @@ class DndSpellModal(
             attackDamageDice = diceInput.value,
             attackDamageType = dmgTypeSel.value,
             isPrepared = preparedCb.checked,
-            tags = selectedTags.toList()
+            tags = tagsField.getTags()
         )
         Repos.spell.save(spell)
         close()
