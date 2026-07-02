@@ -107,12 +107,14 @@ abstract class Modal(
 
         val cancelBtn = document.createElement("button") as HTMLButtonElement
         cancelBtn.textContent = cancelLabel ?: t("btn.cancel")
+        cancelBtn.className = "modal__btn-secondary"
         cancelBtn.addEventListener("click", { close() })
         btnRow.appendChild(cancelBtn)
 
         if (!hideSave) {
             val saveBtn = document.createElement("button") as HTMLButtonElement
             saveBtn.textContent = saveLabel ?: t("btn.save")
+            saveBtn.className = "modal__btn-primary"
             saveBtn.addEventListener("click", {
                 onSave {
                     close()
