@@ -1,10 +1,10 @@
-package com.dungeonsanddeigo.web.dnd.components.modal
+package com.dungeonsanddeigo.web.components.modal
 
 import com.dungeonsanddeigo.i18n.t
 import kotlinx.browser.document
 import org.w3c.dom.*
 
-abstract class DndModal(
+abstract class Modal(
     private val title: String,
     private val size: String = "",
     private val saveLabel: String? = null,

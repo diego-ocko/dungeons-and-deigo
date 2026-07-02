@@ -7,7 +7,7 @@ import com.dungeonsanddeigo.model.DndFeature
 import com.dungeonsanddeigo.model.DndMainInfo
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -16,7 +16,7 @@ class DndFeatureModal(
     private val character: Character,
     private val existing: DndFeature?,
     private val mainInfo: DndMainInfo?
-) : DndModal(
+) : Modal(
     title = if (existing != null) t("features.editFeature") else t("features.addNew")
 ) {
     private lateinit var typeSelect: HTMLSelectElement

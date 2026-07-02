@@ -5,7 +5,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndNote
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.currentTimestamp
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -13,7 +13,7 @@ import org.w3c.dom.*
 class DndNoteModal(
     private val character: Character,
     private val existing: DndNote?
-) : DndModal(
+) : Modal(
     title = if (existing != null) t("notes.editNote") else t("notes.addNote")
 ) {
     private lateinit var titleInput: HTMLInputElement

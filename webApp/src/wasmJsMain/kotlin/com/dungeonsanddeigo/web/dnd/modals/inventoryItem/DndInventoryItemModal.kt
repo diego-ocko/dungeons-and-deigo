@@ -5,7 +5,7 @@ import com.dungeonsanddeigo.i18n.tCurrency
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndInventoryItem
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -14,7 +14,7 @@ class DndInventoryItemModal(
     private val character: Character,
     private val category: String,
     private val existing: DndInventoryItem?
-) : DndModal(
+) : Modal(
     title = if (existing != null) t("inv.editItem") else t("inv.addItem"),
     size = "lg"
 ) {

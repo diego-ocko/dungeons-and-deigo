@@ -3,7 +3,7 @@ package com.dungeonsanddeigo.web.dnd.modals.addConsumableLoot
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.modals.consumable.DndConsumableModal
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -11,7 +11,7 @@ import org.w3c.dom.*
 class DndAddConsumableLootModal(
     private val character: Character,
     private val onItemAdded: () -> Unit
-) : DndModal(
+) : Modal(
     title = t("inv.addConsumableLoot"),
     hideSave = true
 ) {

@@ -3,13 +3,13 @@ package com.dungeonsanddeigo.web.dnd.modals.preparedSpells
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import kotlinx.browser.document
 import org.w3c.dom.*
 
 class DndPreparedSpellsModal(
     private val character: Character
-) : DndModal(
+) : Modal(
     title = t("magic.changePrepared"),
     hideSave = true,
     cancelLabel = t("magic.done")

@@ -5,7 +5,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndSpell
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -13,7 +13,7 @@ import org.w3c.dom.*
 class DndSpellModal(
     private val character: Character,
     private val existing: DndSpell?
-) : DndModal(
+) : Modal(
     title = if (existing != null) t("magic.editSpell") else t("magic.addSpell"),
     size = "xl"
 ) {

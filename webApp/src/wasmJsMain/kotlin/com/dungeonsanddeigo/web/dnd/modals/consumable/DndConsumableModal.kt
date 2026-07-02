@@ -5,7 +5,7 @@ import com.dungeonsanddeigo.i18n.tCurrency
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndConsumable
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -13,7 +13,7 @@ import org.w3c.dom.*
 class DndConsumableModal(
     private val character: Character,
     private val existing: DndConsumable?
-) : DndModal(
+) : Modal(
     title = if (existing != null) t("inv.editConsumable") else t("inv.addConsumable"),
     size = "lg"
 ) {

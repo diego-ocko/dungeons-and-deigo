@@ -3,7 +3,7 @@ package com.dungeonsanddeigo.web.dnd.modals.hitDice
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.w3c.dom.*
@@ -13,7 +13,7 @@ class DndHitDiceModal(
     private val storageKey: String,
     private val currentUsed: Int,
     private val character: Character
-) : DndModal(
+) : Modal(
     title = "${t("playing.useHitDie")} ($die)",
     size = "sm",
     saveLabel = t("playing.apply")

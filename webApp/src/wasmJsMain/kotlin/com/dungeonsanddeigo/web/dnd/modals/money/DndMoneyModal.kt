@@ -4,14 +4,14 @@ import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndMoney
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import org.w3c.dom.*
 
 class DndMoneyModal(
     private val character: Character,
     title: String,
     private val isAdd: Boolean
-) : DndModal(
+) : Modal(
     title = title,
     size = "md",
     saveLabel = if (isAdd) t("btn.add") else t("playing.spend")

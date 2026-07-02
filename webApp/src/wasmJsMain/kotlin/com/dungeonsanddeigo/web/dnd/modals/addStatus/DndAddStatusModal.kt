@@ -3,14 +3,14 @@ package com.dungeonsanddeigo.web.dnd.modals.addStatus
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.i18n.tStatus
 import com.dungeonsanddeigo.model.Character
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.w3c.dom.*
 
 class DndAddStatusModal(
     private val character: Character
-) : DndModal(
+) : Modal(
     title = t("playing.addStatus"),
     size = "md",
     saveLabel = t("btn.add")

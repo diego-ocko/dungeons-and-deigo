@@ -5,7 +5,7 @@ import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.addCharSheet.showAddCharSheet
 import com.dungeonsanddeigo.web.app
 import com.dungeonsanddeigo.web.components.header.renderHeader
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.sheet.showCharacterDetail
 import kotlinx.browser.document
 import kotlinx.dom.addClass
@@ -68,7 +68,7 @@ fun showListScreen() {
 private class DeleteCharacterModal(
     private val characterId: Long,
     private val characterName: String
-) : DndModal(
+) : Modal(
     title = t("char.deleteTitle"),
     size = "md",
     saveLabel = t("char.confirmDelete")

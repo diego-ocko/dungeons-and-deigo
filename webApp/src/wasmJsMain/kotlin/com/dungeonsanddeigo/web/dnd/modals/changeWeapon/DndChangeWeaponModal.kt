@@ -3,12 +3,12 @@ package com.dungeonsanddeigo.web.dnd.modals.changeWeapon
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.web.Repos
-import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
+import com.dungeonsanddeigo.web.components.modal.Modal
 import org.w3c.dom.*
 
 class DndChangeWeaponModal(
     private val character: Character
-) : DndModal(
+) : Modal(
     title = t("playing.changeWeapon")
 ) {
     private val weapons = Repos.weapon.getByCharacterId(character.id)

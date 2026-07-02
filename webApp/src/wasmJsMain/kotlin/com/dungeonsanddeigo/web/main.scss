@@ -4,6 +4,7 @@
 
 // Pages
 @use 'components/header/header';
+@use 'components/modal/modal';
 @use 'home/home';
 @use 'addCharSheet/addCharSheet';
 
@@ -22,7 +23,6 @@
 @use 'dnd/tabs/notes/dndnotestab';
 
 // DnD Components and Modals
-@use 'dnd/modals/modals';
 @use 'dnd/modals/weapon/dndweaponmodal';
 @use 'dnd/modals/armor/dndarmormodal';
 @use 'dnd/modals/spell/dndspellmodal';
