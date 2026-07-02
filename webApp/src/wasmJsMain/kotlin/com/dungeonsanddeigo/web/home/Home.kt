@@ -1,45 +1,25 @@
 package com.dungeonsanddeigo.web.home
 
-import com.dungeonsanddeigo.i18n.I18n
-import com.dungeonsanddeigo.i18n.Locale
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.addCharSheet.showAddCharSheet
 import com.dungeonsanddeigo.web.app
+import com.dungeonsanddeigo.web.components.header.renderHeader
 import com.dungeonsanddeigo.web.dnd.components.modal.DndModal
 import com.dungeonsanddeigo.web.dnd.sheet.showCharacterDetail
 import kotlinx.browser.document
-import kotlinx.browser.localStorage
 import kotlinx.dom.addClass
 import org.w3c.dom.*
 
 fun showListScreen() {
     app.innerHTML = ""
-
-    val title = document.createElement("h1")
-    title.textContent = t("app.title")
-    app.appendChild(title)
-
-    // Language switcher
-    val langDiv = document.createElement("div") as HTMLDivElement
-    langDiv.style.marginBottom = "12px"
-    val langBtn = document.createElement("button") as HTMLButtonElement
-    langBtn.textContent = if (I18n.current == Locale.EN) "\uD83C\uDDE7\uD83C\uDDF7 Português" else "\uD83C\uDDFA\uD83C\uDDF8 English"
-    langBtn.style.fontSize = "12px"
-    langBtn.addEventListener("click", {
-        if (I18n.current == Locale.EN) {
-            I18n.current = Locale.PT_BR
-            localStorage.setItem("app_locale", "PT_BR")
-        } else {
-            I18n.current = Locale.EN
-            localStorage.setItem("app_locale", "EN")
-        }
-        showListScreen()
-    })
-    langDiv.appendChild(langBtn)
-    app.appendChild(langDiv)
+    renderHeader(app) { showListScreen() }
 
     // Character list
+    val subtitle = document.createElement("h2")
+    subtitle.textContent = t("char.list")
+    app.appendChild(subtitle)
+
     val characters = Repos.character.getAll()
     if (characters.isEmpty()) {
         val empty = document.createElement("p") as HTMLParagraphElement
@@ -47,27 +27,19 @@ fun showListScreen() {
         app.appendChild(empty)
     } else {
         val ul = document.createElement("ul") as HTMLUListElement
-        ul.style.listStyle = "none"
-        ul.style.padding = "0"
+        ul.className = "home__list"
         characters.forEach { c ->
             val li = document.createElement("li") as HTMLLIElement
-            li.style.display = "flex"
-            li.style.alignItems = "center"
-            li.style.marginBottom = "8px"
-            li.style.cursor = "pointer"
+            li.className = "home__list-item"
             if (c.imageBase64 != null) {
                 val img = document.createElement("img") as HTMLImageElement
                 img.src = c.imageBase64!!
-                img.style.width = "40px"
-                img.style.height = "40px"
-                img.style.marginRight = "8px"
-                img.style.borderRadius = "4px"
+                img.className = "home__list-img"
                 li.appendChild(img)
             }
             val span = document.createElement("span") as HTMLSpanElement
             span.textContent = "${c.name} (${c.sheetModel.name})"
-            span.style.setProperty("flex", "1")
-            span.style.cursor = "pointer"
+            span.className = "home__list-name"
             span.addEventListener("click", { showCharacterDetail(c) })
             li.appendChild(span)
 

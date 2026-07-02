@@ -1,0 +1,9 @@
+@use '../../variables' as *;
+
+.header {
+  margin-bottom: $spacing;
+
+  &__lang-btn {
+    font-size: 12px;
+  }
+}

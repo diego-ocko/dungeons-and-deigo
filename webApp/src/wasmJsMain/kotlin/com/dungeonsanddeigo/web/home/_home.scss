@@ -1,34 +1,31 @@
+@use '../variables' as *;
+
 .home {
-  &__title {
-    margin-bottom: 12px;
-  }
-
-  &__lang-btn {
-    font-size: 12px;
-    margin-bottom: 12px;
-  }
-
   &__list {
     list-style: none;
     padding: 0;
+    max-width: 400px;
   }
 
   &__list-item {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: $spacing-sm;
     cursor: pointer;
-
-    &:hover {
-      background: #f9f9f9;
-      border-radius: 4px;
-    }
+    padding: $spacing-sm;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
   }
 
   &__list-img {
     width: 40px;
     height: 40px;
-    margin-right: 8px;
-    border-radius: 4px;
+    margin-right: $spacing-sm;
+    border-radius: $radius-sm;
+  }
+
+  &__list-name {
+    flex: 1;
+    cursor: pointer;
   }
 }

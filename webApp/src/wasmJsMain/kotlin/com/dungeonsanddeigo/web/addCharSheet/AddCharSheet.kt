@@ -5,6 +5,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.availableSheetModels
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.app
+import com.dungeonsanddeigo.web.components.header.renderHeader
 import com.dungeonsanddeigo.web.dnd.sheet.showCharacterDetail
 import com.dungeonsanddeigo.web.home.showListScreen
 import kotlinx.browser.document
@@ -13,32 +14,31 @@ import org.w3c.files.FileReader
 
 fun showAddCharSheet() {
     app.innerHTML = ""
+    renderHeader(app) { showAddCharSheet() }
 
     val title = document.createElement("h2") as HTMLHeadingElement
     title.textContent = t("char.create")
     app.appendChild(title)
 
     val form = document.createElement("div") as HTMLDivElement
-    form.style.setProperty("display", "grid")
-    form.style.setProperty("gap", "12px")
-    form.style.maxWidth = "400px"
+    form.className = "add-char-sheet"
 
     // Character Name
     val nameLabel = document.createElement("label") as HTMLLabelElement
     nameLabel.textContent = t("char.name")
-    nameLabel.style.fontWeight = "bold"
+    nameLabel.className = "add-char-sheet__label"
     form.appendChild(nameLabel)
     val nameInput = document.createElement("input") as HTMLInputElement
-    nameInput.style.padding = "6px"
+    nameInput.className = "add-char-sheet__input"
     form.appendChild(nameInput)
 
     // Character Model dropdown
     val modelLabel = document.createElement("label") as HTMLLabelElement
     modelLabel.textContent = t("char.model")
-    modelLabel.style.fontWeight = "bold"
+    modelLabel.className = "add-char-sheet__label"
     form.appendChild(modelLabel)
     val modelSelect = document.createElement("select") as HTMLSelectElement
-    modelSelect.style.padding = "6px"
+    modelSelect.className = "add-char-sheet__input"
     availableSheetModels.forEachIndexed { index, model ->
         val option = document.createElement("option") as HTMLOptionElement
         option.value = index.toString()
@@ -50,7 +50,7 @@ fun showAddCharSheet() {
     // Image upload
     val imageLabel = document.createElement("label") as HTMLLabelElement
     imageLabel.textContent = t("char.image")
-    imageLabel.style.fontWeight = "bold"
+    imageLabel.className = "add-char-sheet__label"
     form.appendChild(imageLabel)
     val imageInput = document.createElement("input") as HTMLInputElement
     imageInput.type = "file"
@@ -75,9 +75,7 @@ fun showAddCharSheet() {
 
     // Buttons
     val btnRow = document.createElement("div") as HTMLDivElement
-    btnRow.style.display = "flex"
-    btnRow.style.setProperty("gap", "8px")
-    btnRow.style.marginTop = "8px"
+    btnRow.className = "add-char-sheet__buttons"
 
     val cancelBtn = document.createElement("button") as HTMLButtonElement
     cancelBtn.textContent = t("btn.cancel")
@@ -85,7 +83,8 @@ fun showAddCharSheet() {
     btnRow.appendChild(cancelBtn)
 
     val submitBtn = document.createElement("button") as HTMLButtonElement
-    submitBtn.textContent = t("btn.submit")
+    submitBtn.textContent = t("char.save")
+    submitBtn.className = "btn-primary"
     submitBtn.addEventListener("click", {
         val charName = nameInput.value
         val selectedModel = availableSheetModels[modelSelect.value.toInt()]
