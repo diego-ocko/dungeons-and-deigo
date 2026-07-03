@@ -2,6 +2,14 @@
 
 A Kotlin Multiplatform app targeting Android, iOS, and Web.
 
+## Deployment status
+
+| Platform | Status | Link |
+|----------|--------|------|
+| Web | [![Netlify Status](https://api.netlify.com/api/v1/badges/e4c1d49d-4dff-4ae4-b3f1-0d986aec299b/deploy-status)](https://app.netlify.com/projects/dungeons-and-deigo/deploys) |  https://dungeons-and-deigo.netlify.app/ |
+| Android | Comming Soon | - |
+| iOS | Comming Soon | - |
+
 ## Project Structure
 
 | Module | Purpose | Target |
