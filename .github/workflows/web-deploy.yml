@@ -35,10 +35,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew :webApp:wasmJsBrowserDistribution
 
+      - name: Get commit message
+        id: commit
+        run: echo "msg=$(git log -1 --pretty='[%h] %s')" >> $GITHUB_OUTPUT
+
       - name: Deploy to Netlify
         uses: netlify/actions/cli@master
         with:
-          args: deploy --dir=webApp/build/dist/wasmJs/productionExecutable --prod
+          args: deploy --dir=webApp/build/dist/wasmJs/productionExecutable --prod --message "Tag ${{ github.ref_name }} - ${{ steps.commit.outputs.msg }}"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
