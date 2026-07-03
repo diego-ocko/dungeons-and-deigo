@@ -12,6 +12,7 @@ import com.dungeonsanddeigo.web.dnd.modals.preparedSpells.DndPreparedSpellsModal
 import com.dungeonsanddeigo.web.dnd.modals.money.DndMoneyModal
 import com.dungeonsanddeigo.web.dnd.modals.addStatus.DndAddStatusModal
 import com.dungeonsanddeigo.web.dnd.modals.hitDice.DndHitDiceModal
+import com.dungeonsanddeigo.web.dnd.modals.life.DndLifeModal
 import com.dungeonsanddeigo.web.dnd.modals.armor.DndArmorModal
 import com.dungeonsanddeigo.web.dnd.modals.weapon.DndWeaponModal
 import com.dungeonsanddeigo.web.dnd.modals.magicItem.DndMagicItemModal
@@ -134,52 +135,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     }
 
     fun showValueModal(title: String, onConfirm: (Int) -> Unit) {
-        val overlay = document.createElement("div") as HTMLDivElement
-        overlay.style.position = "fixed"
-        overlay.style.top = "0"; overlay.style.left = "0"
-        overlay.style.width = "100%"; overlay.style.height = "100%"
-        overlay.style.backgroundColor = "rgba(0,0,0,0.5)"
-        overlay.style.display = "flex"
-        overlay.style.justifyContent = "center"; overlay.style.alignItems = "center"
-        overlay.style.setProperty("z-index", "1000")
-
-        val modal = document.createElement("div") as HTMLDivElement
-        modal.style.backgroundColor = "white"
-        modal.style.borderRadius = "8px"; modal.style.padding = "24px"
-        modal.style.maxWidth = "300px"; modal.style.width = "90%"
-
-        val titleEl = document.createElement("h3") as HTMLHeadingElement
-        titleEl.textContent = title
-        modal.appendChild(titleEl)
-
-        val input = document.createElement("input") as HTMLInputElement
-        input.type = "number"; input.min = "0"; input.value = "0"
-        input.style.width = "100%"; input.style.padding = "8px"
-        input.style.fontSize = "18px"; input.style.textAlign = "center"
-        modal.appendChild(input)
-
-        val btnRow = document.createElement("div") as HTMLDivElement
-        btnRow.style.display = "flex"; btnRow.style.setProperty("gap", "8px")
-        btnRow.style.marginTop = "16px"; btnRow.style.justifyContent = "flex-end"
-
-        val cancelBtn = document.createElement("button") as HTMLButtonElement
-        cancelBtn.textContent = t("btn.cancel")
-        cancelBtn.addEventListener("click", { document.body?.removeChild(overlay) })
-        btnRow.appendChild(cancelBtn)
-
-        val confirmBtn = document.createElement("button") as HTMLButtonElement
-        confirmBtn.textContent = t("playing.confirm")
-        confirmBtn.addEventListener("click", {
-            val value = input.value.toIntOrNull() ?: 0
-            if (value > 0) onConfirm(value)
-            document.body?.removeChild(overlay)
-        })
-        btnRow.appendChild(confirmBtn)
-
-        modal.appendChild(btnRow)
-        overlay.appendChild(modal)
-        document.body?.appendChild(overlay)
-        input.focus()
+        DndLifeModal(title, onConfirm).show()
     }
 
     // Buttons
