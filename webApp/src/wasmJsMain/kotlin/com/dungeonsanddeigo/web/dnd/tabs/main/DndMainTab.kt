@@ -12,6 +12,9 @@ import kotlinx.browser.window
 import org.w3c.dom.*
 
 fun renderDndMainTab(character: Character, container: HTMLDivElement) {
+
+    val HOMEBREW_ADD_OPTION_LABEL = t("main.homeBrewOption")
+    val IS_HOMEBREW_LABEL = t("main.isHomeBrew")
     val info = Repos.mainInfo.getByCharacterId(character.id) ?: DndMainInfo(characterId = character.id)
 
     val form = document.createElement("div") as HTMLDivElement
@@ -46,7 +49,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
-        emptyOpt.textContent = "-- Select --"
+        emptyOpt.textContent = t("general.select")
         select.appendChild(emptyOpt)
 
         val subClasses = DungeonsAndDragons.subClassesFor(className)
@@ -59,20 +62,20 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customOpt = document.createElement("option") as HTMLOptionElement
         customOpt.value = "__custom__"
-        customOpt.textContent = "Custom..."
+        customOpt.textContent = HOMEBREW_ADD_OPTION_LABEL
         select.appendChild(customOpt)
 
         if (currentValue != null && currentValue !in subClasses) {
             val existingCustom = document.createElement("option") as HTMLOptionElement
             existingCustom.value = currentValue
-            existingCustom.textContent = "$currentValue (Custom)"
+            existingCustom.textContent = "$currentValue $IS_HOMEBREW_LABEL"
             select.insertBefore(existingCustom, customOpt)
         }
 
         select.value = currentValue ?: ""
 
         val customInput = document.createElement("input") as HTMLInputElement
-        customInput.placeholder = "Enter custom sub-class"
+        customInput.placeholder = t("main.enterCustomSubClass")
         customInput.className = "main-tab-custom-input"
 
         val addBtn = document.createElement("button") as HTMLButtonElement
@@ -81,11 +84,11 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
-                customInput.style.display = "block"
-                addBtn.style.display = "inline-block"
+                customInput.classList.add("visible")
+                addBtn.classList.add("visible")
             } else {
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
         })
 
@@ -94,12 +97,12 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
             if (customValue.isNotEmpty()) {
                 val newOpt = document.createElement("option") as HTMLOptionElement
                 newOpt.value = customValue
-                newOpt.textContent = "$customValue (Custom)"
+                newOpt.textContent = "$customValue $IS_HOMEBREW_LABEL"
                 select.insertBefore(newOpt, customOpt)
                 select.value = customValue
                 customInput.value = ""
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
         })
 
@@ -129,7 +132,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
-        emptyOpt.textContent = "-- Select --"
+        emptyOpt.textContent = t("general.select")
         select.appendChild(emptyOpt)
 
         DungeonsAndDragons.defaultClasses.forEach { cls ->
@@ -141,14 +144,14 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customOpt = document.createElement("option") as HTMLOptionElement
         customOpt.value = "__custom__"
-        customOpt.textContent = "Custom..."
+        customOpt.textContent = HOMEBREW_ADD_OPTION_LABEL
         select.appendChild(customOpt)
 
         Repos.customClass.getAll().forEach { cls ->
             if (cls != value) {
                 val opt = document.createElement("option") as HTMLOptionElement
                 opt.value = cls
-                opt.textContent = "$cls (Custom)"
+                opt.textContent = "$cls $IS_HOMEBREW_LABEL"
                 select.insertBefore(opt, customOpt)
             }
         }
@@ -156,7 +159,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         if (value != null && value !in DungeonsAndDragons.defaultClasses && value !in Repos.customClass.getAll()) {
             val existingCustom = document.createElement("option") as HTMLOptionElement
             existingCustom.value = value
-            existingCustom.textContent = "$value (Custom)"
+            existingCustom.textContent = "$value $IS_HOMEBREW_LABEL"
             select.insertBefore(existingCustom, customOpt)
             customClasses.add(value)
         }
@@ -164,24 +167,20 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         select.value = value ?: ""
 
         val customInput = document.createElement("input") as HTMLInputElement
-        customInput.placeholder = "Enter custom class"
-        
-        
-        customInput.style.display = "none"
-        
+        customInput.placeholder = t("main.enterCustomClass")
+        customInput.classList.add("main-tab-custom-input")
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
-        addBtn.style.display = "none"
-        
+        addBtn.classList.add("main-tab-custom-btn")
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
-                customInput.style.display = "block"
-                addBtn.style.display = "inline-block"
+                customInput.classList.add("visible")
+                addBtn.classList.add("visible")
             } else {
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
             // Rebuild sub-class dropdown
             val scWrapper = subClassWrapper()
@@ -201,12 +200,12 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
                 Repos.customClass.add(customValue)
                 val newOpt = document.createElement("option") as HTMLOptionElement
                 newOpt.value = customValue
-                newOpt.textContent = "$customValue (Custom)"
+                newOpt.textContent = "$customValue $IS_HOMEBREW_LABEL"
                 select.insertBefore(newOpt, customOpt)
                 select.value = customValue
                 customInput.value = ""
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
                 // Rebuild sub-class for custom class (only Custom option)
                 val scWrapper = subClassWrapper()
                 if (scWrapper != null) {
@@ -245,7 +244,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         val select = document.createElement("select") as HTMLSelectElement
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
-        emptyOpt.textContent = "-- Select --"
+        emptyOpt.textContent = t("general.select")
         select.appendChild(emptyOpt)
         DungeonsAndDragons.defaultClasses.forEach { cls ->
             val opt = document.createElement("option") as HTMLOptionElement
@@ -255,40 +254,38 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         }
         val customOpt = document.createElement("option") as HTMLOptionElement
         customOpt.value = "__custom__"
-        customOpt.textContent = "Custom..."
+        customOpt.textContent = HOMEBREW_ADD_OPTION_LABEL
         select.appendChild(customOpt)
         Repos.customClass.getAll().forEach { cls ->
             if (cls != value) {
                 val opt = document.createElement("option") as HTMLOptionElement
                 opt.value = cls
-                opt.textContent = "$cls (Custom)"
+                opt.textContent = "$cls $IS_HOMEBREW_LABEL"
                 select.insertBefore(opt, customOpt)
             }
         }
         if (value != null && value !in DungeonsAndDragons.defaultClasses && value !in Repos.customClass.getAll()) {
             val existingCustom = document.createElement("option") as HTMLOptionElement
             existingCustom.value = value
-            existingCustom.textContent = "$value (Custom)"
+            existingCustom.textContent = "$value $IS_HOMEBREW_LABEL"
             select.insertBefore(existingCustom, customOpt)
         }
         select.value = value ?: ""
         val customInput = document.createElement("input") as HTMLInputElement
-        customInput.placeholder = "Enter custom class"
-        
-        
-        customInput.style.display = "none"
-        
+        customInput.placeholder = t("main.enterCustomClass")
+        customInput.classList.add("main-tab-custom-input")
+
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
-        addBtn.style.display = "none"
-        
+        addBtn.classList.add("main-tab-custom-btn")
+
         select.addEventListener("change", {
             if (select.value == "__custom__") {
-                customInput.style.display = "block"
-                addBtn.style.display = "inline-block"
+                customInput.classList.add("visible")
+                addBtn.classList.add("visible")
             } else {
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
             val scWrapper = subClassRef()
             if (scWrapper != null) {
@@ -304,12 +301,12 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
                 Repos.customClass.add(customValue)
                 val newOpt = document.createElement("option") as HTMLOptionElement
                 newOpt.value = customValue
-                newOpt.textContent = "$customValue (Custom)"
+                newOpt.textContent = "$customValue $IS_HOMEBREW_LABEL"
                 select.insertBefore(newOpt, customOpt)
                 select.value = customValue
                 customInput.value = ""
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
                 val scWrapper = subClassRef()
                 if (scWrapper != null) {
                     val newContent = buildSubClassSelect(customValue, null)
@@ -396,7 +393,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
-        emptyOpt.textContent = "-- Select --"
+        emptyOpt.textContent = t("general.select")
         select.appendChild(emptyOpt)
 
         val subRaces = DungeonsAndDragons.subRacesFor(raceName)
@@ -409,37 +406,33 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customOpt = document.createElement("option") as HTMLOptionElement
         customOpt.value = "__custom__"
-        customOpt.textContent = "Custom..."
+        customOpt.textContent = HOMEBREW_ADD_OPTION_LABEL
         select.appendChild(customOpt)
 
         if (currentValue != null && currentValue !in subRaces) {
             val existingCustom = document.createElement("option") as HTMLOptionElement
             existingCustom.value = currentValue
-            existingCustom.textContent = "$currentValue (Custom)"
+            existingCustom.textContent = "$currentValue $IS_HOMEBREW_LABEL"
             select.insertBefore(existingCustom, customOpt)
         }
 
         select.value = currentValue ?: ""
 
         val customInput = document.createElement("input") as HTMLInputElement
-        customInput.placeholder = "Enter custom sub-race"
-        
-        
-        customInput.style.display = "none"
-        
+        customInput.placeholder = t("main.enterCustomSubRace")
+        customInput.classList.add("main-tab-custom-input")
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
-        addBtn.style.display = "none"
-        
+        addBtn.classList.add("main-tab-custom-btn")
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
-                customInput.style.display = "block"
-                addBtn.style.display = "inline-block"
+                customInput.classList.add("visible")
+                addBtn.classList.add("visible")
             } else {
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
         })
 
@@ -448,12 +441,12 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
             if (customValue.isNotEmpty()) {
                 val newOpt = document.createElement("option") as HTMLOptionElement
                 newOpt.value = customValue
-                newOpt.textContent = "$customValue (Custom)"
+                newOpt.textContent = "$customValue $IS_HOMEBREW_LABEL"
                 select.insertBefore(newOpt, customOpt)
                 select.value = customValue
                 customInput.value = ""
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
         })
 
@@ -474,7 +467,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val emptyOpt = document.createElement("option") as HTMLOptionElement
         emptyOpt.value = ""
-        emptyOpt.textContent = "-- Select --"
+        emptyOpt.textContent = t("general.select")
         select.appendChild(emptyOpt)
 
         DungeonsAndDragons.defaultRaces.forEach { r ->
@@ -486,29 +479,25 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         val customOpt = document.createElement("option") as HTMLOptionElement
         customOpt.value = "__custom__"
-        customOpt.textContent = "Custom..."
+        customOpt.textContent = HOMEBREW_ADD_OPTION_LABEL
         select.appendChild(customOpt)
 
         if (value != null && value !in DungeonsAndDragons.defaultRaces) {
             val existingCustom = document.createElement("option") as HTMLOptionElement
             existingCustom.value = value
-            existingCustom.textContent = "$value (Custom)"
+            existingCustom.textContent = "$value $IS_HOMEBREW_LABEL"
             select.insertBefore(existingCustom, customOpt)
         }
 
         select.value = value ?: ""
 
         val customInput = document.createElement("input") as HTMLInputElement
-        customInput.placeholder = "Enter custom race"
-        
-        
-        customInput.style.display = "none"
-        
+        customInput.placeholder = t("main.enterCustomRace")
+        customInput.classList.add("main-tab-custom-input")
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "Add"
-        addBtn.style.display = "none"
-        
+        addBtn.classList.add("main-tab-custom-btn")
 
         fun rebuildSubRace(raceName: String?) {
             val srw = subRaceWrapper ?: return
@@ -521,11 +510,11 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
 
         select.addEventListener("change", {
             if (select.value == "__custom__") {
-                customInput.style.display = "block"
-                addBtn.style.display = "inline-block"
+                customInput.classList.add("visible")
+                addBtn.classList.add("visible")
             } else {
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
             }
             rebuildSubRace(if (select.value == "__custom__") null else select.value)
         })
@@ -535,12 +524,12 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
             if (customValue.isNotEmpty()) {
                 val newOpt = document.createElement("option") as HTMLOptionElement
                 newOpt.value = customValue
-                newOpt.textContent = "$customValue (Custom)"
+                newOpt.textContent = "$customValue $IS_HOMEBREW_LABEL"
                 select.insertBefore(newOpt, customOpt)
                 select.value = customValue
                 customInput.value = ""
-                customInput.style.display = "none"
-                addBtn.style.display = "none"
+                customInput.classList.remove("visible")
+                addBtn.classList.remove("visible")
                 rebuildSubRace(customValue)
             }
         })
@@ -571,7 +560,7 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     val alignmentSelect = document.createElement("select") as HTMLSelectElement
     val alignEmptyOpt = document.createElement("option") as HTMLOptionElement
     alignEmptyOpt.value = ""
-    alignEmptyOpt.textContent = "-- Select --"
+    alignEmptyOpt.textContent = t("general.select")
     alignmentSelect.appendChild(alignEmptyOpt)
     DungeonsAndDragons.defaultAlignments.forEach { a ->
         val opt = document.createElement("option") as HTMLOptionElement

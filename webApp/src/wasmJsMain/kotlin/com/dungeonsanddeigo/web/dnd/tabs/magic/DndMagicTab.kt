@@ -165,7 +165,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
         val sel = document.createElement("select") as HTMLSelectElement
         val emptyOpt = document.createElement("option") as HTMLOptionElement
-        emptyOpt.value = ""; emptyOpt.textContent = t("magic.select")
+        emptyOpt.value = ""; emptyOpt.textContent = t("general.select")
         sel.appendChild(emptyOpt)
         listOf("Str", "Dex", "Con", "Int", "Wis", "Cha").forEach { ab ->
             val opt = document.createElement("option") as HTMLOptionElement

@@ -130,7 +130,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 var moneySaveTimeout = 0
                 fun autoSaveMoney() {
-                    moneyStatus.textContent = "Saving..."
+                    moneyStatus.textContent = t("status.saving")
                     moneyStatus.style.color = "gray"
                     if (moneySaveTimeout != 0) window.clearTimeout(moneySaveTimeout)
                     moneySaveTimeout = window.setTimeout({
@@ -143,7 +143,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                             platinum = ppInput.value.toIntOrNull() ?: 0,
                             lifestyle = lifeSelect.value
                         ))
-                        moneyStatus.textContent = "\u2713 Saved"
+                        moneyStatus.textContent = t("status.saved")
                         moneyStatus.style.color = "green"
                         null
                     }, 500)

@@ -16,6 +16,7 @@ object EnStrings {
         "label.tags" to "Tags",
         "status.saving" to "Saving...",
         "status.saved" to "\u2713 Saved",
+        "general.select" to "-- Select --",
 
         // Character creation
         "char.create" to "Create a new Character",
@@ -51,6 +52,12 @@ object EnStrings {
         "main.origin" to "Origin",
         "main.alignment" to "Alignment",
         "main.levelSumError" to "Sum of levels must be 20 or less",
+        "main.homeBrewOption" to "Add Homebrew",
+        "main.isHomeBrew" to "(Homebrew)",
+        "main.enterCustomClass" to "Enter custom class",
+        "main.enterCustomSubClass" to "Enter custom sub-class",
+        "main.enterCustomRace" to "Enter custom race",
+        "main.enterCustomSubRace" to "Enter custom sub-race",
 
         // Stats tab
         "stats.proficiency" to "Proficiency",
@@ -332,7 +339,6 @@ object EnStrings {
         "magic.changePrepared" to "Change Prepared Spells",
         "magic.noSpellsToPrepare" to "No spells to prepare.",
         "magic.done" to "Done",
-        "magic.select" to "-- Select --",
         "magic.originClass" to "Origin Class",
         "magic.originLevel" to "Origin Level",
         "magic.circle" to "Circle",

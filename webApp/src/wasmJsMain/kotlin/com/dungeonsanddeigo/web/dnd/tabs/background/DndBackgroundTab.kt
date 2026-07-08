@@ -103,7 +103,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
 
     var nameSaveTimeout = 0
     nameInput.addEventListener("input", {
-        nameStatus.textContent = "Saving..."
+        nameStatus.textContent = t("status.saving")
         nameStatus.style.color = "gray"
         if (nameSaveTimeout != 0) window.clearTimeout(nameSaveTimeout)
         nameSaveTimeout = window.setTimeout({
@@ -111,7 +111,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
             // Update header name
             val headerName = document.getElementById("header-char-name")
             if (headerName != null) headerName.textContent = nameInput.value
-            nameStatus.textContent = "\u2713 Saved"
+            nameStatus.textContent = t("status.saved")
             nameStatus.style.color = "green"
             null
         }, 500)
@@ -211,7 +211,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
 
     var appearanceSaveTimeout = 0
     fun autoSaveAppearance() {
-        appearanceStatus.textContent = "Saving..."
+        appearanceStatus.textContent = t("status.saving")
         appearanceStatus.style.color = "gray"
         if (appearanceSaveTimeout != 0) window.clearTimeout(appearanceSaveTimeout)
         appearanceSaveTimeout = window.setTimeout({
@@ -225,7 +225,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
                 hairColor = hairColorInput.value,
                 description = descInput.value
             ))
-            appearanceStatus.textContent = "\u2713 Saved"
+            appearanceStatus.textContent = t("status.saved")
             appearanceStatus.style.color = "green"
             null
         }, 500)
@@ -358,7 +358,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
 
     var backstorySaveTimeout = 0
     fun autoSaveBackstory() {
-        backstoryStatus.textContent = "Saving..."
+        backstoryStatus.textContent = t("status.saving")
         backstoryStatus.style.color = "gray"
         if (backstorySaveTimeout != 0) window.clearTimeout(backstorySaveTimeout)
         backstorySaveTimeout = window.setTimeout({
@@ -375,7 +375,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
                 factionBackstory = factionBackstoryInput.value,
                 characterBackstory = charBackstoryInput.value
             ))
-            backstoryStatus.textContent = "\u2713 Saved"
+            backstoryStatus.textContent = t("status.saved")
             backstoryStatus.style.color = "green"
             null
         }, 500)

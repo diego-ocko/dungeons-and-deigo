@@ -1,5 +1,6 @@
 package com.dungeonsanddeigo.web.dnd.components.autoSaveIndicator
 
+import com.dungeonsanddeigo.i18n.t
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.*
@@ -12,12 +13,12 @@ class AutoSaveIndicator(container: HTMLElement) {
     private var timeout = 0
 
     fun schedule(delayMs: Int = 500, save: () -> Unit) {
-        el.textContent = "Saving..."
+        el.textContent = t("status.saving")
         el.className = "auto-save-indicator saving"
         if (timeout != 0) window.clearTimeout(timeout)
         timeout = window.setTimeout({
             save()
-            el.textContent = "\u2713 Saved"
+            el.textContent = t("status.saved")
             el.className = "auto-save-indicator saved"
             null
         }, delayMs)

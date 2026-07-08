@@ -75,7 +75,7 @@ class DndWeaponModal(
         lbl(t("inv.weaponType"))
         typeSelect = document.createElement("select") as HTMLSelectElement
         val emptyTypeOpt = document.createElement("option") as HTMLOptionElement
-        emptyTypeOpt.value = ""; emptyTypeOpt.textContent = "-- Select --"
+        emptyTypeOpt.value = ""; emptyTypeOpt.textContent = t("general.select")
         typeSelect.appendChild(emptyTypeOpt)
         DndWeapon.weaponTypes.forEach { wp ->
             val o = document.createElement("option") as HTMLOptionElement

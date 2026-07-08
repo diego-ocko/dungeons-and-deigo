@@ -16,6 +16,7 @@ object PtBrStrings {
         "label.tags" to "Tags",
         "status.saving" to "Salvando...",
         "status.saved" to "\u2713 Salvo",
+        "general.select" to "-- Selecione --",
 
         // Character creation
         "char.create" to "Criar novo Personagem",
@@ -51,6 +52,12 @@ object PtBrStrings {
         "main.origin" to "Origem",
         "main.alignment" to "Alinhamento",
         "main.levelSumError" to "Soma dos níveis deve ser 20 ou menos",
+        "main.homeBrewOption" to "Adicionar Homebrew",
+        "main.isHomeBrew" to "(Homebrew)",
+        "main.enterCustomClass" to "Digite uma classe customizada",
+        "main.enterCustomSubClass" to "Digite uma subclasse customizada",
+        "main.enterCustomRace" to "Digite uma raça customizada",
+        "main.enterCustomSubRace" to "Digite uma sub-raça customizada",
 
         // Stats tab
         "stats.proficiency" to "Proficiência",

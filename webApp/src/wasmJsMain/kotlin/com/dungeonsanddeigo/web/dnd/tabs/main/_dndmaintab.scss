@@ -35,11 +35,19 @@
   margin-top: 4px;
   padding: 4px;
   width: 100%;
+
+  &.visible {
+    display: block;
+  }
 }
 
 .main-tab-custom-btn {
   display: none;
   margin-top: 4px;
+
+  &.visible {
+    display: inline-block;
+  }
 }
 
 .main-tab-level-error {
