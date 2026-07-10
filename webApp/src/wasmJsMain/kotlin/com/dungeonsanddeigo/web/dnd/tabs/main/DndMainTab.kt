@@ -347,23 +347,38 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
         return input
     }
 
+    // --- Main Class box ---
+    val mainClassBox = document.createElement("div") as HTMLDivElement
+    mainClassBox.className = "main-tab-box"
+    val mainClassBoxTitle = document.createElement("h3") as HTMLHeadingElement
+    mainClassBoxTitle.className = "main-tab-box-title"
+    mainClassBoxTitle.textContent = t("main.boxMainClass")
+    mainClassBox.appendChild(mainClassBoxTitle)
+    mainClassBox.appendChild(mainRow)
+
     val mainClassSelect = addClassSelectTo(mainRow, t("main.class"), info.mainClass) { mainSubClassWrapper }
     mainSubClassWrapper = addSubClassSelectTo(mainRow, t("main.subclass"), info.mainClass, info.mainSubClass)
     val mainClassLevelInput = addNumberFieldTo(mainRow, t("main.level"), info.mainClassLevel)
     mainClassLevelInput.min = "1"
     mainClassLevelInput.max = "20"
-    container.appendChild(mainRow)
 
-    // --- Secondary Class row (3 columns) ---
+    // --- Multiclass box ---
     val secRow = document.createElement("div") as HTMLDivElement
     secRow.className = "main-tab-class-row"
+
+    val multiclassBox = document.createElement("div") as HTMLDivElement
+    multiclassBox.className = "main-tab-box"
+    val multiclassBoxTitle = document.createElement("h3") as HTMLHeadingElement
+    multiclassBoxTitle.className = "main-tab-box-title"
+    multiclassBoxTitle.textContent = t("main.boxMulticlass")
+    multiclassBox.appendChild(multiclassBoxTitle)
+    multiclassBox.appendChild(secRow)
 
     val secondaryClassSelect = addClassSelectTo(secRow, t("main.secondaryClass"), info.secondaryClass) { secondarySubClassWrapper }
     secondarySubClassWrapper = addSubClassSelectTo(secRow, t("main.subclass"), info.secondaryClass, info.secondarySubClass)
     val secondaryClassLevelInput = addNumberFieldTo(secRow, t("main.level"), info.secondaryClassLevel)
     secondaryClassLevelInput.min = "0"
     secondaryClassLevelInput.max = "20"
-    container.appendChild(secRow)
 
     // Enforce sum <= 20
     val levelError = document.createElement("span") as HTMLSpanElement
@@ -571,8 +586,28 @@ fun renderDndMainTab(character: Character, container: HTMLDivElement) {
     alignmentSelect.value = info.alignment ?: ""
     form.appendChild(alignmentSelect)
 
-    container.appendChild(form)
-    container.appendChild(levelError)
+    // --- Race & Background box ---
+    val raceBox = document.createElement("div") as HTMLDivElement
+    raceBox.className = "main-tab-box"
+    val raceBoxTitle = document.createElement("h3") as HTMLHeadingElement
+    raceBoxTitle.className = "main-tab-box-title"
+    raceBoxTitle.textContent = t("main.boxRaceBackground")
+    raceBox.appendChild(raceBoxTitle)
+    raceBox.appendChild(form)
+
+    // --- 2/3 + 1/3 outer layout ---
+    val classColumn = document.createElement("div") as HTMLDivElement
+    classColumn.className = "main-tab-class-column"
+    classColumn.appendChild(mainClassBox)
+    classColumn.appendChild(multiclassBox)
+    classColumn.appendChild(levelError)
+
+    val outerGrid = document.createElement("div") as HTMLDivElement
+    outerGrid.className = "main-tab-outer-grid"
+    outerGrid.appendChild(classColumn)
+    outerGrid.appendChild(raceBox)
+
+    container.appendChild(outerGrid)
 
     // Auto-save status indicator
     val autoSaveIndicator = com.dungeonsanddeigo.web.dnd.components.autoSaveIndicator.AutoSaveIndicator(container)

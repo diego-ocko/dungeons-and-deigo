@@ -126,6 +126,13 @@ input, select, textarea {
   color: $color-text;
 }
 
+input {
+  padding: 6px 10px;
+  &[type=number] {
+    padding: 7px 10px;
+  }
+}
+
 // Headings
 h1, h2, h3, h4 {
   font-family: $font-heading;
