@@ -20,17 +20,26 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     val totalLevel = (mainInfo?.mainClassLevel ?: 0) + (mainInfo?.secondaryClassLevel ?: 0)
     val proficiency = calcProficiency(totalLevel)
 
-    // 6 columns: one per stat, each column = Name / Modifier / Value
+    fun makeBox(titleKey: String): HTMLDivElement {
+        val box = document.createElement("div") as HTMLDivElement
+        box.className = "main-tab-box"
+        val title = document.createElement("h3") as HTMLHeadingElement
+        title.className = "main-tab-box-title"
+        title.textContent = t(titleKey)
+        box.appendChild(title)
+        return box
+    }
+
+    // --- Box 1: Base Stats ---
+    val statsBox = makeBox("stats.boxBaseStats")
+
     val row = document.createElement("div") as HTMLDivElement
-    row.style.setProperty("display", "grid")
-    row.style.setProperty("grid-template-columns", "repeat(6, 1fr)")
-    row.style.setProperty("gap", "16px")
-    row.style.textAlign = "center"
-    row.style.maxWidth = "600px"
+    row.className = "stats-row"
+    statsBox.appendChild(row)
 
     data class StatRow(val label: String, val value: Int?)
 
-    val rows = listOf(
+    val statDefs = listOf(
         StatRow("Str", stats.strValue),
         StatRow("Dex", stats.dexValue),
         StatRow("Con", stats.conValue),
@@ -41,36 +50,26 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
 
     val valueInputs = mutableListOf<HTMLInputElement>()
 
-    rows.forEach { stat ->
+    statDefs.forEach { stat ->
         val col = document.createElement("div") as HTMLDivElement
-        col.style.display = "flex"
-        col.style.setProperty("flex-direction", "column")
-        col.style.setProperty("align-items", "center")
-        col.style.setProperty("gap", "4px")
+        col.className = "stats-col"
 
-        // Stat name
         val lbl = document.createElement("span") as HTMLSpanElement
+        lbl.className = "stats-col-label"
         lbl.textContent = tStat(stat.label)
-        lbl.style.fontWeight = "bold"
-        lbl.style.fontSize = "14px"
         col.appendChild(lbl)
 
-        // Modifier label
         val modLabel = document.createElement("span") as HTMLSpanElement
+        modLabel.className = "stats-col-mod"
         modLabel.textContent = formatModifier(stat.value)
-        modLabel.style.fontSize = "20px"
-        modLabel.style.fontWeight = "bold"
         col.appendChild(modLabel)
 
-        // Value input
         val valInput = document.createElement("input") as HTMLInputElement
         valInput.type = "number"
         valInput.min = "0"
         valInput.max = "20"
         valInput.value = stat.value?.toString() ?: ""
-        valInput.style.padding = "4px"
-        valInput.style.width = "50px"
-        valInput.style.textAlign = "center"
+        valInput.className = "stats-col-input"
         col.appendChild(valInput)
 
         valInput.addEventListener("input", {
@@ -81,28 +80,21 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
         row.appendChild(col)
     }
 
-    container.appendChild(row)
+    // --- Box 2: Life & Numbers ---
+    val lifeBox = makeBox("stats.boxLifeNumbers")
 
-    // Extra fields row
     val extras = document.createElement("div") as HTMLDivElement
-    extras.style.setProperty("display", "grid")
-    extras.style.setProperty("grid-template-columns", "1fr 1fr 1fr 1fr")
-    extras.style.setProperty("gap", "12px")
-    extras.style.marginTop = "16px"
-    extras.style.maxWidth = "600px"
+    extras.className = "stats-extras"
+    lifeBox.appendChild(extras)
 
     fun addExtraNumber(label: String, value: Int?): HTMLInputElement {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
-        lbl.style.fontSize = "14px"
         col.appendChild(lbl)
         val input = document.createElement("input") as HTMLInputElement
         input.type = "number"
         input.value = value?.toString() ?: ""
-        input.style.padding = "4px"
-        input.style.width = "100%"
         col.appendChild(input)
         extras.appendChild(col)
         return input
@@ -112,14 +104,10 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
         lbl.textContent = label
-        lbl.style.fontWeight = "bold"
-        lbl.style.fontSize = "14px"
         col.appendChild(lbl)
         val span = document.createElement("span") as HTMLSpanElement
+        span.className = "stats-extra-value"
         span.textContent = value?.toString() ?: ""
-        span.style.fontSize = "20px"
-        span.style.fontWeight = "bold"
-        span.style.display = "block"
         col.appendChild(span)
         extras.appendChild(col)
         return span
@@ -128,12 +116,10 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     fun addExtraCheckbox(label: String, checked: Boolean): HTMLInputElement {
         val col = document.createElement("div") as HTMLDivElement
         val lbl = document.createElement("label") as HTMLLabelElement
-        lbl.style.fontWeight = "bold"
-        lbl.style.fontSize = "14px"
         val input = document.createElement("input") as HTMLInputElement
         input.type = "checkbox"
         input.checked = checked
-        input.style.marginRight = "6px"
+        input.className = "stats-extra-checkbox"
         lbl.appendChild(input)
         lbl.append(label)
         col.appendChild(lbl)
@@ -141,23 +127,15 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
         return input
     }
 
-    val proficiencyLabel = addExtraLabel(t("stats.proficiency"), proficiency)
+    // col 1: maxLife, armorClass, proficiency, initiative
+    // col 2: disarmedDice, speed, vision, darkVision
     val maxLifeInput = addExtraNumber(t("stats.maxLife"), stats.maxLife)
-    val visionInput = addExtraNumber(t("stats.vision"), stats.vision)
-    val darkVisionInput = addExtraCheckbox(t("stats.darkVision"), stats.hasDarkVision)
-    val speedInput = addExtraNumber(t("stats.speed"), stats.speed)
-    val emptyArmorClassInput = addExtraNumber(t("stats.noArmorAC"), stats.emptyArmorClass)
 
-    // Disarmed Attack Dice
     val disarmedCol = document.createElement("div") as HTMLDivElement
     val disarmedLbl = document.createElement("label") as HTMLLabelElement
     disarmedLbl.textContent = t("combat.disarmedDice")
-    disarmedLbl.style.fontWeight = "bold"
-    disarmedLbl.style.fontSize = "14px"
     disarmedCol.appendChild(disarmedLbl)
     val disarmedSelect = document.createElement("select") as HTMLSelectElement
-    disarmedSelect.style.padding = "4px"
-    disarmedSelect.style.width = "100%"
     DndBaseStats.disarmedDiceOptions.forEach { opt ->
         val o = document.createElement("option") as HTMLOptionElement
         o.value = opt; o.textContent = opt; disarmedSelect.appendChild(o)
@@ -166,30 +144,41 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     disarmedCol.appendChild(disarmedSelect)
     extras.appendChild(disarmedCol)
 
-    // Initiative (read-only, equals Dex modifier)
+    val emptyArmorClassInput = addExtraNumber(t("stats.noArmorAC"), stats.emptyArmorClass)
+    val speedInput = addExtraNumber(t("stats.speed"), stats.speed).also { input ->
+        val row = document.createElement("div") as HTMLDivElement
+        row.className = "stats-extras-input-row"
+        input.parentElement?.replaceChild(row, input)
+        row.appendChild(input)
+        val unit = document.createElement("span") as HTMLSpanElement
+        unit.textContent = "m"
+        row.appendChild(unit)
+    }
+
+    val proficiencyLabel = addExtraLabel(t("stats.proficiency"), proficiency)
+    val visionInput = addExtraNumber(t("stats.vision"), stats.vision).also { input ->
+        val row = document.createElement("div") as HTMLDivElement
+        row.className = "stats-extras-input-row"
+        input.parentElement?.replaceChild(row, input)
+        row.appendChild(input)
+        val unit = document.createElement("span") as HTMLSpanElement
+        unit.textContent = "m"
+        row.appendChild(unit)
+    }
+
     val dexMod = stats.dexValue?.let { calcModifier(it) }
     val initiativeLabel = addExtraLabel(t("stats.initiative"), dexMod)
-    // Update initiative when Dex value changes
     valueInputs[1].addEventListener("input", {
         val v = valueInputs[1].value.toIntOrNull()
         val mod = v?.let { calcModifier(it) }
         initiativeLabel.textContent = if (mod != null) { if (mod >= 0) "+$mod" else "$mod" } else ""
     })
 
-    container.appendChild(extras)
+    val darkVisionInput = addExtraCheckbox(t("stats.darkVision"), stats.hasDarkVision)
 
-    // Resistance Tests box
-    val resBox = document.createElement("div") as HTMLDivElement
-    resBox.style.border = "1px solid #ccc"
-    resBox.style.borderRadius = "8px"
-    resBox.style.padding = "12px"
-    resBox.style.marginTop = "16px"
-    resBox.style.maxWidth = "300px"
-
-    val resTitle = document.createElement("h3") as HTMLHeadingElement
-    resTitle.textContent = t("stats.resistanceTests")
-    resTitle.style.marginTop = "0"
-    resBox.appendChild(resTitle)
+    // --- Box 3: Resistance Tests ---
+    val resBox = makeBox("stats.resistanceTests")
+    resBox.className += " stats-res-box"
 
     data class ResRow(val label: String, val hasRes: Boolean, val statIndex: Int)
 
@@ -228,33 +217,25 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
             return if (total >= 0) "+$total" else "$total"
         }
         valLabel.textContent = calcResValue()
-        valLabel.style.fontSize = "16px"
         line.appendChild(valLabel)
 
-        cb.addEventListener("change", {
-            valLabel.textContent = calcResValue()
-        })
+        cb.addEventListener("change", { valLabel.textContent = calcResValue() })
 
         resCheckboxes.add(cb)
         resValueLabels.add(valLabel)
         resBox.appendChild(line)
     }
 
-    // Update resistance values when stat values change
     valueInputs.forEachIndexed { i, input ->
         input.addEventListener("input", {
-            resValueLabels[i].textContent = run {
-                val statVal = input.value.toIntOrNull()
-                val mod = statVal?.let { calcModifier(it) } ?: 0
-                val total = if (resCheckboxes[i].checked) mod + proficiency else mod
-                if (total >= 0) "+$total" else "$total"
-            }
+            val statVal = input.value.toIntOrNull()
+            val mod = statVal?.let { calcModifier(it) } ?: 0
+            val total = if (resCheckboxes[i].checked) mod + proficiency else mod
+            resValueLabels[i].textContent = if (total >= 0) "+$total" else "$total"
         })
     }
 
-    container.appendChild(resBox)
-
-    // Auto-save status
+    // Auto-save
     val autoSaveIndicator = AutoSaveIndicator(container)
 
     fun autoSave() {
@@ -290,13 +271,30 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     container.addEventListener("input", { autoSave() })
     container.addEventListener("change", { autoSave() })
 
-    // Skills section
-    renderDndSkillsBox(character, container)
+    // --- Layout: left column (boxes 1-3) + right column (box 4) ---
+    val midGrid = document.createElement("div") as HTMLDivElement
+    midGrid.className = "stats-mid-grid"
+    midGrid.appendChild(lifeBox)
+    midGrid.appendChild(resBox)
+
+    val leftColumn = document.createElement("div") as HTMLDivElement
+    leftColumn.className = "stats-left-column"
+    leftColumn.appendChild(statsBox)
+    leftColumn.appendChild(midGrid)
+
+    val skillsBox = buildDndSkillsBox(character, container)
+
+    val outerGrid = document.createElement("div") as HTMLDivElement
+    outerGrid.className = "stats-outer-grid"
+    outerGrid.appendChild(leftColumn)
+    outerGrid.appendChild(skillsBox)
+
+    container.appendChild(outerGrid)
 }
 
 private val statAbbreviations = listOf("Str", "Dex", "Con", "Int", "Wis", "Cha")
 
-private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) {
+private fun buildDndSkillsBox(character: Character, container: HTMLDivElement): HTMLDivElement {
     val skills = Repos.skills.getByCharacterId(character.id) ?: DndSkills(characterId = character.id)
     val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
     val mainInfo = Repos.mainInfo.getByCharacterId(character.id)
@@ -320,6 +318,7 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
     box.className = "stats-skills-box"
 
     val title = document.createElement("h3") as HTMLHeadingElement
+    title.className = "main-tab-box-title"
     title.textContent = t("stats.skills")
     box.appendChild(title)
 
@@ -333,6 +332,10 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
 
     val skillRows = mutableListOf<SkillRow>()
 
+    val skillsGrid = document.createElement("div") as HTMLDivElement
+    skillsGrid.className = "stats-skills-grid"
+    box.appendChild(skillsGrid)
+
     DndSkills.skillNames.forEach { skillName ->
         val entry = skills.getEntry(skillName)
         val defaultMod = DndSkills.defaultModifiers[skillName] ?: "Str"
@@ -341,19 +344,16 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         val line = document.createElement("div") as HTMLDivElement
         line.className = "stats-skill-row"
 
-        // Trained checkbox
         val cb = document.createElement("input") as HTMLInputElement
         cb.type = "checkbox"
         cb.checked = entry.isTrained
         line.appendChild(cb)
 
-        // Skill name
         val nameSpan = document.createElement("span") as HTMLSpanElement
         nameSpan.textContent = t("skill.$skillName")
         nameSpan.className = "stats-skill-name"
         line.appendChild(nameSpan)
 
-        // Modifier select
         val modSelect = document.createElement("select") as HTMLSelectElement
         modSelect.className = "stats-skill-mod"
         statAbbreviations.forEach { abbr ->
@@ -365,19 +365,16 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         modSelect.value = currentMod
         line.appendChild(modSelect)
 
-        // Plus label
         val plusLabel = document.createElement("span") as HTMLSpanElement
         plusLabel.textContent = "+"
         line.appendChild(plusLabel)
 
-        // Additional value
         val addInput = document.createElement("input") as HTMLInputElement
         addInput.type = "number"
         addInput.value = entry.additionalValue.toString()
         addInput.className = "stats-skill-add"
         line.appendChild(addInput)
 
-        // Equals + total
         val totalLabel = document.createElement("span") as HTMLSpanElement
         totalLabel.className = "stats-skill-total"
 
@@ -389,8 +386,8 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         }
 
         fun updateTotal() {
-            val t = calcTotal()
-            totalLabel.textContent = "= ${if (t >= 0) "+$t" else "$t"}"
+            val total = calcTotal()
+            totalLabel.textContent = "= ${if (total >= 0) "+$total" else "$total"}"
         }
         updateTotal()
 
@@ -401,12 +398,11 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
         addInput.addEventListener("input", { updateTotal() })
 
         skillRows.add(SkillRow(skillName, cb, modSelect, addInput, totalLabel))
-        box.appendChild(line)
+        skillsGrid.appendChild(line)
     }
 
     container.appendChild(box)
 
-    // Auto-save
     val autoSaveIndicator = AutoSaveIndicator(container)
 
     fun autoSave() {
@@ -430,4 +426,6 @@ private fun renderDndSkillsBox(character: Character, container: HTMLDivElement) 
 
     container.addEventListener("input", { autoSave() })
     container.addEventListener("change", { autoSave() })
+
+    return box
 }

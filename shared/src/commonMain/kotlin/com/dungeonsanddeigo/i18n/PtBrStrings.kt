@@ -63,6 +63,8 @@ object PtBrStrings {
         "main.enterCustomSubRace" to "Digite uma sub-raça customizada",
 
         // Stats tab
+        "stats.boxBaseStats" to "Atributos Base",
+        "stats.boxLifeNumbers" to "Vida & Números",
         "stats.proficiency" to "Proficiência",
         "stats.maxLife" to "Vida Máxima",
         "stats.vision" to "Visão",

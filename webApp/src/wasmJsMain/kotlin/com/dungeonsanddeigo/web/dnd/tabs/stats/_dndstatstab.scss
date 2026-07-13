@@ -3,7 +3,6 @@
   grid-template-columns: repeat(6, 1fr);
   gap: 16px;
   text-align: center;
-  max-width: 600px;
 }
 
 .stats-col {
@@ -11,6 +10,10 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+
+  input {
+    width: 60px;
+  }
 }
 
 .stats-col-label {
@@ -19,22 +22,45 @@
 }
 
 .stats-col-mod {
-  font-size: 20px;
+  font-size: 40px;
   font-weight: bold;
 }
 
 .stats-col-input {
   padding: 4px;
-  width: 50px;
   text-align: center;
+}
+
+.stats-outer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.stats-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stats-mid-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
 }
 
 .stats-extras {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 16px;
-  max-width: 600px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   label {
     font-weight: bold;
@@ -45,6 +71,21 @@
     padding: 4px;
     width: 100%;
   }
+
+  input[type="number"] {
+    width: 60px;
+  }
+
+  input[type="checkbox"] {
+    width: auto;
+  }
+}
+
+.stats-extras-input-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
 }
 
 .stats-extra-value {
@@ -57,15 +98,9 @@
   margin-right: 6px;
 }
 
-.stats-box {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 16px;
-  max-width: 300px;
-
-  h3 {
-    margin-top: 0;
+.stats-res-box {
+  input, select {
+    width: auto;
   }
 }
 
@@ -74,6 +109,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
+  text-align: left;
 }
 
 .stats-res-name {
@@ -86,14 +122,15 @@
 }
 
 .stats-skills-box {
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid var(--color-border, #444);
+  border-radius: 6px;
   padding: 12px;
-  max-width: 650px;
+}
 
-  h3 {
-    margin-top: 0;
-  }
+.stats-skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
 }
 
 .stats-skill-row {
@@ -123,5 +160,3 @@
   font-weight: bold;
   min-width: 50px;
 }
-
-

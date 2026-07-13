@@ -63,6 +63,8 @@ object EnStrings {
         "main.enterCustomSubRace" to "Enter custom sub-race",
 
         // Stats tab
+        "stats.boxBaseStats" to "Base Stats",
+        "stats.boxLifeNumbers" to "Life & Numbers",
         "stats.proficiency" to "Proficiency",
         "stats.maxLife" to "Max Life",
         "stats.vision" to "Vision",
