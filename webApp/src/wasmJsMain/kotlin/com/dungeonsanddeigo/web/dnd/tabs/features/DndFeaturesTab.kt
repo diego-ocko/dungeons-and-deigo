@@ -33,15 +33,11 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         header.className = "features-card-header"
 
         val left = document.createElement("div") as HTMLDivElement
-        val sourceBadge = document.createElement("span") as HTMLSpanElement
-        sourceBadge.textContent = tSource(f.source)
-        sourceBadge.className = "features-source-badge source-${f.source.lowercase()}"
-        left.appendChild(sourceBadge)
-
-        val sourceDetail = document.createElement("span") as HTMLSpanElement
-        sourceDetail.textContent = featureSourceLabel(f, ::tDnd, ::t)
-        sourceDetail.className = "features-source-detail"
-        left.appendChild(sourceDetail)
+        val sourceText = document.createElement("span") as HTMLSpanElement
+        val sourceDetail = featureSourceLabel(f, ::tDnd, ::t)
+        sourceText.textContent = if (sourceDetail.isNotBlank()) "${tSource(f.source)}: $sourceDetail" else tSource(f.source)
+        sourceText.className = "features-source-text"
+        left.appendChild(sourceText)
         header.appendChild(left)
 
         val typeBadge = document.createElement("span") as HTMLSpanElement
@@ -86,7 +82,7 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
             f.tags.forEach { tag ->
                 val tagSpan = document.createElement("span") as HTMLSpanElement
                 tagSpan.textContent = tag
-                tagSpan.className = "features-tag"
+                tagSpan.className = "features-tag features-tag--blue"
                 tagsDiv.appendChild(tagSpan)
             }
             card.appendChild(tagsDiv)
@@ -135,33 +131,39 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         val columns = document.createElement("div") as HTMLDivElement
         columns.className = "features-columns"
 
-        val leftCol = document.createElement("div") as HTMLDivElement
-        leftCol.className = "features-col"
-        val leftTitle = document.createElement("h3") as HTMLHeadingElement
-        leftTitle.textContent = t("features.profAndIdioms")
-        leftCol.appendChild(leftTitle)
-        if (leftFeatures.isEmpty()) {
-            val empty = document.createElement("p") as HTMLParagraphElement
-            empty.textContent = t("features.noProf")
-            leftCol.appendChild(empty)
-        } else {
-            leftFeatures.forEach { leftCol.appendChild(buildFeatureCard(it) { refreshList() }) }
+        fun makeSection(title: String, items: List<DndFeature>, emptyKey: String): HTMLDivElement {
+            val section = document.createElement("div") as HTMLDivElement
+            section.className = "features-section"
+            val h3 = document.createElement("h3") as HTMLHeadingElement
+            h3.textContent = title
+            h3.className = "features-section-title"
+            section.appendChild(h3)
+            val grid = document.createElement("div") as HTMLDivElement
+            grid.className = "features-section-grid"
+            if (items.isEmpty()) {
+                val empty = document.createElement("p") as HTMLParagraphElement
+                empty.textContent = t(emptyKey)
+                grid.appendChild(empty)
+            } else {
+                val half = (items.size + 1) / 2
+                listOf(items.take(half), items.drop(half)).forEach { colItems ->
+                    val col = document.createElement("div") as HTMLDivElement
+                    col.className = "features-col"
+                    colItems.forEach { col.appendChild(buildFeatureCard(it) { refreshList() }) }
+                    grid.appendChild(col)
+                }
+            }
+            section.appendChild(grid)
+            return section
         }
-        columns.appendChild(leftCol)
 
-        val rightCol = document.createElement("div") as HTMLDivElement
-        rightCol.className = "features-col"
-        val rightTitle = document.createElement("h3") as HTMLHeadingElement
-        rightTitle.textContent = t("features.features")
-        rightCol.appendChild(rightTitle)
-        if (rightFeatures.isEmpty()) {
-            val empty = document.createElement("p") as HTMLParagraphElement
-            empty.textContent = t("features.noFeatures")
-            rightCol.appendChild(empty)
-        } else {
-            rightFeatures.forEach { rightCol.appendChild(buildFeatureCard(it) { refreshList() }) }
-        }
-        columns.appendChild(rightCol)
+        columns.appendChild(makeSection(t("features.profAndIdioms"), leftFeatures, "features.noProf"))
+
+        val separator = document.createElement("div") as HTMLDivElement
+        separator.className = "features-separator"
+        columns.appendChild(separator)
+
+        columns.appendChild(makeSection(t("features.features"), rightFeatures, "features.noFeatures"))
 
         container.appendChild(columns)
     }

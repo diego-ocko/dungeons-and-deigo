@@ -16,27 +16,20 @@
   margin-bottom: 8px;
 }
 
-.features-source-badge {
-  color: white;
+.features-source-text {
+  font-size: 12px;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 12px;
-  margin-right: 8px;
-
-  &.source-class { background-color: #4a90d9; }
-  &.source-origin { background-color: #d9a34a; }
-  &.source-race { background-color: #4ad97a; }
-  &.source-custom { background-color: #999; }
-}
-
-.features-source-detail {
-  font-size: 13px;
-  color: #666;
+  background-color: #bbf7d0;
+  color: #14532d;
 }
 
 .features-type-badge {
   font-size: 12px;
-  font-style: italic;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #fde68a;
+  color: #78350f;
 }
 
 .features-desc {
@@ -45,8 +38,12 @@
 }
 
 .features-recharge-info {
-  font-size: 13px;
-  color: #555;
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #e5e7eb;
+  color: #111;
   margin: 0 0 8px 0;
 }
 
@@ -55,11 +52,16 @@
 }
 
 .features-tag {
-  background-color: #eee;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
   margin-right: 4px;
+  background-color: #eee;
+
+  &--blue {
+    background-color: #2563eb;
+    color: #fff;
+  }
 }
 
 .features-actions {
@@ -77,13 +79,35 @@
 
 .features-columns {
   display: flex;
-  gap: 16px;
+  gap: 0;
+  align-items: start;
+}
+
+.features-section {
+  flex: 1;
+}
+
+.features-section-title {
+  margin: 0 0 12px 0;
+}
+
+.features-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
 }
 
 .features-col {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  h3 {
-    margin-top: 0;
-  }
+.features-separator {
+  width: 1px;
+  align-self: stretch;
+  background-color: var(--color-border, #444);
+  margin: 0 16px;
+  opacity: 0.5;
 }
