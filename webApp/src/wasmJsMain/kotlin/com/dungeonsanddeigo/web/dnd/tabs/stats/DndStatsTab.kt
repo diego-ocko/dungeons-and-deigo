@@ -282,7 +282,7 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     leftColumn.appendChild(statsBox)
     leftColumn.appendChild(midGrid)
 
-    val skillsBox = buildDndSkillsBox(character, container)
+    val skillsBox = buildDndSkillsBox(character, container, autoSaveIndicator)
 
     val outerGrid = document.createElement("div") as HTMLDivElement
     outerGrid.className = "stats-outer-grid"
@@ -294,7 +294,7 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
 
 private val statAbbreviations = listOf("Str", "Dex", "Con", "Int", "Wis", "Cha")
 
-private fun buildDndSkillsBox(character: Character, container: HTMLDivElement): HTMLDivElement {
+private fun buildDndSkillsBox(character: Character, container: HTMLDivElement, autoSaveIndicator: AutoSaveIndicator): HTMLDivElement {
     val skills = Repos.skills.getByCharacterId(character.id) ?: DndSkills(characterId = character.id)
     val stats = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
     val mainInfo = Repos.mainInfo.getByCharacterId(character.id)
@@ -402,8 +402,6 @@ private fun buildDndSkillsBox(character: Character, container: HTMLDivElement): 
     }
 
     container.appendChild(box)
-
-    val autoSaveIndicator = AutoSaveIndicator(container)
 
     fun autoSave() {
         autoSaveIndicator.schedule {

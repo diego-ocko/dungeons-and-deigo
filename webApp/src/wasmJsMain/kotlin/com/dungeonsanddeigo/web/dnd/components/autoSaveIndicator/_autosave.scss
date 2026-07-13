@@ -1,13 +1,30 @@
 .auto-save-indicator {
-  margin-top: 8px;
-  display: block;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 10px 16px;
+  border-radius: 6px;
   font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
 
   &.saving {
-    color: gray;
+    opacity: 1;
+    color: var(--color-text, #eee);
+    background: var(--color-surface, #333);
   }
 
   &.saved {
-    color: green;
+    opacity: 1;
+    color: #fff;
+    background: #2a7a2a;
+  }
+
+  &.hidden {
+    opacity: 0;
   }
 }
