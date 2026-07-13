@@ -104,6 +104,7 @@ object PtBrStrings {
         "features.addNew" to "Adicionar Habilidade/Proficiência",
         "features.proficiencies" to "Proficiências e Idiomas",
         "features.features" to "Habilidades",
+        "features.noProf" to "Nenhuma proficiëncia/idioma.",
 
         // Inventory
         "inventory.armor" to "Armadura",

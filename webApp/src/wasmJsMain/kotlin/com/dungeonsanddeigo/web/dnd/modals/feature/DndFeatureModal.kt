@@ -63,30 +63,31 @@ class DndFeatureModal(
     nameInput.value = existing?.name ?: ""
     nameInput.placeholder = "Feature name"
 
-    // Source
-    addLabel(t("features.source"))
+    // Source row: left = source select, right = source extended fields
+    val sourceRow = document.createElement("div") as HTMLDivElement
+    sourceRow.className = "modal__source-row"
+    form.appendChild(sourceRow)
+
+    val sourceCol1 = document.createElement("div") as HTMLDivElement
+    val sourceLbl = document.createElement("label") as HTMLLabelElement
+    sourceLbl.textContent = t("features.source")
+    sourceCol1.appendChild(sourceLbl)
     sourceSelect = document.createElement("select") as HTMLSelectElement
     DndFeature.sources.forEach { s ->
         val opt = document.createElement("option") as HTMLOptionElement
         opt.value = s; opt.textContent = tSource(s); sourceSelect.appendChild(opt)
     }
     sourceSelect.value = existing?.source ?: "Class"
-    form.appendChild(sourceSelect)
+    sourceCol1.appendChild(sourceSelect)
+    sourceRow.appendChild(sourceCol1)
 
     // Source Extended container
     val sourceExtDiv = document.createElement("div") as HTMLDivElement
-    sourceExtDiv.className = "modal__full-width"
 
     // Source extended fields (will be rebuilt on source change)
-    var sourceClassSelect: HTMLSelectElement? = null
-    var sourceClassLevelInput: HTMLInputElement? = null
-    var sourceOriginInput: HTMLInputElement? = null
-    var sourceRaceInput: HTMLInputElement? = null
-    var sourceSubRaceInput: HTMLInputElement? = null
-    var sourceCustomInput: HTMLInputElement? = null
-
     fun buildSourceExtended() {
         sourceExtDiv.innerHTML = ""
+        sourceExtDiv.style.alignSelf = if (sourceSelect.value == "Class") "start" else "end"
         val inner = document.createElement("div") as HTMLDivElement
 
         when (sourceSelect.value) {
@@ -183,37 +184,39 @@ class DndFeatureModal(
     }
     buildSourceExtended()
     sourceSelect.addEventListener("change", { buildSourceExtended() })
-    form.appendChild(sourceExtDiv)
+    sourceRow.appendChild(sourceExtDiv)
 
     // Rechargable fields container
     val rechargeDiv = document.createElement("div") as HTMLDivElement
     rechargeDiv.className = "modal__full-width"
 
-    var maxQtyInput: HTMLInputElement? = null
-    var reloadSelect: HTMLSelectElement? = null
-
     fun buildRechargeFields() {
         rechargeDiv.innerHTML = ""
         if (typeSelect.value == "Rechargable Feature") {
             val inner = document.createElement("div") as HTMLDivElement
+            inner.className = "modal__source-row"
 
+            val qtyCol = document.createElement("div") as HTMLDivElement
             val lbl1 = document.createElement("label") as HTMLLabelElement
-            lbl1.textContent = t("features.maxQuantity"); inner.appendChild(lbl1)
+            lbl1.textContent = t("features.maxQuantity"); qtyCol.appendChild(lbl1)
             val qty = document.createElement("input") as HTMLInputElement
             qty.type = "number"; qty.value = existing?.maxQuantity?.toString() ?: "1"
-            inner.appendChild(qty)
+            qtyCol.appendChild(qty)
             maxQtyInput = qty
+            inner.appendChild(qtyCol)
 
+            val reloadCol = document.createElement("div") as HTMLDivElement
             val lbl2 = document.createElement("label") as HTMLLabelElement
-            lbl2.textContent = t("features.reloadRule"); inner.appendChild(lbl2)
+            lbl2.textContent = t("features.reloadRule"); reloadCol.appendChild(lbl2)
             val sel = document.createElement("select") as HTMLSelectElement
             DndFeature.reloadRules.forEach { r ->
                 val o = document.createElement("option") as HTMLOptionElement
                 o.value = r; o.textContent = tReloadRule(r); sel.appendChild(o)
             }
             sel.value = existing?.reloadRule ?: "Long Rest"
-            inner.appendChild(sel)
+            reloadCol.appendChild(sel)
             reloadSelect = sel
+            inner.appendChild(reloadCol)
 
             rechargeDiv.appendChild(inner)
         }
@@ -249,8 +252,6 @@ class DndFeatureModal(
             }
         }
     }
-
-    var descInput: HTMLTextAreaElement? = null
 
     fun buildDynamicContent() {
         dynamicDiv.innerHTML = ""

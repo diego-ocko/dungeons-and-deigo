@@ -299,4 +299,12 @@
   &__full-width {
     grid-column: 1 / -1;
   }
+
+  &__source-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+  }
 }

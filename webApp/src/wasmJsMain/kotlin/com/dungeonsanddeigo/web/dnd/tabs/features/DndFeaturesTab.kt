@@ -142,7 +142,7 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         leftCol.appendChild(leftTitle)
         if (leftFeatures.isEmpty()) {
             val empty = document.createElement("p") as HTMLParagraphElement
-            empty.textContent = "No proficiencies yet."
+            empty.textContent = t("features.noProf")
             leftCol.appendChild(empty)
         } else {
             leftFeatures.forEach { leftCol.appendChild(buildFeatureCard(it) { refreshList() }) }

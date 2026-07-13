@@ -161,6 +161,7 @@ object EnStrings {
         "features.editFeature" to "Edit Feature",
         "features.profAndIdioms" to "Proficiencies & Idioms",
         "features.noFeatures" to "No features yet.",
+        "features.noProf" to "No proficiencies yet.",
         "features.noClassFeatures" to "No class features yet.",
         "features.source" to "Source",
         "features.type" to "Type",
