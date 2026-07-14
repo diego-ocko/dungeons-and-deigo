@@ -353,6 +353,8 @@ object EnStrings {
         "magic.duration" to "Duration",
         "magic.range" to "Range",
         "magic.ritual" to "Ritual",
+        "magic.personal" to "Personal",
+        "magic.touch" to "Touch",
         "magic.concentration" to "Concentration",
         "magic.higherCircles" to "At Higher Circles",
         "magic.isAttack" to "This is an Attack",
@@ -395,6 +397,7 @@ object EnStrings {
         "magic.ritualShort" to "Ritual",
         "magic.higherShort" to "Higher",
         "magic.needsSavingThrow" to "Need saving throw?",
+        "magic.description" to "Description",
 
         // Playing tab
         "playing.changeWeapon" to "Change Weapon",

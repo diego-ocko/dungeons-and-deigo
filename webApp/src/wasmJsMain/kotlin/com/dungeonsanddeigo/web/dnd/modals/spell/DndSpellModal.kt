@@ -91,15 +91,26 @@ class DndSpellModal(
         val row2 = document.createElement("div") as HTMLDivElement
         row2.className = "spell-modal__row3"
         circleSel = labeledSelect(row2, t("magic.circle"), DndSpell.circles, existing?.circle ?: "Cantrip") { tCircle(it) }
-        schoolSel = labeledSelect(row2, t("magic.school"), DndSpell.schools, existing?.school ?: DndSpell.schools.first()) { tSchool(it) }
+        fun schoolIcon(s: String) = when (s) {
+            "Abjuration"   -> "🛡️"
+            "Conjuration"  -> "✨"
+            "Divination"   -> "🔮"
+            "Enchantment"  -> "💫"
+            "Evocation"    -> "🔥"
+            "Illusion"     -> "🌀"
+            "Necromancy"   -> "☠️"
+            "Transmutation"-> "⚙️"
+            else -> ""
+        }
+        schoolSel = labeledSelect(row2, t("magic.school"), DndSpell.schools, existing?.school ?: DndSpell.schools.first()) { "${schoolIcon(it)} ${tSchool(it)}" }
 
         val prepCol = document.createElement("div") as HTMLDivElement
-        val prepLbl = document.createElement("label") as HTMLLabelElement
-        prepLbl.textContent = t("magic.prepared")
-        prepCol.appendChild(prepLbl)
+        prepCol.className = "spell-modal__cb-col"
         preparedCb = document.createElement("input") as HTMLInputElement
         preparedCb.type = "checkbox"; preparedCb.checked = existing?.isPrepared ?: false
-        prepCol.appendChild(preparedCb)
+        val prepLbl = document.createElement("label") as HTMLLabelElement
+        prepLbl.appendChild(preparedCb); prepLbl.append(t("magic.prepared"))
+        prepCol.appendChild(prepLbl)
         row2.appendChild(prepCol)
 
         fun updatePreparedVisibility() {
@@ -112,35 +123,52 @@ class DndSpellModal(
         originClassSel.addEventListener("change", { updatePreparedVisibility() })
         form.appendChild(row2)
 
-        // Row 3: Casting Time, Duration, Range, Ritual
+        // Row 3: Casting Time, Ritual, Range, Concentration, Duration
         val row3 = document.createElement("div") as HTMLDivElement
-        row3.className = "spell-modal__row4"
+        row3.className = "spell-modal__row5"
         castingTimeInput = labeledInput(row3, t("magic.castingTime"), existing?.castingTime ?: "")
-        durationInput = labeledInput(row3, t("magic.duration"), existing?.duration ?: "")
-
-        val rangeCol = document.createElement("div") as HTMLDivElement
-        val rangeLbl = document.createElement("label") as HTMLLabelElement
-        rangeLbl.textContent = t("inv.rangeMeter")
-        rangeCol.appendChild(rangeLbl)
-        rangeInput = document.createElement("input") as HTMLInputElement
-        rangeInput.type = "number"; rangeInput.min = "0"
-        rangeInput.value = existing?.range ?: ""
-        rangeCol.appendChild(rangeInput)
-        row3.appendChild(rangeCol)
 
         val ritualCol = document.createElement("div") as HTMLDivElement
+        ritualCol.className = "spell-modal__cb-col"
         ritualCb = document.createElement("input") as HTMLInputElement
         ritualCb.type = "checkbox"; ritualCb.checked = existing?.canBeRitual ?: false
         val ritualLbl = document.createElement("label") as HTMLLabelElement
         ritualLbl.appendChild(ritualCb); ritualLbl.append(t("magic.ritual"))
         ritualCol.appendChild(ritualLbl)
         row3.appendChild(ritualCol)
+
+        val rangeCol = document.createElement("div") as HTMLDivElement
+        rangeCol.className = "spell-modal__range-col"
+        val rangeLbl = document.createElement("label") as HTMLLabelElement
+        rangeLbl.textContent = t("magic.range")
+        rangeCol.appendChild(rangeLbl)
+        val rangeInputs = document.createElement("div") as HTMLDivElement
+        rangeInputs.className = "spell-modal__range-inputs"
+        rangeInput = document.createElement("input") as HTMLInputElement
+        rangeInput.type = "text"
+        rangeInput.value = existing?.range ?: ""
+        rangeInputs.appendChild(rangeInput)
+        val personalBtn = document.createElement("button") as HTMLButtonElement
+        personalBtn.textContent = "🧍"
+        personalBtn.type = "button"
+        personalBtn.title = t("magic.personal")
+        personalBtn.addEventListener("click", { rangeInput.value = t("magic.personal") })
+        rangeInputs.appendChild(personalBtn)
+        val touchBtn = document.createElement("button") as HTMLButtonElement
+        touchBtn.textContent = "👆"
+        touchBtn.type = "button"
+        touchBtn.title = t("magic.touch")
+        touchBtn.addEventListener("click", { rangeInput.value = t("magic.touch") })
+        rangeInputs.appendChild(touchBtn)
+        rangeCol.appendChild(rangeInputs)
+        row3.appendChild(rangeCol)
+
         form.appendChild(row3)
 
-        // Row 4: Concentration + V, S, M, Material Components
+        // Row 4: V, S, M, Material Components, Concentration, Duration
         val row4 = document.createElement("div") as HTMLDivElement
         row4.className = "spell-modal__components"
-        concentrationCb = inlineCb(row4, t("magic.concentration"), existing?.needsConcentration ?: false)
+
         verbalCb = inlineCb(row4, "V", existing?.hasVerbal ?: false)
         somaticCb = inlineCb(row4, "S", existing?.hasSomatic ?: false)
         materialCb = inlineCb(row4, "M", existing?.hasMaterial ?: false)
@@ -148,9 +176,27 @@ class DndSpellModal(
         materialInput = document.createElement("input") as HTMLInputElement
         materialInput.value = existing?.materialComponents ?: ""
         materialInput.placeholder = t("magic.materialComponents")
-        materialInput.style.display = if (existing?.hasMaterial == true) "" else "none"
+        materialInput.disabled = existing?.hasMaterial != true
         row4.appendChild(materialInput)
-        materialCb.addEventListener("change", { materialInput.style.display = if (materialCb.checked) "" else "none" })
+        materialCb.addEventListener("change", { materialInput.disabled = !materialCb.checked; if (!materialCb.checked) materialInput.value = "" })
+
+        val concCol = document.createElement("div") as HTMLDivElement
+        concCol.className = "spell-modal__cb-col"
+        concentrationCb = document.createElement("input") as HTMLInputElement
+        concentrationCb.type = "checkbox"; concentrationCb.checked = existing?.needsConcentration ?: false
+        val concLbl = document.createElement("label") as HTMLLabelElement
+        concLbl.appendChild(concentrationCb); concLbl.append(t("magic.concentration"))
+        concCol.appendChild(concLbl)
+        row4.appendChild(concCol)
+
+        val durationCol = document.createElement("div") as HTMLDivElement
+        val durationLbl = document.createElement("label") as HTMLLabelElement
+        durationLbl.textContent = t("magic.duration")
+        durationCol.appendChild(durationLbl)
+        durationInput = document.createElement("input") as HTMLInputElement
+        durationInput.value = existing?.duration ?: ""
+        durationCol.appendChild(durationInput)
+        row4.appendChild(durationCol)
         form.appendChild(row4)
 
         // Description
@@ -159,30 +205,33 @@ class DndSpellModal(
         // Higher Circles
         higherInput = addTextarea(form, t("magic.higherShort"), existing?.higherCircles ?: "", rows = 2, classes = arrayOf("modal__full-width")).input
 
-        // Attack / Saving Throw
+        // Attack row: checkbox + inline details
         val attackRow = document.createElement("div") as HTMLDivElement
-        attackRow.className = "spell-modal__attack-row"
+        attackRow.className = "spell-modal__inline-row"
         attackCb = inlineCb(attackRow, t("magic.isAttack"), existing?.isAttack ?: false)
-        savingThrowCb = inlineCb(attackRow, t("magic.needsSavingThrow"), existing?.needsSavingThrow ?: false)
+        val atkDetailsRow = document.createElement("div") as HTMLDivElement
+        atkDetailsRow.className = "spell-modal__inline-details"
+        diceInput = labeledInput(atkDetailsRow, t("inv.damageDice"), existing?.attackDamageDice ?: "")
+        dmgTypeSel = labeledSelect(atkDetailsRow, t("inv.damageType"), listOf("") + DndSpell.damageTypes, existing?.attackDamageType ?: "") { if (it.isEmpty()) "-" else tSpellDamageType(it) }
+        fun setAtkDisabled(disabled: Boolean) { diceInput.disabled = disabled; dmgTypeSel.disabled = disabled; if (disabled) { diceInput.value = ""; dmgTypeSel.value = "" } }
+        setAtkDisabled(existing?.isAttack != true)
+        attackRow.appendChild(atkDetailsRow)
         form.appendChild(attackRow)
 
-        // Attack details
-        val atkDetailsRow = document.createElement("div") as HTMLDivElement
-        atkDetailsRow.className = "spell-modal__details-row"
-        atkDetailsRow.style.display = if (existing?.isAttack == true) "grid" else "none"
-        diceInput = labeledInput(atkDetailsRow, t("inv.damageDice"), existing?.attackDamageDice ?: "")
-        dmgTypeSel = labeledSelect(atkDetailsRow, t("inv.damageType"), DndSpell.damageTypes, existing?.attackDamageType ?: "Fire") { tSpellDamageType(it) }
-        form.appendChild(atkDetailsRow)
-
-        // Save details
+        // Save row: checkbox + inline details
+        val saveRow = document.createElement("div") as HTMLDivElement
+        saveRow.className = "spell-modal__inline-row"
+        savingThrowCb = inlineCb(saveRow, t("magic.needsSavingThrow"), existing?.needsSavingThrow ?: false)
         val saveDetailsRow = document.createElement("div") as HTMLDivElement
-        saveDetailsRow.className = "spell-modal__details-row"
-        saveDetailsRow.style.display = if (existing?.needsSavingThrow == true) "grid" else "none"
-        saveSel = labeledSelect(saveDetailsRow, t("magic.saveAbility"), DndSpell.savingThrowAbilities, existing?.savingThrowAbility ?: "Dex") { tStat(it) }
-        form.appendChild(saveDetailsRow)
+        saveDetailsRow.className = "spell-modal__inline-details"
+        saveSel = labeledSelect(saveDetailsRow, t("magic.saveAbility"), listOf("") + DndSpell.savingThrowAbilities, existing?.savingThrowAbility ?: "") { if (it.isEmpty()) "-" else tStat(it) }
+        fun setSaveDisabled(disabled: Boolean) { saveSel.disabled = disabled; if (disabled) saveSel.value = "" }
+        setSaveDisabled(existing?.needsSavingThrow != true)
+        saveRow.appendChild(saveDetailsRow)
+        form.appendChild(saveRow)
 
-        attackCb.addEventListener("change", { atkDetailsRow.style.display = if (attackCb.checked) "grid" else "none" })
-        savingThrowCb.addEventListener("change", { saveDetailsRow.style.display = if (savingThrowCb.checked) "grid" else "none" })
+        attackCb.addEventListener("change", { setAtkDisabled(!attackCb.checked) })
+        savingThrowCb.addEventListener("change", { setSaveDisabled(!savingThrowCb.checked) })
 
         // Tags
         tagsField = TagsField(form, existing?.tags ?: emptyList())
@@ -205,15 +254,15 @@ class DndSpellModal(
             hasVerbal = verbalCb.checked,
             hasSomatic = somaticCb.checked,
             hasMaterial = materialCb.checked,
-            materialComponents = materialInput.value,
+            materialComponents = if (materialCb.checked) materialInput.value else "",
             description = descInput.value,
             higherCircles = higherInput.value,
             isAttack = attackCb.checked,
             needsSavingThrow = savingThrowCb.checked,
             attackType = if (attackCb.checked) "Roll for Attack" else "",
-            savingThrowAbility = saveSel.value,
-            attackDamageDice = diceInput.value,
-            attackDamageType = dmgTypeSel.value,
+            savingThrowAbility = if (savingThrowCb.checked) saveSel.value else "",
+            attackDamageDice = if (attackCb.checked) diceInput.value else "",
+            attackDamageType = if (attackCb.checked) dmgTypeSel.value else "",
             isPrepared = preparedCb.checked,
             tags = tagsField.getTags()
         )

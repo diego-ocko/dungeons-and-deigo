@@ -274,7 +274,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         addStat(t("magic.spellMod"), if (caster.spellMod >= 0) "+${caster.spellMod}" else "${caster.spellMod}")
         addStat(t("magic.spellDC"), caster.spellDC.toString())
 
-        val casterSpells = Repos.spell.getByCharacterId(character.id).filter { it.originClass == caster.className }
+        val casterSpells = Repos.spell.getByCharacterId(character.id).filter { it.originClass == caster.rawClassName }
         val cantripsCount = casterSpells.count { it.circle == "Cantrip" }
         val spellsCount = casterSpells.count { it.circle != "Cantrip" }
         val preparedCount = casterSpells.count { it.isPrepared && it.circle != "Cantrip" }
@@ -407,7 +407,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             val line2 = document.createElement("div") as HTMLDivElement
             line2.className = "magic-spell-line2"
             val originStr = "${tDnd("class", spell.originClass)} (${tOriginLevel(spell.originLevel)})"
-            val rangeStr = if (spell.range.isNotEmpty()) "${spell.range}m" else ""
+            val rangeStr = if (spell.range.isNotEmpty()) "${spell.range}" else ""
             val ritualStr = if (spell.canBeRitual) " | \uD83D\uDD2E ${t("magic.ritualShort")}" else ""
             val concStr = if (spell.needsConcentration) " | \uD83C\uDFAF ${t("magic.concShort")}" else ""
             line2.textContent = "$originStr | ${spell.castingTime} | ${spell.duration} | $rangeStr$ritualStr$concStr"
