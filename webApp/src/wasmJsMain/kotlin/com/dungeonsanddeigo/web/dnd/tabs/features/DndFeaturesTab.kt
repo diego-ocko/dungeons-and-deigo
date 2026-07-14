@@ -21,7 +21,7 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         val card = document.createElement("div") as HTMLDivElement
         card.className = "features-card"
 
-        val nameEl = document.createElement("h4") as HTMLHeadingElement
+        val nameEl = document.createElement("h3") as HTMLHeadingElement
         nameEl.textContent = when (f.type) {
             "Idiom", "Tool Proficiency", "Weapon/Armor Proficiency" -> tFeatureType(f.type)
             else -> f.name.ifEmpty { "(Unnamed)" }
@@ -40,10 +40,13 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         left.appendChild(sourceText)
         header.appendChild(left)
 
-        val typeBadge = document.createElement("span") as HTMLSpanElement
-        typeBadge.textContent = tFeatureType(f.type)
-        typeBadge.className = "features-type-badge"
-        header.appendChild(typeBadge)
+        val isProfType = f.type == "Idiom" || f.type == "Tool Proficiency" || f.type == "Weapon/Armor Proficiency"
+        if (!isProfType) {
+            val typeBadge = document.createElement("span") as HTMLSpanElement
+            typeBadge.textContent = tFeatureType(f.type)
+            typeBadge.className = "features-type-badge"
+            header.appendChild(typeBadge)
+        }
         card.appendChild(header)
 
         val desc = document.createElement("p") as HTMLParagraphElement
@@ -92,13 +95,16 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         actions.className = "features-actions"
 
         val editBtn = document.createElement("button") as HTMLButtonElement
-        editBtn.textContent = t("btn.edit")
+        editBtn.textContent = "✏️"
+        editBtn.className = ""
+        editBtn.title = t("btn.edit")
         editBtn.addEventListener("click", { DndFeatureModal(character, f, mainInfo).show { onRefresh() } })
         actions.appendChild(editBtn)
 
         val deleteBtn = document.createElement("button") as HTMLButtonElement
-        deleteBtn.textContent = t("btn.delete")
+        deleteBtn.textContent = "🗑️"
         deleteBtn.className = "features-delete-btn"
+        deleteBtn.title = t("btn.delete")
         deleteBtn.addEventListener("click", {
             Repos.features.delete(f.id)
             onRefresh()
@@ -114,7 +120,7 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = t("features.addNew")
-        addBtn.className = "features-add-btn"
+        addBtn.className = "features-add-btn btn-primary"
         addBtn.addEventListener("click", { DndFeatureModal(character, null, mainInfo).show { refreshList() } })
         container.appendChild(addBtn)
 
@@ -134,10 +140,10 @@ fun renderDndFeaturesTab(character: Character, container: HTMLDivElement) {
         fun makeSection(title: String, items: List<DndFeature>, emptyKey: String): HTMLDivElement {
             val section = document.createElement("div") as HTMLDivElement
             section.className = "features-section"
-            val h3 = document.createElement("h3") as HTMLHeadingElement
-            h3.textContent = title
-            h3.className = "features-section-title"
-            section.appendChild(h3)
+            val h2 = document.createElement("h2") as HTMLHeadingElement
+            h2.textContent = title
+            h2.className = "features-section-title"
+            section.appendChild(h2)
             val grid = document.createElement("div") as HTMLDivElement
             grid.className = "features-section-grid"
             if (items.isEmpty()) {
