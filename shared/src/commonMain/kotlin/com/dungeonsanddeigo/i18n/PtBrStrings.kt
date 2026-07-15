@@ -123,6 +123,8 @@ object PtBrStrings {
         "magic.cantripsKnown" to "Truques Conhecidos",
         "magic.spellsKnown" to "Magias Conhecidas",
         "magic.prepared" to "Preparadas",
+        "magic.prepare" to "Preparar magia",
+        "magic.unprepare" to "Despreparar magia",
         "magic.noSpellcasting" to "Sua classe não possui habilidade de conjuração.",
         "magic.ritualOnly" to "Só pode conjurar magias como rituais",
 
@@ -424,6 +426,7 @@ object PtBrStrings {
         "playing.spendMoney" to "Gastar Dinheiro",
         "playing.mod" to "Mod",
         "playing.dc" to "CD",
+        "magic.spellSlots" to "Slots de Magia",
         "playing.resetSlots" to "Resetar espaços de magia",
         "playing.search.test" to "Teste de",
         "playing.search.save" to "Salvaguarda de",

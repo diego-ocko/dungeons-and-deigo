@@ -285,13 +285,14 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             addStat(t("magic.prepared"), preparedCount.toString())
         }
 
-        box.appendChild(grid)
-
-        // Spell Slots
+        // Spell Slots \u2014 added directly into grid
         val slots = DungeonsAndDragons.spellSlotsFor(caster.rawClassName, caster.subClassName, caster.level)
         if (slots.isNotEmpty()) {
-            val slotsDiv = document.createElement("div") as HTMLDivElement
-            slotsDiv.className = "magic-slots-row"
+            val slotsWrapper = document.createElement("div") as HTMLDivElement
+            slotsWrapper.className = "magic-slots-wrapper"
+
+            val slotsRow = document.createElement("div") as HTMLDivElement
+            slotsRow.className = "magic-slots-inner"
 
             slots.forEachIndexed { idx, totalSlots ->
                 val circleNum = idx + 1
@@ -311,11 +312,20 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
                 slotValue.className = "magic-slot-value" + if (usedSlots >= totalSlots) " exhausted" else ""
                 slotCol.appendChild(slotValue)
 
-                slotsDiv.appendChild(slotCol)
+                slotsRow.appendChild(slotCol)
             }
 
-            box.appendChild(slotsDiv)
+            slotsWrapper.appendChild(slotsRow)
+
+            val slotsLbl = document.createElement("div") as HTMLDivElement
+            slotsLbl.textContent = t("magic.spellSlots")
+            slotsLbl.className = "magic-stat-label"
+            slotsWrapper.appendChild(slotsLbl)
+
+            grid.appendChild(slotsWrapper)
         }
+
+        box.appendChild(grid)
 
         container.appendChild(box)
     }
@@ -323,7 +333,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
     // Add Spell button
     val addSpellBtn = document.createElement("button") as HTMLButtonElement
     addSpellBtn.textContent = "\u2728 " + t("magic.addSpell")
-    addSpellBtn.className = "magic-add-btn"
+    addSpellBtn.className = "magic-add-btn btn-primary"
     addSpellBtn.addEventListener("click", {
         DndSpellModal(character, null).show {
             container.innerHTML = ""
@@ -341,7 +351,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
     com.dungeonsanddeigo.model.DndSpell.circles.forEach { circle ->
         val spells = spellsByCircle[circle] ?: return@forEach
-        val sorted = spells.sortedByDescending { it.isPrepared }
+        val sorted = spells.sortedBy { it.name }
 
         val col = document.createElement("div") as HTMLDivElement
         col.className = "magic-spell-col"
@@ -357,11 +367,29 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             val line1 = document.createElement("div") as HTMLDivElement
             line1.className = "magic-spell-line1"
 
-            val nameDiv = document.createElement("div") as HTMLDivElement
             val isCantrip = spell.circle == "Cantrip"
             val classUsesPrepared = spell.originClass in DungeonsAndDragons.preparedCasters
             val showPrepared = isCantrip || !classUsesPrepared || spell.isPrepared
-            val prepIcon = if (showPrepared) "\u2705 " else "\u2B1C "
+
+            // Prep icon or button
+            if (!isCantrip && classUsesPrepared) {
+                val prepBtn = document.createElement("button") as HTMLButtonElement
+                prepBtn.textContent = if (spell.isPrepared) "\u2705" else "\u2b1c"
+                prepBtn.title = if (spell.isPrepared) t("magic.unprepare") else t("magic.prepare")
+                prepBtn.className = "magic-spell-prep-btn"
+                prepBtn.addEventListener("click", {
+                    Repos.spell.save(spell.copy(isPrepared = !spell.isPrepared))
+                    container.innerHTML = ""
+                    renderDndMagicTab(character, container)
+                })
+                line1.appendChild(prepBtn)
+            } else {
+                val prepIcon = document.createElement("span") as HTMLSpanElement
+                prepIcon.textContent = "\u2705"
+                prepIcon.className = "magic-spell-prep-icon"
+                line1.appendChild(prepIcon)
+            }
+
             val schoolEmoji = when (spell.school) {
                 "Abjuration" -> "\uD83D\uDEE1\uFE0F"
                 "Conjuration" -> "\u2728"
@@ -373,7 +401,8 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
                 "Transmutation" -> "\u2699\uFE0F"
                 else -> ""
             }
-            nameDiv.textContent = "$prepIcon${spell.name} $schoolEmoji"
+            val nameDiv = document.createElement("div") as HTMLDivElement
+            nameDiv.textContent = "${spell.name} $schoolEmoji"
             nameDiv.className = "magic-spell-name" + if (showPrepared) " prepared" else ""
             line1.appendChild(nameDiv)
 
@@ -392,7 +421,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
             btns.appendChild(editBtn)
 
             val delBtn = document.createElement("button") as HTMLButtonElement
-            delBtn.textContent = "\u2716"
+            delBtn.textContent = "\ud83d\uddd1\ufe0f"
             delBtn.className = "magic-spell-del-btn"
             delBtn.addEventListener("click", {
                 Repos.spell.delete(character.id, spell.id)
@@ -406,11 +435,14 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
 
             val line2 = document.createElement("div") as HTMLDivElement
             line2.className = "magic-spell-line2"
-            val originStr = "${tDnd("class", spell.originClass)} (${tOriginLevel(spell.originLevel)})"
+            val originStr = if (spell.originLevel == "Learned by Scroll")
+                "📜"
+            else
+                "${tDnd("class", spell.originClass)} (${tOriginLevel(spell.originLevel)})"
             val rangeStr = if (spell.range.isNotEmpty()) "${spell.range}" else ""
-            val ritualStr = if (spell.canBeRitual) " | \uD83D\uDD2E ${t("magic.ritualShort")}" else ""
-            val concStr = if (spell.needsConcentration) " | \uD83C\uDFAF ${t("magic.concShort")}" else ""
-            line2.textContent = "$originStr | ${spell.castingTime} | ${spell.duration} | $rangeStr$ritualStr$concStr"
+            val ritualStr = if (spell.canBeRitual) "${t("magic.ritualShort")}" else ""
+            val durationStr = if (spell.needsConcentration) "${t("magic.concShort")} ${spell.duration}" else spell.duration
+            line2.textContent = "$originStr | ${spell.castingTime} $ritualStr | $rangeStr | $durationStr"
             row.appendChild(line2)
 
             col.appendChild(row)

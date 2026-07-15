@@ -84,7 +84,9 @@ class DndSpellModal(
         row1.className = "spell-modal__row3"
         nameInput = labeledInput(row1, t("label.name"), existing?.name ?: "")
         originClassSel = labeledSelect(row1, t("magic.originClass"), classes.ifEmpty { listOf("") }, existing?.originClass ?: classes.firstOrNull() ?: "") { tDnd("class", it) }
-        originLevelSel = labeledSelect(row1, t("magic.originLevel"), DndSpell.originLevels, existing?.originLevel ?: "1") { tOriginLevel(it) }
+        originLevelSel = labeledSelect(row1, t("magic.originLevel"), DndSpell.originLevels, existing?.originLevel ?: "1") {
+            if (it == "Learned by Scroll") "📜 ${tOriginLevel(it)}" else tOriginLevel(it)
+        }
         form.appendChild(row1)
 
         // Row 2: Circle, School, Prepared

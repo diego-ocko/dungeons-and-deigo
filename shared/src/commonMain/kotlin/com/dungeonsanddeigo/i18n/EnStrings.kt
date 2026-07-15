@@ -122,6 +122,8 @@ object EnStrings {
         "magic.cantripsKnown" to "Cantrips Known",
         "magic.spellsKnown" to "Spells Known",
         "magic.prepared" to "Prepared",
+        "magic.prepare" to "Prepare spell",
+        "magic.unprepare" to "Unprepare spell",
         "magic.noSpellcasting" to "Your class does not have spellcasting ability.",
         "magic.ritualOnly" to "Only cast magics as rituals",
 
@@ -423,6 +425,7 @@ object EnStrings {
         "playing.spendMoney" to "Spend Money",
         "playing.mod" to "Mod",
         "playing.dc" to "DC",
+        "magic.spellSlots" to "Spell Slots",
         "playing.resetSlots" to "Reset all spell slots",
         "playing.search.test" to "Test of",
         "playing.search.save" to "Saving Throw of",
