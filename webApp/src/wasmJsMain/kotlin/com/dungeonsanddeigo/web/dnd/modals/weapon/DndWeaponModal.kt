@@ -1,13 +1,13 @@
 package com.dungeonsanddeigo.web.dnd.modals.weapon
 
 import com.dungeonsanddeigo.i18n.t
-import com.dungeonsanddeigo.i18n.tCurrency
 import com.dungeonsanddeigo.i18n.tWeapon
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndWeapon
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
+import com.dungeonsanddeigo.web.dnd.components.weightAndPrice.WeightAndPriceField
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -16,7 +16,7 @@ class DndWeaponModal(
     private val existing: DndWeapon?
 ) : Modal(
     title = if (existing != null) t("inv.editWeapon") else t("inv.addWeapon"),
-    size = "wide"
+    size = "xl"
 ) {
     private lateinit var nameInput: HTMLInputElement
     private lateinit var catSelect: HTMLSelectElement
@@ -38,41 +38,51 @@ class DndWeaponModal(
     private lateinit var silverCb: HTMLInputElement
     private lateinit var rangeInput: HTMLInputElement
     private lateinit var rangeLongInput: HTMLInputElement
-    private lateinit var specialInput: HTMLTextAreaElement
+    private lateinit var specialInput: HTMLInputElement
     private lateinit var versatileInput: HTMLInputElement
     private lateinit var addFeatInput: HTMLTextAreaElement
-    private lateinit var weightInput: HTMLInputElement
-    private lateinit var priceInput: HTMLInputElement
-    private lateinit var currSelect: HTMLSelectElement
+    private lateinit var weightAndPriceField: WeightAndPriceField
     private lateinit var eqCb: HTMLInputElement
     private lateinit var tagsField: TagsField
 
     override fun buildForm(form: HTMLDivElement) {
         form.classList.add("weapon-modal")
-        fun lbl(text: String) {
+
+        fun col(vararg children: HTMLElement): HTMLDivElement {
+            val div = document.createElement("div") as HTMLDivElement
+            div.className = "weapon-modal__field-col"
+            children.forEach { div.appendChild(it) }
+            return div
+        }
+        fun lbl(text: String): HTMLLabelElement {
             val l = document.createElement("label") as HTMLLabelElement
             l.textContent = text
-            form.appendChild(l)
+            return l
         }
 
-        // Name
-        lbl(t("label.name"))
+        // Name + Category + Weapon Type row
+        val nameTypRow = document.createElement("div") as HTMLDivElement
+        nameTypRow.className = "weapon-modal__name-type-row modal__full-width"
+
         nameInput = document.createElement("input") as HTMLInputElement
         nameInput.value = existing?.name ?: ""
-        form.appendChild(nameInput)
+        val nameCol = col(lbl(t("label.name")), nameInput)
+        nameCol.className = "weapon-modal__field-col weapon-modal__name-col"
+        nameTypRow.appendChild(nameCol)
 
-        // Category
-        lbl(t("inv.category"))
         catSelect = document.createElement("select") as HTMLSelectElement
         DndWeapon.categories.forEach { c ->
             val o = document.createElement("option") as HTMLOptionElement
-            o.value = c; o.textContent = when(c) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); "Others" -> t("features.weapon.others"); else -> c }; catSelect.appendChild(o)
+            o.value = c; o.textContent = when (c) {
+                "Simple" -> t("features.weapon.simple")
+                "Martial" -> t("features.weapon.martial")
+                "Others"  -> t("features.weapon.others")
+                else -> c
+            }; catSelect.appendChild(o)
         }
         catSelect.value = existing?.category ?: DndWeapon.categories.first()
-        form.appendChild(catSelect)
+        nameTypRow.appendChild(col(lbl(t("inv.category")), catSelect))
 
-        // Weapon Type
-        lbl(t("inv.weaponType"))
         typeSelect = document.createElement("select") as HTMLSelectElement
         val emptyTypeOpt = document.createElement("option") as HTMLOptionElement
         emptyTypeOpt.value = ""; emptyTypeOpt.textContent = t("general.select")
@@ -90,110 +100,125 @@ class DndWeaponModal(
             typeSelect.insertBefore(existOpt, customTypeOpt)
         }
         typeSelect.value = existing?.weaponType ?: ""
-        form.appendChild(typeSelect)
+        nameTypRow.appendChild(col(lbl(t("inv.weaponType")), typeSelect))
 
-        // Custom weapon type
+        // Custom weapon type — inline, next to type select
         customTypeInput = document.createElement("input") as HTMLInputElement
         customTypeInput.placeholder = "Custom weapon type"
-        customTypeInput.className = "modal__full-width modal__custom-input"
+        val customTypeCol = col(lbl(""), customTypeInput)
+        customTypeCol.style.display = "none"
+        nameTypRow.appendChild(customTypeCol)
         typeSelect.addEventListener("change", {
-            customTypeInput.style.display = if (typeSelect.value == "__custom__") "block" else "none"
+            val isCustom = typeSelect.value == "__custom__"
+            customTypeCol.style.display = if (isCustom) "flex" else "none"
         })
-        form.appendChild(customTypeInput)
 
-        // Damage Dice
-        lbl(t("inv.damageDice"))
+        form.appendChild(nameTypRow)
+
+        // Damage Dice + Damage Type row
+        val dmgRow = document.createElement("div") as HTMLDivElement
+        dmgRow.className = "weapon-modal__dmg-row modal__full-width"
+
         dmgDiceInput = document.createElement("input") as HTMLInputElement
         dmgDiceInput.value = existing?.damageDice ?: ""
         dmgDiceInput.placeholder = "e.g. 1d8"
-        form.appendChild(dmgDiceInput)
+        dmgRow.appendChild(col(lbl(t("inv.damageDice")), dmgDiceInput))
 
-        // Damage Type
-        lbl(t("inv.damageType"))
         dmgTypeSelect = document.createElement("select") as HTMLSelectElement
         DndWeapon.damageTypes.forEach { d ->
             val o = document.createElement("option") as HTMLOptionElement
-            o.value = d; o.textContent = when(d) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> d }; dmgTypeSelect.appendChild(o)
+            o.value = d; o.textContent = when (d) {
+                "Bludgeoning" -> t("inv.dmg.bludgeoning")
+                "Piercing"    -> t("inv.dmg.piercing")
+                "Slashing"    -> t("inv.dmg.slashing")
+                else -> d
+            }; dmgTypeSelect.appendChild(o)
         }
         dmgTypeSelect.value = existing?.damageType ?: DndWeapon.damageTypes.first()
-        form.appendChild(dmgTypeSelect)
+        dmgRow.appendChild(col(lbl(t("inv.damageType")), dmgTypeSelect))
+
+        form.appendChild(dmgRow)
 
         // Properties
-        val propsGrid = document.createElement("div") as HTMLDivElement
-        propsGrid.className = "weapon-modal__props-grid modal__full-width"
-        fun addCb(label: String, checked: Boolean): HTMLInputElement {
+        fun cbRow(cols: String): HTMLDivElement {
+            val row = document.createElement("div") as HTMLDivElement
+            row.className = "weapon-modal__cb-row modal__full-width"
+            row.style.setProperty("grid-template-columns", cols)
+            return row
+        }
+        fun addCb(container: HTMLDivElement, label: String, checked: Boolean): HTMLInputElement {
             val l = document.createElement("label") as HTMLLabelElement
             val cb = document.createElement("input") as HTMLInputElement
             cb.type = "checkbox"; cb.checked = checked
             l.appendChild(cb); l.append(label)
-            propsGrid.appendChild(l)
+            container.appendChild(l)
             return cb
         }
-        ammoCb = addCb(t("inv.ammunition"), existing?.ammunition ?: false)
-        finesseCb = addCb(t("inv.finesse"), existing?.finesse ?: false)
-        heavyCb = addCb(t("inv.heavy"), existing?.heavy ?: false)
-        lightCb = addCb(t("inv.light"), existing?.light ?: false)
-        loadingCb = addCb(t("inv.loading"), existing?.loading ?: false)
-        rangeCb = addCb(t("inv.range"), existing?.range ?: false)
-        reachCb = addCb(t("inv.reach"), existing?.reach ?: false)
-        specialCb = addCb(t("inv.special"), existing?.special ?: false)
-        thrownCb = addCb(t("inv.thrown"), existing?.thrown ?: false)
-        twoHandedCb = addCb(t("inv.twoHanded"), existing?.twoHanded ?: false)
-        versatileCb = addCb(t("inv.versatile"), existing?.versatile ?: false)
-        silverCb = addCb(t("inv.silver"), existing?.silver ?: false)
-        form.appendChild(propsGrid)
 
-        // Range fields
-        val rangeDiv = document.createElement("div") as HTMLDivElement
-        rangeDiv.className = "weapon-modal__range-grid modal__full-width"
-        val rangeLbl1 = document.createElement("label") as HTMLLabelElement
-        rangeLbl1.textContent = t("inv.rangeMeter")
-        rangeDiv.appendChild(rangeLbl1)
-        val rangeLbl2 = document.createElement("label") as HTMLLabelElement
-        rangeLbl2.textContent = t("inv.longRange")
-        rangeDiv.appendChild(rangeLbl2)
+        // Row 1: Acuidade, Alcance Estendido, Munição, Recarga
+        val row1 = cbRow("1fr 1fr 1fr 1fr")
+        finesseCb  = addCb(row1, t("inv.finesse"),    existing?.finesse    ?: false)
+        reachCb    = addCb(row1, t("inv.reach"),      existing?.reach      ?: false)
+        ammoCb     = addCb(row1, t("inv.ammunition"), existing?.ammunition ?: false)
+        loadingCb  = addCb(row1, t("inv.loading"),    existing?.loading    ?: false)
+        form.appendChild(row1)
+
+        // Row 2: Leve, Pesada, Duas Mãos, Prateada
+        val row2 = cbRow("1fr 1fr 1fr 1fr")
+        lightCb      = addCb(row2, t("inv.light"),      existing?.light      ?: false)
+        heavyCb      = addCb(row2, t("inv.heavy"),      existing?.heavy      ?: false)
+        twoHandedCb  = addCb(row2, t("inv.twoHanded"),  existing?.twoHanded  ?: false)
+        silverCb     = addCb(row2, t("inv.silver"),     existing?.silver     ?: false)
+        form.appendChild(row2)
+
+        // Row 3: Alcance | Arremesso | Alcance normal | Alcance longo
+        val row3 = cbRow("1fr 1fr 1fr 1fr")
+        rangeCb  = addCb(row3, t("inv.range"),  existing?.range  ?: false)
+        thrownCb = addCb(row3, t("inv.thrown"), existing?.thrown ?: false)
         rangeInput = document.createElement("input") as HTMLInputElement
         rangeInput.type = "number"; rangeInput.min = "0"
         rangeInput.value = (existing?.rangeDistance ?: 0).toString()
-        rangeDiv.appendChild(rangeInput)
+        row3.appendChild(col(lbl(t("inv.rangeMeter")), rangeInput))
         rangeLongInput = document.createElement("input") as HTMLInputElement
         rangeLongInput.type = "number"; rangeLongInput.min = "0"
         rangeLongInput.value = (existing?.rangeLongDistance ?: 0).toString()
-        rangeDiv.appendChild(rangeLongInput)
-        fun updateRangeVisibility() { rangeDiv.style.display = if (rangeCb.checked || thrownCb.checked) "grid" else "none" }
-        updateRangeVisibility()
-        rangeCb.addEventListener("change", { updateRangeVisibility() })
-        thrownCb.addEventListener("change", { updateRangeVisibility() })
-        form.appendChild(rangeDiv)
+        row3.appendChild(col(lbl(t("inv.longRange")), rangeLongInput))
+        fun updateRangeEnabled() {
+            val enabled = rangeCb.checked || thrownCb.checked
+            rangeInput.disabled = !enabled
+            rangeLongInput.disabled = !enabled
+        }
+        updateRangeEnabled()
+        rangeCb.addEventListener("change", { updateRangeEnabled() })
+        thrownCb.addEventListener("change", { updateRangeEnabled() })
+        form.appendChild(row3)
 
-        // Special description
-        val specialDiv = document.createElement("div") as HTMLDivElement
-        specialDiv.className = "modal__full-width"
-        val specialLbl = document.createElement("label") as HTMLLabelElement
-        specialLbl.textContent = t("inv.special")
-        specialDiv.appendChild(specialLbl)
-        specialInput = document.createElement("textarea") as HTMLTextAreaElement
-        specialInput.value = existing?.specialDescription ?: ""
-        specialDiv.appendChild(specialInput)
-        fun updateSpecialVisibility() { specialDiv.style.display = if (specialCb.checked) "block" else "none" }
-        updateSpecialVisibility()
-        specialCb.addEventListener("change", { updateSpecialVisibility() })
-        form.appendChild(specialDiv)
-
-        // Versatile dice
-        val versatileDiv = document.createElement("div") as HTMLDivElement
-        versatileDiv.className = "modal__full-width"
-        val versatileLbl = document.createElement("label") as HTMLLabelElement
-        versatileLbl.textContent = t("inv.twoHandedDice")
-        versatileDiv.appendChild(versatileLbl)
+        // Row 4: Versátil | Dado de Dano (duas mãos)
+        val row4 = cbRow("1fr 2fr 1fr")
+        versatileCb = addCb(row4, t("inv.versatile"), existing?.versatile ?: false)
         versatileInput = document.createElement("input") as HTMLInputElement
         versatileInput.value = existing?.versatileDice ?: ""
         versatileInput.placeholder = "e.g. 1d10"
-        versatileDiv.appendChild(versatileInput)
-        fun updateVersatileVisibility() { versatileDiv.style.display = if (versatileCb.checked) "block" else "none" }
-        updateVersatileVisibility()
-        versatileCb.addEventListener("change", { updateVersatileVisibility() })
-        form.appendChild(versatileDiv)
+        row4.appendChild(col(lbl(t("inv.twoHandedDice")), versatileInput))
+        fun updateVersatileEnabled() {
+            versatileInput.disabled = !versatileCb.checked
+        }
+        updateVersatileEnabled()
+        versatileCb.addEventListener("change", { updateVersatileEnabled() })
+        form.appendChild(row4)
+
+        // Row 5: Especial | Descrição
+        val row5 = cbRow("1fr 3fr")
+        specialCb = addCb(row5, t("inv.special"), existing?.special ?: false)
+        specialInput = document.createElement("input") as HTMLInputElement
+        specialInput.value = existing?.specialDescription ?: ""
+        row5.appendChild(col(lbl(t("inv.special")), specialInput))
+        fun updateSpecialEnabled() {
+            specialInput.disabled = !specialCb.checked
+        }
+        updateSpecialEnabled()
+        specialCb.addEventListener("change", { updateSpecialEnabled() })
+        form.appendChild(row5)
 
         // Additional Features
         val addFeatLbl = document.createElement("label") as HTMLLabelElement
@@ -205,35 +230,13 @@ class DndWeaponModal(
         addFeatInput.className = "modal__full-width"
         form.appendChild(addFeatInput)
 
-        // Weight
-        lbl(t("inv.weight"))
-        val weightRow = document.createElement("div") as HTMLDivElement
-        weightRow.className = "modal__checkbox-row"
-        weightInput = document.createElement("input") as HTMLInputElement
-        weightInput.type = "number"; weightInput.step = "0.1"; weightInput.min = "0"
-        weightInput.value = (existing?.weight ?: 0.0).toString()
-        weightRow.appendChild(weightInput)
-        val kgSpan = document.createElement("span") as HTMLSpanElement
-        kgSpan.textContent = "Kg"
-        weightRow.appendChild(kgSpan)
-        form.appendChild(weightRow)
-
-        // Price
-        lbl(t("inv.price"))
-        val priceRow = document.createElement("div") as HTMLDivElement
-        priceRow.className = "modal__checkbox-row"
-        priceInput = document.createElement("input") as HTMLInputElement
-        priceInput.type = "number"; priceInput.min = "0"
-        priceInput.value = (existing?.price ?: 0).toString()
-        priceRow.appendChild(priceInput)
-        currSelect = document.createElement("select") as HTMLSelectElement
-        DndWeapon.currencies.forEach { c ->
-            val o = document.createElement("option") as HTMLOptionElement
-            o.value = c; o.textContent = tCurrency(c); currSelect.appendChild(o)
-        }
-        currSelect.value = existing?.priceCurrency ?: "pg"
-        priceRow.appendChild(currSelect)
-        form.appendChild(priceRow)
+        // Weight + Price
+        weightAndPriceField = WeightAndPriceField(form)
+        weightAndPriceField.setValues(
+            weight = existing?.weight ?: 0.0,
+            price = existing?.price ?: 0,
+            priceCurrency = existing?.priceCurrency ?: "pg"
+        )
 
         // Tags
         tagsField = TagsField(form, existing?.tags ?: emptyList())
@@ -251,6 +254,7 @@ class DndWeaponModal(
 
     override fun onSave(close: () -> Unit) {
         val weaponType = if (typeSelect.value == "__custom__") customTypeInput.value.trim() else typeSelect.value
+        val wp = weightAndPriceField.getValues()
         val weapon = DndWeapon(
             id = existing?.id ?: 0,
             characterId = character.id,
@@ -265,20 +269,20 @@ class DndWeaponModal(
             light = lightCb.checked,
             loading = loadingCb.checked,
             range = rangeCb.checked,
-            rangeDistance = rangeInput.value.toIntOrNull() ?: 0,
-            rangeLongDistance = rangeLongInput.value.toIntOrNull() ?: 0,
+            rangeDistance = if (rangeInput.disabled) 0 else rangeInput.value.toIntOrNull() ?: 0,
+            rangeLongDistance = if (rangeLongInput.disabled) 0 else rangeLongInput.value.toIntOrNull() ?: 0,
             reach = reachCb.checked,
             special = specialCb.checked,
-            specialDescription = specialInput.value,
+            specialDescription = if (specialInput.disabled) "" else specialInput.value,
             thrown = thrownCb.checked,
             twoHanded = twoHandedCb.checked,
             versatile = versatileCb.checked,
-            versatileDice = versatileInput.value,
+            versatileDice = if (versatileInput.disabled) "" else versatileInput.value,
             silver = silverCb.checked,
             additionalFeatures = addFeatInput.value,
-            weight = weightInput.value.toDoubleOrNull() ?: 0.0,
-            price = priceInput.value.toIntOrNull() ?: 0,
-            priceCurrency = currSelect.value,
+            weight = wp.weight,
+            price = wp.price,
+            priceCurrency = wp.priceCurrency,
             tags = tagsField.getTags(),
             isEquipped = eqCb.checked
         )
@@ -293,4 +297,3 @@ class DndWeaponModal(
         close()
     }
 }
-

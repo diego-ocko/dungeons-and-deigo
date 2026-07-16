@@ -2,16 +2,53 @@
   .modal__form {
     grid-template-columns: 1fr 1fr;
   }
+
+  input:not([type="checkbox"]),
+  select {
+    height: 32px;
+    box-sizing: border-box;
+  }
 }
 
-.weapon-modal__props-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px;
-}
-
-.weapon-modal__range-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.weapon-modal__name-type-row,
+.weapon-modal__dmg-row {
+  display: flex;
   gap: 10px;
+  align-items: flex-end;
 }
+
+.weapon-modal__field-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+
+  label {
+    font-size: 12px;
+  }
+}
+
+.weapon-modal__name-col {
+  flex: 2;
+}
+
+.weapon-modal__cb-row {
+  display: grid;
+  gap: 6px;
+  align-items: end;
+
+  // checkbox labels align to bottom like the inputs beside them
+  > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    margin-bottom: 0;
+  }
+
+  input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
