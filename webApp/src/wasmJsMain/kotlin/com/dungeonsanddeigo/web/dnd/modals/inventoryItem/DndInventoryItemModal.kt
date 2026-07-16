@@ -1,12 +1,12 @@
 package com.dungeonsanddeigo.web.dnd.modals.inventoryItem
 
 import com.dungeonsanddeigo.i18n.t
-import com.dungeonsanddeigo.i18n.tCurrency
 import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndInventoryItem
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.components.modal.Modal
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
+import com.dungeonsanddeigo.web.dnd.components.weightAndPrice.WeightAndPriceField
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -20,27 +20,21 @@ class DndInventoryItemModal(
 ) {
     private lateinit var nameInput: HTMLInputElement
     private lateinit var descInput: HTMLTextAreaElement
-    private lateinit var weightInput: HTMLInputElement
-    private lateinit var priceInput: HTMLInputElement
-    private lateinit var currSelect: HTMLSelectElement
+    private lateinit var weightAndPriceField: WeightAndPriceField
     private lateinit var tagsField: TagsField
 
     override fun buildForm(form: HTMLDivElement) {
         nameInput = addInput(form, t("label.name"), existing?.name ?: "", classes = arrayOf("modal__full-width")).input
         descInput = addTextarea(form, t("label.description"), existing?.description ?: "", rows = 3, classes = arrayOf("modal__full-width")).input
-        weightInput = addNumberInput(form, t("inv.weight"), (existing?.weight ?: 0.0).toString()).input
-        weightInput.step = "0.1"
-
-        // Price row
-        val currencies = listOf("pc", "ps", "pe", "pg", "pp").map { it to tCurrency(it) }
-        priceInput = addNumberInput(form, t("inv.price"), (existing?.price ?: 0).toString()).input
-        currSelect = addSelect(form, "", currencies, existing?.priceCurrency ?: "pg").input
+        weightAndPriceField = WeightAndPriceField(form)
+        weightAndPriceField.setValues(existing?.weight ?: 0.0, existing?.price ?: 0, existing?.priceCurrency ?: "pg")
 
         // Tags
         tagsField = TagsField(form, existing?.tags ?: emptyList())
     }
 
     override fun onSave(close: () -> Unit) {
+        val wp = weightAndPriceField.getValues()
         val item = DndInventoryItem(
             id = existing?.id ?: 0,
             characterId = character.id,
@@ -49,9 +43,9 @@ class DndInventoryItemModal(
             description = descInput.value,
             quantity = 1,
             equipped = false,
-            weight = weightInput.value.toDoubleOrNull() ?: 0.0,
-            price = priceInput.value.toIntOrNull() ?: 0,
-            priceCurrency = currSelect.value,
+            weight = wp.weight,
+            price = wp.price,
+            priceCurrency = wp.priceCurrency,
             tags = tagsField.getTags()
         )
         Repos.inventory.save(item)

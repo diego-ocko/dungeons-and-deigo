@@ -19,7 +19,11 @@ private val currencyEmoji = mapOf(
     "pp" to "💎"
 )
 
-class WeightAndPriceField(container: HTMLElement) {
+class WeightAndPriceField(
+    container: HTMLElement,
+    weightLabel: String = t("inv.weight"),
+    priceLabel: String = t("inv.price")
+) {
 
     private val weightInput: HTMLInputElement
     private val priceInput: HTMLInputElement
@@ -35,7 +39,7 @@ class WeightAndPriceField(container: HTMLElement) {
         val weightSection = document.createElement("div") as HTMLDivElement
         weightSection.className = "weight-and-price__section"
         val weightLbl = document.createElement("label") as HTMLLabelElement
-        weightLbl.textContent = t("inv.weight")
+        weightLbl.textContent = weightLabel
         weightSection.appendChild(weightLbl)
         val weightInner = document.createElement("div") as HTMLDivElement
         weightInner.className = "weight-and-price__input-row"
@@ -53,7 +57,7 @@ class WeightAndPriceField(container: HTMLElement) {
         val priceSection = document.createElement("div") as HTMLDivElement
         priceSection.className = "weight-and-price__section"
         val priceLbl = document.createElement("label") as HTMLLabelElement
-        priceLbl.textContent = t("inv.price")
+        priceLbl.textContent = priceLabel
         priceSection.appendChild(priceLbl)
         val priceInner = document.createElement("div") as HTMLDivElement
         priceInner.className = "weight-and-price__input-row"
