@@ -1,0 +1,32 @@
+@use '../../../variables' as *;
+
+.weight-and-price {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.weight-and-price__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.weight-and-price__input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input,
+  select {
+    height: 32px;
+    box-sizing: border-box;
+  }
+}
+
+.weight-and-price__unit {
+  font-size: 12px;
+  color: $parchment-text-muted;
+  white-space: nowrap;
+}

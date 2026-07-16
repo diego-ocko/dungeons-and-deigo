@@ -276,7 +276,7 @@ object PtBrStrings {
         "inv.sneakDisadvWarn" to "Armadura equipada causa Desvantagem em Testes de Des (Furtividade)",
         "inv.needStrength" to "Precisa de mais força para usar esta armadura. Velocidade reduzida em 3",
         "inv.sneakDisadvShort" to "Desv. Furtividade",
-        "inv.minStr" to "For Mín",
+        "inv.minStr" to "Força Mínima",
         "inv.lifestyle.wretched" to "Miserável",
         "inv.lifestyle.squalid" to "Esquálido",
         "inv.lifestyle.poor" to "Pobre",
