@@ -7,7 +7,7 @@
 }
 
 .inv-box {
-  border: 1px solid $color-border;
+  border: 1px solid $color-text;
   border-radius: 8px;
   padding: 12px;
   min-height: 150px;
@@ -33,15 +33,23 @@
 }
 
 .inv-row {
-  border-bottom: 1px solid $color-border;
+  border-bottom: 1px solid $color-text;
   padding: 6px 0;
   font-size: 12px;
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .inv-row-line1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.inv-row-line2 {
+  margin-top: 2px;
 }
 
 .inv-row-name {
@@ -63,9 +71,14 @@
 }
 
 .inv-warning {
-  color: $color-danger;
+  display: block;
+  color: $color-text;
+  background-color: rgba(180, 30, 30, 0.85);
   font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
   margin-bottom: 4px;
+  width: 80%;
 }
 
 .inv-ac-row {
@@ -90,6 +103,9 @@
 
 .inv-warnings {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .inv-speed-display {
@@ -110,29 +126,41 @@
 }
 
 .inv-coins-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
   font-size: 13px;
-
-  label {
-    font-weight: bold;
-  }
-
-  input {
-    width: 100%;
-    padding: 2px;
-  }
 }
 
-.inv-coin-wrapper {
+.inv-coin-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+}
+
+.inv-coin-label {
+  font-weight: bold;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.inv-coin-row input {
+  width: 64px;
+  padding: 2px 4px;
+}
+
+.inv-coin-row select {
+  max-width: 160px;
 }
 
 .inv-coin-abbr {
   font-size: 12px;
+  white-space: nowrap;
+}
+
+.inv-coin-sum {
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .inv-cost-label {
@@ -165,7 +193,7 @@
   th {
     text-align: left;
     padding: 4px;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid $color-text;
     font-size: 11px;
   }
 

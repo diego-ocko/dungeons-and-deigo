@@ -334,6 +334,8 @@ object EnStrings {
         "inv.atkTable.test" to "Test",
         "inv.atkTable.damage" to "Damage",
         "inv.atkTable.notes" to "Notes",
+        "inv.itemsSum" to "Items total",
+        "inv.itemsWeight" to "Items weight",
 
         // Magic tab
         "magic.editSpell" to "Edit Spell",

@@ -10,8 +10,8 @@ import com.dungeonsanddeigo.web.dnd.modals.weapon.DndWeaponModal
 import com.dungeonsanddeigo.web.dnd.modals.magicItem.DndMagicItemModal
 import com.dungeonsanddeigo.web.dnd.modals.consumable.DndConsumableModal
 import com.dungeonsanddeigo.web.dnd.modals.inventoryItem.DndInventoryItemModal
+import com.dungeonsanddeigo.web.dnd.components.autoSaveIndicator.AutoSaveIndicator
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.w3c.dom.*
 
 fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
@@ -36,7 +36,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
             if (section != "Money") {
                 val addBtn = document.createElement("button") as HTMLButtonElement
                 addBtn.textContent = t("inv.add")
-                addBtn.className = "inv-add-btn"
+                addBtn.className = "btn-primary"
                 addBtn.addEventListener("click", {
                     when (section) {
                         "Armor" -> DndArmorModal(character, null).show { refresh() }
@@ -55,37 +55,79 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                 // Money section: editable fields with auto-save
                 val money = Repos.money.getByCharacterId(character.id) ?: DndMoney(characterId = character.id)
 
+                // Collect all items for totals
+                val allArmors    = Repos.armor.getByCharacterId(character.id)
+                val allWeapons   = Repos.weapon.getByCharacterId(character.id)
+                val allMagic     = Repos.magicItem.getByCharacterId(character.id)
+                val allConsumables = Repos.consumable.getByCharacterId(character.id)
+                val allInvItems  = listOf("Key Items, Loot and others", "Potions Ammo and Ration")
+                    .flatMap { Repos.inventory.getByCategory(character.id, it) }
+
+                // Convert all prices to copper for summing, then back per currency
+                fun toCp(price: Int, currency: String): Int = price * when (currency) {
+                    "pp" -> 1000; "pg" -> 100; "pe" -> 50; "ps" -> 10; else -> 1
+                }
+                val totalCp = allArmors.sumOf { toCp(it.price, it.priceCurrency) } +
+                    allWeapons.sumOf { toCp(it.price, it.priceCurrency) } +
+                    allMagic.sumOf { toCp(it.price, it.priceCurrency) } +
+                    allConsumables.sumOf { toCp(it.price, it.priceCurrency) * it.quantity } +
+                    allInvItems.sumOf { toCp(it.price, it.priceCurrency) }
+
+                // Break down total into each currency (largest first)
+                var remaining = totalCp
+                val sumPp = remaining / 1000; remaining %= 1000
+                val sumPg = remaining / 100;  remaining %= 100
+                val sumPe = remaining / 50;   remaining %= 50
+                val sumPs = remaining / 10;   remaining %= 10
+                val sumCp = remaining
+
+                val totalWeight = allArmors.sumOf { it.weight } +
+                    allWeapons.sumOf { it.weight } +
+                    allMagic.sumOf { it.weight } +
+                    allConsumables.sumOf { it.weight * it.quantity } +
+                    allInvItems.sumOf { it.weight }
+
                 val coinsGrid = document.createElement("div") as HTMLDivElement
                 coinsGrid.className = "inv-coins-grid"
 
-                fun addCoinField(label: String, abbr: String, value: Int): HTMLInputElement {
-                    val lbl = document.createElement("label") as HTMLLabelElement
+                fun addCoinField(label: String, emoji: String, abbr: String, value: Int, itemSum: Int): HTMLInputElement {
+                    val row = document.createElement("div") as HTMLDivElement
+                    row.className = "inv-coin-row"
+                    val lbl = document.createElement("span") as HTMLSpanElement
                     lbl.textContent = label
-                    coinsGrid.appendChild(lbl)
-                    val wrapper = document.createElement("div") as HTMLDivElement
-                    wrapper.className = "inv-coin-wrapper"
+                    lbl.className = "inv-coin-label"
+                    row.appendChild(lbl)
                     val input = document.createElement("input") as HTMLInputElement
                     input.type = "number"; input.min = "0"
                     input.value = value.toString()
-                    wrapper.appendChild(input)
+                    row.appendChild(input)
                     val abbrSpan = document.createElement("span") as HTMLSpanElement
-                    abbrSpan.textContent = abbr
+                    abbrSpan.textContent = "$emoji $abbr"
                     abbrSpan.className = "inv-coin-abbr"
-                    wrapper.appendChild(abbrSpan)
-                    coinsGrid.appendChild(wrapper)
+                    row.appendChild(abbrSpan)
+                    if (itemSum > 0) {
+                        val sumSpan = document.createElement("span") as HTMLSpanElement
+                        sumSpan.textContent = "+ ${t("inv.itemsSum")}: $itemSum$emoji $abbr"
+                        sumSpan.className = "inv-coin-sum"
+                        row.appendChild(sumSpan)
+                    }
+                    coinsGrid.appendChild(row)
                     return input
                 }
 
-                val cpInput = addCoinField(t("coin.copper"), t("coin.copper.abbr"), money.copper)
-                val spInput = addCoinField(t("coin.silver"), t("coin.silver.abbr"), money.silver)
-                val epInput = addCoinField(t("coin.electrum"), t("coin.electrum.abbr"), money.electrum)
-                val gpInput = addCoinField(t("coin.gold"), t("coin.gold.abbr"), money.gold)
-                val ppInput = addCoinField(t("coin.platinum"), t("coin.platinum.abbr"), money.platinum)
+                val cpInput = addCoinField(t("coin.copper"), "🥉", t("coin.copper.abbr"), money.copper, sumCp)
+                val spInput = addCoinField(t("coin.silver"), "🥈", t("coin.silver.abbr"), money.silver, sumPs)
+                val epInput = addCoinField(t("coin.electrum"), "🪙", t("coin.electrum.abbr"), money.electrum, sumPe)
+                val gpInput = addCoinField(t("coin.gold"), "🥇", t("coin.gold.abbr"), money.gold, sumPg)
+                val ppInput = addCoinField(t("coin.platinum"), "💎", t("coin.platinum.abbr"), money.platinum, sumPp)
 
                 // Lifestyle
-                val lifeLbl = document.createElement("label") as HTMLLabelElement
+                val lifeRow = document.createElement("div") as HTMLDivElement
+                lifeRow.className = "inv-coin-row"
+                val lifeLbl = document.createElement("span") as HTMLSpanElement
                 lifeLbl.textContent = t("inv.lifestyle")
-                coinsGrid.appendChild(lifeLbl)
+                lifeLbl.className = "inv-coin-label"
+                lifeRow.appendChild(lifeLbl)
                 val lifeSelect = document.createElement("select") as HTMLSelectElement
                 val emptyOpt = document.createElement("option") as HTMLOptionElement
                 emptyOpt.value = ""; emptyOpt.textContent = "--"
@@ -96,7 +138,13 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                     lifeSelect.appendChild(opt)
                 }
                 lifeSelect.value = money.lifestyle
-                coinsGrid.appendChild(lifeSelect)
+                lifeRow.appendChild(lifeSelect)
+                val weightRounded = (totalWeight * 10).toInt().toDouble() / 10
+                val weightSpan = document.createElement("span") as HTMLSpanElement
+                weightSpan.textContent = "${t("inv.itemsWeight")}: ${weightRounded} kg"
+                weightSpan.className = "inv-coin-label"
+                lifeRow.appendChild(weightSpan)
+                coinsGrid.appendChild(lifeRow)
 
                 // Cost per day label
                 val costLabel = document.createElement("span") as HTMLSpanElement
@@ -123,17 +171,9 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                 box.appendChild(coinsGrid)
 
-                // Auto-save for money
-                val moneyStatus = document.createElement("span") as HTMLSpanElement
-                moneyStatus.className = "inv-money-status"
-                box.appendChild(moneyStatus)
-
-                var moneySaveTimeout = 0
+                val autoSave = AutoSaveIndicator(box)
                 fun autoSaveMoney() {
-                    moneyStatus.textContent = t("status.saving")
-                    moneyStatus.style.color = "gray"
-                    if (moneySaveTimeout != 0) window.clearTimeout(moneySaveTimeout)
-                    moneySaveTimeout = window.setTimeout({
+                    autoSave.schedule {
                         Repos.money.save(DndMoney(
                             characterId = character.id,
                             copper = cpInput.value.toIntOrNull() ?: 0,
@@ -143,10 +183,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                             platinum = ppInput.value.toIntOrNull() ?: 0,
                             lifestyle = lifeSelect.value
                         ))
-                        moneyStatus.textContent = t("status.saved")
-                        moneyStatus.style.color = "green"
-                        null
-                    }, 500)
+                    }
                 }
                 coinsGrid.addEventListener("input", { autoSaveMoney() })
                 coinsGrid.addEventListener("change", { autoSaveMoney() })
@@ -275,13 +312,9 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                     armors.forEach { armor ->
                         val row = document.createElement("div") as HTMLDivElement
                         row.className = "inv-row"
-                        
-                        
 
                         val line1 = document.createElement("div") as HTMLDivElement
                         line1.className = "inv-row-line1"
-                        
-                        
 
                         val nameSpan = document.createElement("span") as HTMLSpanElement
                         val eqIcon = if (armor.isEquipped) "\u2705 " else ""
@@ -293,11 +326,13 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         actions.className = "inv-row-actions"
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
+                        editBtn.textContent = "✏️"
+                        editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { DndArmorModal(character, armor).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
+                        delBtn.textContent = "🗑"
+                        delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.armor.delete(armor.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
@@ -316,9 +351,6 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
 
                         val line2 = document.createElement("div") as HTMLDivElement
                         line2.className = "inv-row-line2"
-                        val warnings = StringBuilder()
-                        if (!hasProficiency) warnings.append("\u26A0\uFE0F ")
-                        if (hasStrWarning) warnings.append("\u26A0\uFE0F ")
                         val sneakStr = if (armor.hasSneakDisadvantage) " | " + t("inv.sneakDisadvShort") else ""
                         val strStr = if (armor.minimumStrength > 0) " | ${t("inv.minStr")}: ${armor.minimumStrength}" else ""
                         if (armor.type == "Clothes") {
@@ -328,7 +360,14 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                             } else ""
                             line2.textContent = "${tArmorType(armor.type)} | ${armor.weight}kg | ${armor.price} ${tCurrency(armor.priceCurrency)}$featText"
                         } else {
-                            line2.textContent = "$warnings${tArmorType(armor.type)} | ${t("inv.baseAC")}: ${armor.baseAC} (${tAcModifier(armor.acModifier)})$strStr$sneakStr | ${armor.weight}kg | ${armor.price} ${tCurrency(armor.priceCurrency)}"
+                            if (!hasProficiency || hasStrWarning) {
+                                val warnBadge = document.createElement("span") as HTMLSpanElement
+                                warnBadge.textContent = "\u26A0\uFE0F "
+                                line2.appendChild(warnBadge)
+                            }
+                            val infoSpan = document.createElement("span") as HTMLSpanElement
+                            infoSpan.textContent = "${tArmorType(armor.type)} | ${t("inv.baseAC")}: ${armor.baseAC} (${tAcModifier(armor.acModifier)})$strStr$sneakStr | ${armor.weight}kg | ${armor.price} ${tCurrency(armor.priceCurrency)}"
+                            line2.appendChild(infoSpan)
                         }
                         row.appendChild(line2)
 
@@ -494,11 +533,13 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         actions.className = "inv-row-actions"
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
+                        editBtn.textContent = "✏️"
+                        editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { DndWeaponModal(character, weapon).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
+                        delBtn.textContent = "🗑"
+                        delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.weapon.delete(weapon.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
@@ -581,11 +622,13 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         actions.className = "inv-row-actions"
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
+                        editBtn.textContent = "✏️"
+                        editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { DndMagicItemModal(character, item).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
+                        delBtn.textContent = "🗑"
+                        delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.magicItem.delete(item.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
@@ -633,11 +676,13 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         actions.className = "inv-row-actions"
                         
                         val editBtn = document.createElement("button") as HTMLButtonElement
-                        editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
+                        editBtn.textContent = "✏️"
+                        editBtn.className = "inv-row-btn"
                         editBtn.addEventListener("click", { DndConsumableModal(character, item).show { refresh() } })
                         actions.appendChild(editBtn)
                         val delBtn = document.createElement("button") as HTMLButtonElement
-                        delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
+                        delBtn.textContent = "🗑"
+                        delBtn.className = "inv-row-del-btn"
                         delBtn.addEventListener("click", { Repos.consumable.delete(item.id); refresh() })
                         actions.appendChild(delBtn)
                         line1.appendChild(actions)
@@ -685,13 +730,15 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                     actions.className = "inv-row-actions"
                     
                     val editBtn = document.createElement("button") as HTMLButtonElement
-                    editBtn.textContent = "\u270E"; editBtn.className = "inv-row-btn"
+                    editBtn.textContent = "✏️"
+                        editBtn.className = "inv-row-btn"
                     editBtn.addEventListener("click", {
                         DndInventoryItemModal(character, section, item).show { refresh() }
                     })
                     actions.appendChild(editBtn)
                     val delBtn = document.createElement("button") as HTMLButtonElement
-                    delBtn.textContent = "\u2716"; delBtn.className = "inv-row-del-btn"
+                    delBtn.textContent = "🗑"
+                        delBtn.className = "inv-row-del-btn"
                     delBtn.addEventListener("click", { Repos.inventory.delete(item.id); refresh() })
                     actions.appendChild(delBtn)
                     line1.appendChild(actions)

@@ -334,6 +334,8 @@ object PtBrStrings {
         "inv.atkTable.test" to "Teste",
         "inv.atkTable.damage" to "Dano",
         "inv.atkTable.notes" to "Notas",
+        "inv.itemsSum" to "Soma dos itens",
+        "inv.itemsWeight" to "Peso dos items",
 
         // Magic tab
         "magic.editSpell" to "Editar Magia",
