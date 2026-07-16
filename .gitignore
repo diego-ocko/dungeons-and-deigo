@@ -12,6 +12,9 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+### VS CODE ###
+.vscode/
+
 ### iOS ###
 iosApp/Pods/
 *.xcuserdata
