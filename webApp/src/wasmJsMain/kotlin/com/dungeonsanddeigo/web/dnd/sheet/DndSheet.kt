@@ -61,9 +61,7 @@ fun showCharacterDetail(character: Character) {
 
     // Tabs
     val tabBar = document.createElement("div") as HTMLDivElement
-    tabBar.style.display = "flex"
-    tabBar.style.borderBottom = "1px solid #ccc"
-    tabBar.style.marginBottom = "16px"
+    tabBar.className = "sheet-tab-bar"
 
     val tabContent = document.createElement("div") as HTMLDivElement
 
@@ -81,16 +79,13 @@ fun showCharacterDetail(character: Character) {
             else -> tabName
         }
         tabBtn.textContent = tabDisplayName
-        tabBtn.style.padding = "8px 16px"
-        tabBtn.style.border = "none"
-        tabBtn.style.cursor = "pointer"
-        tabBtn.style.backgroundColor = if (index == 0) "#e0e0e0" else "transparent"
+        tabBtn.className = if (index == 0) "sheet-tab-btn btn-primary" else "sheet-tab-btn"
         tabBtn.addEventListener("click", {
             val buttons = tabBar.querySelectorAll("button")
             for (i in 0 until buttons.length) {
-                (buttons.item(i) as? HTMLButtonElement)?.style?.backgroundColor = "transparent"
+                (buttons.item(i) as? HTMLButtonElement)?.className = "sheet-tab-btn"
             }
-            tabBtn.style.backgroundColor = "#e0e0e0"
+            tabBtn.className = "sheet-tab-btn btn-primary"
             renderTabContent(tabName, character, tabContent)
         })
         tabBar.appendChild(tabBtn)

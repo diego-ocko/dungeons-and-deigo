@@ -1,3 +1,15 @@
+.sheet-tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.sheet-tab-btn {
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
 .dnd-sheet {
   display: flex;
   height: 100vh;
