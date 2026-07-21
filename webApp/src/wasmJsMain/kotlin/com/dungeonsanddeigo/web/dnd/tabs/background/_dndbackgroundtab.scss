@@ -18,7 +18,12 @@
 .bg-content {
   display: flex;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
+}
+
+.bg-appearance-right {
+  flex: 1;
+  min-width: 0;
 }
 
 .bg-img-container {
@@ -26,7 +31,7 @@
 }
 
 .bg-img {
-  max-width: 300px;
+  max-width: 500px;
   border-radius: 8px;
 }
 
@@ -75,7 +80,7 @@
     margin-bottom: 4px;
   }
 
-  input {
+  input:not([type="color"]) {
     width: 100%;
     padding: 4px;
   }
@@ -89,7 +94,9 @@
 
 .bg-color-picker {
   width: 30px;
+  min-width: 30px;
   height: 30px;
+  padding: 2px 4px;
   border: none;
   cursor: pointer;
 }
@@ -106,9 +113,25 @@
   margin-bottom: 4px;
 }
 
+.bg-backstory-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.bg-backstory-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.bg-backstory-right {
+  flex: 1;
+  min-width: 0;
+}
+
 .bg-personality-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-bottom: 12px;
 
@@ -121,8 +144,6 @@
 }
 
 .bg-faction-section {
-  border-top: 1px solid #eee;
-  padding-top: 12px;
   margin-bottom: 12px;
 }
 

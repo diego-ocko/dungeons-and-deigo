@@ -5,6 +5,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.util.hexToColorName
 import com.dungeonsanddeigo.util.namedColors
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.autoSaveIndicator.AutoSaveIndicator
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
@@ -12,6 +13,7 @@ import org.w3c.dom.*
 import org.w3c.files.FileReader
 
 fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
+    val autoSave = AutoSaveIndicator(container)
     // Appearance section
     val appearanceBox = document.createElement("div") as HTMLDivElement
     appearanceBox.className = "bg-box"
@@ -80,46 +82,28 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
 
     imgContainer.appendChild(changeImgBtn)
     imgContainer.appendChild(fileInput)
-    content.appendChild(imgContainer)
+
+    // Right column: name + details + description
+    val rightCol = document.createElement("div") as HTMLDivElement
+    rightCol.className = "bg-appearance-right"
 
     // Character name (editable with autosave)
-    val nameDiv = document.createElement("div") as HTMLDivElement
-    val nameLabel = document.createElement("div") as HTMLDivElement
-    nameLabel.textContent = t("label.name")
-    nameLabel.className = "bg-name-label"
-    nameDiv.appendChild(nameLabel)
-
     val charNameKey = "char_name_${character.id}"
     val currentName = localStorage.getItem(charNameKey) ?: character.name
 
     val nameInput = document.createElement("input") as HTMLInputElement
     nameInput.value = currentName
     nameInput.className = "bg-name-input"
-    nameDiv.appendChild(nameInput)
 
-    val nameStatus = document.createElement("span") as HTMLSpanElement
-    nameStatus.className = "bg-status"
-    nameDiv.appendChild(nameStatus)
-
-    var nameSaveTimeout = 0
     nameInput.addEventListener("input", {
-        nameStatus.textContent = t("status.saving")
-        nameStatus.style.color = "gray"
-        if (nameSaveTimeout != 0) window.clearTimeout(nameSaveTimeout)
-        nameSaveTimeout = window.setTimeout({
+        autoSave.schedule {
             localStorage.setItem(charNameKey, nameInput.value)
-            // Update header name
             val headerName = document.getElementById("header-char-name")
             if (headerName != null) headerName.textContent = nameInput.value
-            nameStatus.textContent = t("status.saved")
-            nameStatus.style.color = "green"
-            null
-        }, 500)
+        }
     })
 
-    content.appendChild(nameDiv)
-
-    appearanceBox.appendChild(content)
+    rightCol.appendChild(nameInput)
 
     // Appearance details form
     val appearance = Repos.appearance.getByCharacterId(character.id) ?: com.dungeonsanddeigo.model.DndAppearance(characterId = character.id)
@@ -192,29 +176,24 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
     val skinColorInput = addColorField(t("bg.skinColor"), appearance.skinColor)
     val hairColorInput = addColorField(t("bg.hairColor"), appearance.hairColor)
 
-    appearanceBox.appendChild(detailsForm)
+    rightCol.appendChild(detailsForm)
 
     // Description textarea
     val descLabel = document.createElement("label") as HTMLLabelElement
     descLabel.textContent = t("bg.appearanceDesc")
     descLabel.className = "bg-desc-label"
-    appearanceBox.appendChild(descLabel)
+    rightCol.appendChild(descLabel)
     val descInput = document.createElement("textarea") as HTMLTextAreaElement
     descInput.value = appearance.description
     descInput.rows = 4; descInput.style.width = "100%"
-    appearanceBox.appendChild(descInput)
+    rightCol.appendChild(descInput)
 
-    // Auto-save
-    val appearanceStatus = document.createElement("span") as HTMLSpanElement
-    appearanceStatus.className = "bg-status"
-    appearanceBox.appendChild(appearanceStatus)
+    content.appendChild(imgContainer)
+    content.appendChild(rightCol)
+    appearanceBox.appendChild(content)
 
-    var appearanceSaveTimeout = 0
-    fun autoSaveAppearance() {
-        appearanceStatus.textContent = t("status.saving")
-        appearanceStatus.style.color = "gray"
-        if (appearanceSaveTimeout != 0) window.clearTimeout(appearanceSaveTimeout)
-        appearanceSaveTimeout = window.setTimeout({
+    appearanceBox.addEventListener("input", {
+        autoSave.schedule {
             Repos.appearance.save(com.dungeonsanddeigo.model.DndAppearance(
                 characterId = character.id,
                 age = ageInput.value,
@@ -225,13 +204,8 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
                 hairColor = hairColorInput.value,
                 description = descInput.value
             ))
-            appearanceStatus.textContent = t("status.saved")
-            appearanceStatus.style.color = "green"
-            null
-        }, 500)
-    }
-
-    appearanceBox.addEventListener("input", { autoSaveAppearance() })
+        }
+    })
 
     // Layout: Appearance (left) + Backstory (right)
     val bgRow = document.createElement("div") as HTMLDivElement
@@ -247,6 +221,17 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
     backstoryBox.appendChild(backstoryTitle)
 
     val backstory = Repos.backstory.getByCharacterId(character.id) ?: com.dungeonsanddeigo.model.DndBackstory(characterId = character.id)
+
+    val backstoryContent = document.createElement("div") as HTMLDivElement
+    backstoryContent.className = "bg-backstory-content"
+
+    // Left column: faction + character backstory
+    val backstoryLeft = document.createElement("div") as HTMLDivElement
+    backstoryLeft.className = "bg-backstory-left"
+
+    // Right column: personality traits
+    val backstoryRight = document.createElement("div") as HTMLDivElement
+    backstoryRight.className = "bg-backstory-right"
 
     // Personality fields grid
     val personalityGrid = document.createElement("div") as HTMLDivElement
@@ -270,7 +255,7 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
     val defectsInput = addTextArea(personalityGrid, t("bg.defects"), backstory.defects)
     val habitsInput = addTextArea(personalityGrid, t("bg.habits"), backstory.habits)
 
-    backstoryBox.appendChild(personalityGrid)
+    backstoryRight.appendChild(personalityGrid)
 
     // Faction section
     val factionSection = document.createElement("div") as HTMLDivElement
@@ -339,29 +324,24 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
     })
 
     factionSection.appendChild(factionDetails)
-    backstoryBox.appendChild(factionSection)
+    backstoryLeft.appendChild(factionSection)
 
     // Character Backstory
     val charBackstoryLbl = document.createElement("label") as HTMLLabelElement
     charBackstoryLbl.textContent = t("bg.charBackstory")
     charBackstoryLbl.className = "bg-char-backstory-label"
-    backstoryBox.appendChild(charBackstoryLbl)
+    backstoryLeft.appendChild(charBackstoryLbl)
     val charBackstoryInput = document.createElement("textarea") as HTMLTextAreaElement
     charBackstoryInput.value = backstory.characterBackstory
     charBackstoryInput.rows = 10; charBackstoryInput.style.width = "100%"
-    backstoryBox.appendChild(charBackstoryInput)
+    backstoryLeft.appendChild(charBackstoryInput)
 
-    // Auto-save
-    val backstoryStatus = document.createElement("span") as HTMLSpanElement
-    backstoryStatus.className = "bg-status"
-    backstoryBox.appendChild(backstoryStatus)
+    backstoryContent.appendChild(backstoryLeft)
+    backstoryContent.appendChild(backstoryRight)
+    backstoryBox.appendChild(backstoryContent)
 
-    var backstorySaveTimeout = 0
-    fun autoSaveBackstory() {
-        backstoryStatus.textContent = t("status.saving")
-        backstoryStatus.style.color = "gray"
-        if (backstorySaveTimeout != 0) window.clearTimeout(backstorySaveTimeout)
-        backstorySaveTimeout = window.setTimeout({
+    fun scheduleBackstorySave() {
+        autoSave.schedule {
             Repos.backstory.save(com.dungeonsanddeigo.model.DndBackstory(
                 characterId = character.id,
                 personalityTraits = traitsInput.value,
@@ -375,14 +355,11 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
                 factionBackstory = factionBackstoryInput.value,
                 characterBackstory = charBackstoryInput.value
             ))
-            backstoryStatus.textContent = t("status.saved")
-            backstoryStatus.style.color = "green"
-            null
-        }, 500)
+        }
     }
 
-    backstoryBox.addEventListener("input", { autoSaveBackstory() })
-    backstoryBox.addEventListener("change", { autoSaveBackstory() })
+    backstoryBox.addEventListener("input", { scheduleBackstorySave() })
+    backstoryBox.addEventListener("change", { scheduleBackstorySave() })
 
     bgRow.appendChild(backstoryBox)
     container.appendChild(bgRow)
