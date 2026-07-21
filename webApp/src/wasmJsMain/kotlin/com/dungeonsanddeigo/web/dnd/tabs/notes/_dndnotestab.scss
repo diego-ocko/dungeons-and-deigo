@@ -1,14 +1,16 @@
+@use '../../../variables' as *;
+
 .notes-add-btn {
   margin-bottom: 16px;
 }
 
 .notes-empty {
-  color: #999;
+  color: $color-text-muted;
 }
 
 .notes-card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid $color-border;
+  border-radius: $radius;
   padding: 12px;
   margin-bottom: 10px;
   max-width: 700px;
@@ -27,7 +29,6 @@
 
 .notes-meta {
   font-size: 11px;
-  color: #666;
   text-align: right;
 }
 
@@ -45,22 +46,18 @@
 }
 
 .notes-tag {
-  background-color: #eee;
+  background-color: #2563eb;
+  color: #fff;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   font-size: 11px;
 }
 
 .notes-actions {
   display: flex;
-  gap: 8px;
-}
-
-.notes-btn {
-  font-size: 11px;
+  gap: $spacing-sm;
 }
 
 .notes-del-btn {
-  font-size: 11px;
-  color: red;
+  color: $color-danger;
 }

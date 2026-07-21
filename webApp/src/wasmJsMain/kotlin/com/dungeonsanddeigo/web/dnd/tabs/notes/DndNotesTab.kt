@@ -13,7 +13,7 @@ fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
 
         val addBtn = document.createElement("button") as HTMLButtonElement
         addBtn.textContent = "\uD83D\uDCDD " + t("notes.addNote")
-        addBtn.className = "notes-add-btn"
+        addBtn.className = "notes-add-btn btn-primary"
         addBtn.addEventListener("click", {
             DndNoteModal(character, null).show { refresh() }
         })
@@ -75,13 +75,15 @@ fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
             actions.className = "notes-actions"
 
             val editBtn = document.createElement("button") as HTMLButtonElement
-            editBtn.textContent = t("btn.edit")
+            editBtn.textContent = "✏️"
+            editBtn.title = t("btn.edit")
             editBtn.className = "notes-btn"
             editBtn.addEventListener("click", { DndNoteModal(character, note).show { refresh() } })
             actions.appendChild(editBtn)
 
             val deleteBtn = document.createElement("button") as HTMLButtonElement
-            deleteBtn.textContent = t("btn.delete")
+            deleteBtn.textContent = "🗑️"
+            deleteBtn.title = t("btn.delete")
             deleteBtn.className = "notes-del-btn"
             deleteBtn.addEventListener("click", {
                 Repos.note.delete(character.id, note.id)
