@@ -229,7 +229,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         val titleRow = document.createElement("div") as HTMLDivElement
         titleRow.className = "magic-title-row"
 
-        val titleEl = document.createElement("h4") as HTMLHeadingElement
+        val titleEl = document.createElement("h2") as HTMLHeadingElement
         titleEl.textContent = "${caster.className} - ${t("magic.spellcasting")}"
         titleRow.appendChild(titleEl)
 
@@ -356,7 +356,7 @@ fun renderDndMagicTab(character: Character, container: HTMLDivElement) {
         val col = document.createElement("div") as HTMLDivElement
         col.className = "magic-spell-col"
 
-        val colTitle = document.createElement("h5") as HTMLHeadingElement
+        val colTitle = document.createElement("h3") as HTMLHeadingElement
         colTitle.textContent = if (circle == "Cantrip") t("magic.cantrips") else tCircle(circle)
         col.appendChild(colTitle)
 

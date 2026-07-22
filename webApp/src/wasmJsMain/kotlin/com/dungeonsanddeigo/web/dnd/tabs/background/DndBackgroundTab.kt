@@ -18,7 +18,8 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
     val appearanceBox = document.createElement("div") as HTMLDivElement
     appearanceBox.className = "bg-box"
 
-    val appearanceTitle = document.createElement("h4") as HTMLHeadingElement
+    val appearanceTitle = document.createElement("h3") as HTMLHeadingElement
+    appearanceTitle.className = "bg-section-title"
     appearanceTitle.textContent = t("background.appearance")
     appearanceBox.appendChild(appearanceTitle)
 
@@ -216,7 +217,8 @@ fun renderDndBackgroundTab(character: Character, container: HTMLDivElement) {
     val backstoryBox = document.createElement("div") as HTMLDivElement
     backstoryBox.className = "bg-box"
 
-    val backstoryTitle = document.createElement("h4") as HTMLHeadingElement
+    val backstoryTitle = document.createElement("h3") as HTMLHeadingElement
+    backstoryTitle.className = "bg-section-title"
     backstoryTitle.textContent = t("background.backstory")
     backstoryBox.appendChild(backstoryTitle)
 

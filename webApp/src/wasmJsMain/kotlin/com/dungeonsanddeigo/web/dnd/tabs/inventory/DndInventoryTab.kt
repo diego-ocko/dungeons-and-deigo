@@ -29,7 +29,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
             val header = document.createElement("div") as HTMLDivElement
             header.className = "inv-header"
 
-            val title = document.createElement("h4") as HTMLHeadingElement
+            val title = document.createElement("h3") as HTMLHeadingElement
             title.textContent = tSection(section)
             header.appendChild(title)
 

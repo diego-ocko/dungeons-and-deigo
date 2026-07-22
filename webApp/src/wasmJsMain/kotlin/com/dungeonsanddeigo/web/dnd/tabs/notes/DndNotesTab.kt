@@ -36,7 +36,7 @@ fun renderDndNotesTab(character: Character, container: HTMLDivElement) {
             val header = document.createElement("div") as HTMLDivElement
             header.className = "notes-header"
 
-            val titleEl = document.createElement("h4") as HTMLHeadingElement
+            val titleEl = document.createElement("h3") as HTMLHeadingElement
             titleEl.textContent = note.title.ifEmpty { "(Untitled)" }
             header.appendChild(titleEl)
 
