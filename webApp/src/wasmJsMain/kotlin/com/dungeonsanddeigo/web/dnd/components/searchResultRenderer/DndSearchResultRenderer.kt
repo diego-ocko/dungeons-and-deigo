@@ -228,7 +228,7 @@ object DndSearchResultRenderer {
         if (components.isNotEmpty()) flags.add(components.joinToString(""))
         if (spell.needsConcentration) flags.add(t("magic.concShort"))
         if (spell.canBeRitual) flags.add(t("magic.ritualShort"))
-        if (spell.higherCircles.isNotEmpty()) flags.add("\u2B06\uFE0F ${t("magic.higherShort")}")
+        if (spell.higherCircles.isNotEmpty()) flags.add("\u2B06\uFE0F")
         if (flags.isNotEmpty()) {
             val flagSpan = document.createElement("div") as HTMLDivElement
             flagSpan.className = "search-item-flags"
@@ -246,7 +246,7 @@ object DndSearchResultRenderer {
         if (spell.higherCircles.isNotEmpty()) {
             val higherSpan = document.createElement("div") as HTMLDivElement
             higherSpan.className = "search-item-flags"
-            higherSpan.textContent = "\u2B06\uFE0F ${t("magic.higherShort")}: ${spell.higherCircles}"
+            higherSpan.textContent = "\u2B06\uFE0F ${t("magic.higherShort")} ${spell.higherCircles}"
             sDiv.appendChild(higherSpan)
         }
 
