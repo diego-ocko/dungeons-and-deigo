@@ -21,13 +21,7 @@ class DndHitDiceModal(
     private lateinit var input: HTMLInputElement
 
     override fun buildForm(form: HTMLDivElement) {
-        val desc = document.createElement("p") as HTMLParagraphElement
-        desc.textContent = "${t("playing.rollValue")}:"
-        desc.className = "modal__desc"
-        form.appendChild(desc)
-
         input = addNumberInput(form, t("playing.rollValue"), "", min = "1").input
-        input.placeholder = "Rolled value"
     }
 
     override fun onSave(close: () -> Unit) {
