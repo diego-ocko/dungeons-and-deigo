@@ -1,3 +1,5 @@
+@use '../../../variables' as *;
+
 [data-feature-id].focused,
 [data-consumable-id].focused,
 div[data-spell-id].focused,

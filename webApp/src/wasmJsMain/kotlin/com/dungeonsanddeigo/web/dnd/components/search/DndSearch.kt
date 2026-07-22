@@ -25,7 +25,7 @@ class DndSearch(private val character: Character, private val container: HTMLDiv
 
         searchInput = document.createElement("input") as HTMLInputElement
         searchInput.type = "text"
-        searchInput.placeholder = "Search..."
+        searchInput.placeholder = t("playing.search.placeholder")
         searchRow.appendChild(searchInput)
 
         val clearBtn = document.createElement("button") as HTMLButtonElement

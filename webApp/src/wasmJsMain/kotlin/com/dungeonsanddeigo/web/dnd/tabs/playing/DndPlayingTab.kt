@@ -68,7 +68,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     lifeBox.style.padding = "12px"
     lifeBox.style.marginBottom = "16px"
 
-    val lifeBoxTitle = document.createElement("h4") as HTMLHeadingElement
+    val lifeBoxTitle = document.createElement("h3") as HTMLHeadingElement
     lifeBoxTitle.textContent = t("playing.lifeTracker")
     lifeBoxTitle.style.margin = "0 0 10px 0"
     lifeBox.appendChild(lifeBoxTitle)
@@ -93,7 +93,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     lifeSection.appendChild(lifeCol)
 
     val sep = document.createElement("span") as HTMLSpanElement
-    sep.textContent = "/"; sep.style.fontSize = "24px"; sep.style.color = "#666"
+    sep.textContent = "/"; sep.style.fontSize = "24px"; sep.style.color = "white"
     lifeSection.appendChild(sep)
 
     val maxCol = document.createElement("div") as HTMLDivElement
@@ -109,7 +109,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     lifeSection.appendChild(maxCol)
 
     val sep2 = document.createElement("span") as HTMLSpanElement
-    sep2.textContent = "+"; sep2.style.fontSize = "24px"; sep2.style.color = "#666"
+    sep2.textContent = "+"; sep2.style.fontSize = "24px"; sep2.style.color = "white"
     lifeSection.appendChild(sep2)
 
     val tempCol = document.createElement("div") as HTMLDivElement
@@ -167,7 +167,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         deathSection.style.marginBottom = "12px"
 
         val deathTitle = document.createElement("div") as HTMLDivElement
-        deathTitle.textContent = "\u2620\uFE0F Death Saving Throws"
+        deathTitle.textContent = "\u2620\uFE0F ${t("playing.deathSavingThrows")}"
         deathTitle.style.fontWeight = "bold"
         deathTitle.style.marginBottom = "10px"
         deathSection.appendChild(deathTitle)
@@ -207,7 +207,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
         // Mark Fail button
         val dmgBtn = document.createElement("button") as HTMLButtonElement
-        dmgBtn.textContent = "\u2620\uFE0F Mark Fail"
+        dmgBtn.textContent = "\u2620\uFE0F ${t("playing.markFail")}"
+        dmgBtn.className = "btn-primary"
         dmgBtn.disabled = deathFails >= 3
         dmgBtn.addEventListener("click", {
             deathFails = minOf(deathFails + 1, 3)
@@ -219,7 +220,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
         // Success button
         val successBtn = document.createElement("button") as HTMLButtonElement
-        successBtn.textContent = "\u2764\uFE0F Success"
+        successBtn.textContent = "\u2764\uFE0F ${t("playing.success")}"
+        successBtn.className = "btn-primary"
         successBtn.disabled = deathSuccesses >= 3
         successBtn.addEventListener("click", {
             deathSuccesses = minOf(deathSuccesses + 1, 3)
@@ -231,7 +233,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
         // Stable Creature button
         val stableBtn = document.createElement("button") as HTMLButtonElement
-        stableBtn.textContent = "\uD83D\uDC9A Stable"
+        stableBtn.textContent = "\uD83D\uDC9A ${t("playing.stable")}"
+        stableBtn.className = "btn-primary"
         stableBtn.addEventListener("click", {
             localStorage.setItem(deathSaveKey, "false")
             localStorage.setItem(deathSuccessKey, "0")
@@ -244,6 +247,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         // Normal mode
         val cureBtn = document.createElement("button") as HTMLButtonElement
         cureBtn.textContent = "\u2764\uFE0F " + t("playing.cure")
+        cureBtn.className = "btn-primary"
         cureBtn.addEventListener("click", {
             showValueModal(t("playing.cure")) { value ->
                 currentLife = minOf(currentLife + value, maxLife)
@@ -254,6 +258,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
         val dmgBtn = document.createElement("button") as HTMLButtonElement
         dmgBtn.textContent = "\u2694\uFE0F " + t("playing.dmg")
+        dmgBtn.className = "btn-primary"
         dmgBtn.addEventListener("click", {
             showValueModal(t("playing.dmg")) { value ->
                 var remaining = value
@@ -274,6 +279,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
         val tempBtn = document.createElement("button") as HTMLButtonElement
         tempBtn.textContent = "\uD83D\uDEE1\uFE0F " + t("playing.tempHP")
+        tempBtn.className = "btn-primary"
         tempBtn.addEventListener("click", {
             showValueModal(t("playing.tempHP")) { value ->
                 currentTempLife += value
@@ -285,6 +291,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         // Second row: Reset + Death Saves
         val resetBtn = document.createElement("button") as HTMLButtonElement
         resetBtn.textContent = "\u21BA " + t("playing.reset")
+        resetBtn.className = "btn-primary"
         resetBtn.addEventListener("click", {
             currentLife = maxLife
             currentTempLife = 0
@@ -294,6 +301,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
         val deathBtn = document.createElement("button") as HTMLButtonElement
         deathBtn.textContent = "\u2620\uFE0F"
+        deathBtn.className = "btn-primary"
         deathBtn.disabled = currentLife > 0
         deathBtn.addEventListener("click", {
             localStorage.setItem(deathSaveKey, "true")
@@ -340,7 +348,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (hitDiceInfos.isEmpty()) {
         val noInfo = document.createElement("p") as HTMLParagraphElement
         noInfo.textContent = t("playing.setClassLevel")
-        noInfo.style.color = "#999"; noInfo.style.fontSize = "12px"
+        noInfo.style.color = "white"; noInfo.style.fontSize = "12px"
         hitDiceSection.appendChild(noInfo)
     } else {
         hitDiceInfos.forEach { hd ->
@@ -405,7 +413,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     atkBox.style.padding = "12px"
     atkBox.style.setProperty("flex", "1")
 
-    val atkBoxTitle = document.createElement("h4") as HTMLHeadingElement
+    val atkBoxTitle = document.createElement("h3") as HTMLHeadingElement
     atkBoxTitle.textContent = t("playing.attacks")
     atkBoxTitle.style.margin = "0"
 
@@ -418,6 +426,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     val changeWeaponBtn = document.createElement("button") as HTMLButtonElement
     changeWeaponBtn.textContent = t("playing.changeWeapon")
+    changeWeaponBtn.className = "btn-primary"
     changeWeaponBtn.style.fontSize = "11px"
     changeWeaponBtn.addEventListener("click", {
         DndChangeWeaponModal(character).show {
@@ -469,7 +478,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             th.style.padding = "4px"
             th.style.borderBottom = "1px solid #ccc"
             th.style.fontSize = "11px"
-            th.style.color = "#666"
+            th.style.color = "white"
             headerRow.appendChild(th)
         }
         thead.appendChild(headerRow)
@@ -516,7 +525,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             tr.appendChild(tdDmg)
 
             val tdNotes = document.createElement("td") as HTMLTableCellElement
-            tdNotes.style.padding = "3px 4px"; tdNotes.style.color = "#888"
+            tdNotes.style.padding = "3px 4px"; tdNotes.style.color = "white"
             val icons = mutableListOf<String>()
             if (equippedWeapon.silver) icons.add("\uD83E\uDD48")
             if (equippedWeapon.heavy) icons.add("\u2693")
@@ -633,7 +642,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${tSpellDamageType(spell.attackDamageType)}" else "\u2014"
             tr.appendChild(tdDmg)
             val tdNotes = document.createElement("td") as HTMLTableCellElement
-            tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "#666"
+            tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "white"
             val notes = mutableListOf<String>()
             val components = mutableListOf<String>()
             if (spell.hasVerbal) components.add("V")
@@ -672,7 +681,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             th.style.padding = "4px"
             th.style.borderBottom = "1px solid #ccc"
             th.style.fontSize = "11px"
-            th.style.color = "#666"
+            th.style.color = "white"
             headerRow.appendChild(th)
         }
         thead.appendChild(headerRow)
@@ -754,7 +763,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${tSpellDamageType(spell.attackDamageType)}" else "\u2014"
             tr.appendChild(tdDmg)
             val tdNotes = document.createElement("td") as HTMLTableCellElement
-            tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "#666"
+            tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "white"
             val notes = mutableListOf<String>()
             val components = mutableListOf<String>()
             if (spell.hasVerbal) components.add("V")
@@ -847,7 +856,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     specialBox.style.padding = "12px"
     specialBox.style.setProperty("flex", "0.4")
 
-    val specialTitle = document.createElement("h4") as HTMLHeadingElement
+    val specialTitle = document.createElement("h3") as HTMLHeadingElement
     specialTitle.textContent = t("playing.specialActions")
     specialTitle.style.margin = "0 0 10px 0"
     specialBox.appendChild(specialTitle)
@@ -856,7 +865,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (rechargeables.isEmpty()) {
         val placeholder = document.createElement("p") as HTMLParagraphElement
         placeholder.textContent = t("playing.noRechargeable")
-        placeholder.style.color = "#999"
+        placeholder.style.color = "white"
         placeholder.style.fontSize = "13px"
         specialBox.appendChild(placeholder)
     } else {
@@ -880,7 +889,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             val remaining = (feat.maxQuantity ?: 0) - feat.currentUsages
             usageSpan.textContent = " ($remaining / ${feat.maxQuantity ?: 0})"
             usageSpan.style.fontSize = "12px"
-            usageSpan.style.color = if (remaining <= 0) "#c00" else "#666"
+            usageSpan.style.color = if (remaining <= 0) "#c00" else "white"
             infoDiv.appendChild(usageSpan)
 
             row.appendChild(infoDiv)
@@ -891,6 +900,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
             val useBtn = document.createElement("button") as HTMLButtonElement
             useBtn.textContent = "\u25BC"
+            useBtn.className = "btn-primary"
             useBtn.style.fontSize = "11px"
             useBtn.disabled = remaining <= 0
             useBtn.addEventListener("click", {
@@ -944,7 +954,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             val qtySpan = document.createElement("span") as HTMLSpanElement
             qtySpan.textContent = " x${potion.quantity}"
             qtySpan.style.fontSize = "11px"
-            qtySpan.style.color = "#666"
+            qtySpan.style.color = "white"
             infoDiv.appendChild(qtySpan)
             row.appendChild(infoDiv)
 
@@ -1000,7 +1010,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             val qtySpan = document.createElement("span") as HTMLSpanElement
             qtySpan.textContent = " x${item.quantity}"
             qtySpan.style.fontSize = "11px"
-            qtySpan.style.color = "#666"
+            qtySpan.style.color = "white"
             infoDiv.appendChild(qtySpan)
             row.appendChild(infoDiv)
 
@@ -1074,11 +1084,12 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     defHeader.style.justifyContent = "space-between"
     defHeader.style.alignItems = "center"
     defHeader.style.marginBottom = "10px"
-    val defTitle = document.createElement("h4") as HTMLHeadingElement
+    val defTitle = document.createElement("h3") as HTMLHeadingElement
     defTitle.textContent = t("playing.defenseStatus"); defTitle.style.margin = "0"
     defHeader.appendChild(defTitle)
     val changeArmorBtn = document.createElement("button") as HTMLButtonElement
     changeArmorBtn.textContent = t("playing.changeArmor")
+    changeArmorBtn.className = "btn-primary"
     changeArmorBtn.style.fontSize = "11px"
     changeArmorBtn.addEventListener("click", {
         DndChangeArmorModal(character).show {
@@ -1121,7 +1132,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     acNum.style.fontSize = "32px"; acNum.style.fontWeight = "bold"
     acCol.appendChild(acNum)
     val acIcons = document.createElement("div") as HTMLDivElement
-    acIcons.style.fontSize = "11px"; acIcons.style.color = "#666"
+    acIcons.style.fontSize = "11px"; acIcons.style.color = "white"
     val armorIcon = if (equippedArmor != null) "\uD83E\uDE96" else "\uD83D\uDC55"
     val shieldIcon = if (equippedShield != null) " \uD83D\uDEE1\uFE0F" else ""
     acIcons.textContent = "CA $armorIcon$shieldIcon"
@@ -1138,7 +1149,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     initCol.appendChild(initNum)
     val initLabel = document.createElement("div") as HTMLDivElement
     initLabel.textContent = t("stats.initiative")
-    initLabel.style.fontSize = "11px"; initLabel.style.color = "#666"
+    initLabel.style.fontSize = "11px"; initLabel.style.color = "white"
     initCol.appendChild(initLabel)
     numbersRow.appendChild(initCol)
 
@@ -1157,6 +1168,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     statusHeader.appendChild(statusTitle)
     val addStatusBtn = document.createElement("button") as HTMLButtonElement
     addStatusBtn.textContent = t("inv.add")
+    addStatusBtn.className = "btn-primary"
     addStatusBtn.style.fontSize = "11px"
     addStatusBtn.addEventListener("click", {
         DndAddStatusModal(character).show {
@@ -1172,7 +1184,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (statuses.isEmpty()) {
         val noStatus = document.createElement("span") as HTMLSpanElement
         noStatus.textContent = t("playing.noActiveStatus")
-        noStatus.style.color = "#999"; noStatus.style.fontSize = "12px"
+        noStatus.style.color = "white"; noStatus.style.fontSize = "12px"
         defenseBox.appendChild(noStatus)
     } else {
         val statusList = document.createElement("div") as HTMLDivElement
@@ -1182,7 +1194,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         statuses.forEach { status ->
             val badge = document.createElement("span") as HTMLSpanElement
             badge.textContent = "${tStatus(status)} \u00D7"
-            badge.style.backgroundColor = "#ffe0e0"
+            badge.style.backgroundColor = "#3a1a1a"
+            badge.style.color = "#ffaaaa"
             badge.style.padding = "2px 8px"
             badge.style.borderRadius = "4px"
             badge.style.fontSize = "12px"
@@ -1213,7 +1226,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     magicsBox.style.padding = "12px"
     magicsBox.style.setProperty("flex", "1")
 
-    val magicsTitle = document.createElement("h4") as HTMLHeadingElement
+    val magicsTitle = document.createElement("h3") as HTMLHeadingElement
     magicsTitle.textContent = t("playing.magics")
     magicsTitle.style.margin = "0 0 10px 0"
     magicsBox.appendChild(magicsTitle)
@@ -1227,7 +1240,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (magicAbility == null) {
         val noMagic = document.createElement("p") as HTMLParagraphElement
         noMagic.textContent = t("playing.noMagic")
-        noMagic.style.color = "#999"; noMagic.style.fontSize = "13px"
+        noMagic.style.color = "white"; noMagic.style.fontSize = "13px"
         magicsBox.appendChild(noMagic)
     } else {
         val abilityMod = when (magicAbility) {
@@ -1245,7 +1258,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         magicStats.style.display = "flex"
         magicStats.style.setProperty("gap", "16px")
         magicStats.style.marginBottom = "8px"
-        magicStats.style.fontSize = "12px"
+        magicStats.style.fontSize = "14px"
 
         val abSpan = document.createElement("span") as HTMLSpanElement
         abSpan.textContent = "\u2728 ${tStat(abilityName)}"; abSpan.style.fontWeight = "bold"
@@ -1280,7 +1293,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
                 slotRow.style.alignItems = "center"
                 slotRow.style.setProperty("gap", "4px")
                 slotRow.style.marginBottom = "3px"
-                slotRow.style.fontSize = "11px"
+                slotRow.style.fontSize = "13px"
 
                 val label = document.createElement("span") as HTMLSpanElement
                 label.textContent = "${circleNum}\u00BA"
@@ -1288,19 +1301,16 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
                 label.style.width = "22px"
                 slotRow.appendChild(label)
 
-                val badge = document.createElement("span") as HTMLSpanElement
+                val slotText = document.createElement("span") as HTMLSpanElement
                 val tempStr = if (tempSlots > 0) " (+$tempSlots)" else ""
-                badge.textContent = "$usedSlots / $availableSlots$tempStr"
-                badge.style.padding = "1px 4px"
-                badge.style.borderRadius = "3px"
-                badge.style.backgroundColor = if (usedSlots >= availableSlots) "#ffe0e0" else "#e0f0e0"
-                badge.style.minWidth = "50px"
-                badge.style.textAlign = "center"
-                slotRow.appendChild(badge)
+                slotText.textContent = "$usedSlots / $availableSlots$tempStr"
+                slotText.style.minWidth = "50px"
+                slotText.style.color = if (usedSlots >= availableSlots) "#c00" else "white"
+                slotRow.appendChild(slotText)
 
                 // Increase Used
                 val useBtn = document.createElement("button") as HTMLButtonElement
-                useBtn.textContent = "\u25B2"; useBtn.title = "Use Slot"; useBtn.style.fontSize = "9px"
+                useBtn.textContent = "\u25B2"; useBtn.title = "Use Slot"; useBtn.className = "btn-primary"; useBtn.style.fontSize = "9px"
                 useBtn.disabled = usedSlots >= availableSlots
                 useBtn.addEventListener("click", {
                     localStorage.setItem(usedKey, (usedSlots + 1).toString())
@@ -1345,6 +1355,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         val prepBtn = document.createElement("button") as HTMLButtonElement
         prepBtn.textContent = "\uD83D\uDCCB " + t("magic.prepared")
         prepBtn.title = "Change Prepared Spells"
+        prepBtn.className = "btn-primary"
         prepBtn.style.fontSize = "11px"
         val classNeedsPrepared = (magicMainClass ?: "") in DungeonsAndDragons.preparedCasters
         prepBtn.disabled = !classNeedsPrepared
@@ -1383,7 +1394,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     lootBox.style.padding = "12px"
     lootBox.style.setProperty("flex", "1")
 
-    val lootTitle = document.createElement("h4") as HTMLHeadingElement
+    val lootTitle = document.createElement("h3") as HTMLHeadingElement
     lootTitle.textContent = t("playing.lootNotes")
     lootTitle.style.margin = "0 0 10px 0"
     lootBox.appendChild(lootTitle)
@@ -1397,13 +1408,13 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     moneyGrid.style.textAlign = "center"
     moneyGrid.style.marginBottom = "12px"
 
-    data class CoinDisplay(val label: String, val abbr: String, val value: Int)
+    data class CoinDisplay(val label: String, val emoji: String, val abbr: String, val value: Int)
     val coins = listOf(
-        CoinDisplay(t("coin.copper"), t("coin.copper.abbr"), money.copper),
-        CoinDisplay(t("coin.silver"), t("coin.silver.abbr"), money.silver),
-        CoinDisplay(t("coin.electrum"), t("coin.electrum.abbr"), money.electrum),
-        CoinDisplay(t("coin.gold"), t("coin.gold.abbr"), money.gold),
-        CoinDisplay(t("coin.platinum"), t("coin.platinum.abbr"), money.platinum)
+        CoinDisplay(t("coin.copper"), "🥉", t("coin.copper.abbr"), money.copper),
+        CoinDisplay(t("coin.silver"), "🥈", t("coin.silver.abbr"), money.silver),
+        CoinDisplay(t("coin.electrum"), "🪙", t("coin.electrum.abbr"), money.electrum),
+        CoinDisplay(t("coin.gold"), "🥇", t("coin.gold.abbr"), money.gold),
+        CoinDisplay(t("coin.platinum"), "💎", t("coin.platinum.abbr"), money.platinum)
     )
 
     coins.forEach { coin ->
@@ -1414,9 +1425,9 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         numSpan.style.fontWeight = "bold"
         col.appendChild(numSpan)
         val abbrSpan = document.createElement("div") as HTMLDivElement
-        abbrSpan.textContent = coin.abbr
+        abbrSpan.textContent = "${coin.emoji} ${coin.abbr}"
         abbrSpan.style.fontSize = "10px"
-        abbrSpan.style.color = "#666"
+        abbrSpan.style.color = "white"
         col.appendChild(abbrSpan)
         moneyGrid.appendChild(col)
     }
@@ -1430,6 +1441,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     val addMoneyBtn = document.createElement("button") as HTMLButtonElement
     addMoneyBtn.textContent = "\uD83D\uDCB0 " + t("btn.add")
+    addMoneyBtn.className = "btn-primary"
     addMoneyBtn.style.fontSize = "11px"
     addMoneyBtn.addEventListener("click", {
         DndMoneyModal(character, t("playing.addMoney"), true).show {
@@ -1441,6 +1453,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     val subMoneyBtn = document.createElement("button") as HTMLButtonElement
     subMoneyBtn.textContent = "\uD83D\uDCB8 " + t("playing.spend")
+    subMoneyBtn.className = "btn-primary"
     subMoneyBtn.style.fontSize = "11px"
     subMoneyBtn.addEventListener("click", {
         DndMoneyModal(character, t("playing.spendMoney"), false).show {
@@ -1518,6 +1531,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     // Add Note button
     val addNoteBtn = document.createElement("button") as HTMLButtonElement
     addNoteBtn.textContent = "\uD83D\uDCDD " + t("playing.addNote")
+    addNoteBtn.className = "btn-primary"
     addNoteBtn.style.fontSize = "10px"
     addNoteBtn.style.marginTop = "8px"
     addNoteBtn.addEventListener("click", {

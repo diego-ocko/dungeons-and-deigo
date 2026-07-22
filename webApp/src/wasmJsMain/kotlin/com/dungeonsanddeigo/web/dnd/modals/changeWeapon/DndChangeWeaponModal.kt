@@ -16,7 +16,15 @@ class DndChangeWeaponModal(
 
     override fun buildForm(form: HTMLDivElement) {
         val options = mutableListOf("" to t("inv.none"))
-        weapons.forEach { w -> options.add(w.id.toString() to "${w.name} (${w.damageDice} ${w.damageType})") }
+        weapons.forEach { w ->
+            val dmgType = when (w.damageType) {
+                "Bludgeoning" -> t("inv.dmg.bludgeoning")
+                "Piercing" -> t("inv.dmg.piercing")
+                "Slashing" -> t("inv.dmg.slashing")
+                else -> w.damageType
+            }
+            options.add(w.id.toString() to "${w.name} (${w.damageDice} $dmgType)")
+        }
         select = addSelect(form, t("playing.changeWeapon"), options, weapons.firstOrNull { it.isEquipped }?.id?.toString() ?: "").input
         select.className = "modal__select"
     }

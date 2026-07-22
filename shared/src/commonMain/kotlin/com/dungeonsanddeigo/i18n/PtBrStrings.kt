@@ -441,7 +441,12 @@ object PtBrStrings {
         "playing.search.needsSynch" to "Precisa Sincronizar",
         "playing.search.spellSave" to "Realizar salvaguarda de",
         "playing.search.notesCheckbox" to "Pesquisar nas notas",
-        "playing.search.plainCheckbox" to "Pesquisar nas descri\u00e7\u00f5es"
+        "playing.search.plainCheckbox" to "Pesquisar nas descri\u00e7\u00f5es",
+        "playing.search.placeholder" to "Pesquisar...",
+        "playing.deathSavingThrows" to "Testes de Morte",
+        "playing.markFail" to "Marcar Falha",
+        "playing.success" to "Sucesso",
+        "playing.stable" to "Est\u00e1vel"
     )
 
     fun get(key: String): String = strings[key] ?: EnStrings.get(key)
