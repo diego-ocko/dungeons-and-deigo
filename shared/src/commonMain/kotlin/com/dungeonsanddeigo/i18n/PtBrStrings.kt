@@ -112,7 +112,7 @@ object PtBrStrings {
         "inventory.magicItems" to "Itens Mágicos",
         "inventory.money" to "Dinheiro",
         "inventory.potions" to "Poções, Munição e Ração",
-        "inventory.other" to "Itens Chave, Saque e outros",
+        "inventory.other" to "Itens Chave e Outros",
 
         // Magic tab
         "magic.addSpell" to "Adicionar Magia",
@@ -298,7 +298,7 @@ object PtBrStrings {
         "inv.finesse" to "Acuidade",
         "inv.range" to "Alcance",
         "inv.versatile" to "Versátil",
-        "inv.addConsumableLoot" to "Adicionar Consumível",
+        "inv.addConsumableLoot" to "Consumível",
         "inv.selectExisting" to "Selecione um item existente para aumentar a quantidade, ou adicione um novo.",
         "inv.newConsumable" to "Novo Consumível",
         "inv.ammunition" to "Munição",

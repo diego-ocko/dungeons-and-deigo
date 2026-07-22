@@ -849,12 +849,13 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     topRow.appendChild(atkBox)
 
-    // Special Actions box (right of Attacks)
+    // Special Actions box (sidebar spanning both rows)
     val specialBox = document.createElement("div") as HTMLDivElement
+    specialBox.className = "playing-special-box"
     specialBox.style.border = "1px solid #ccc"
     specialBox.style.borderRadius = "8px"
     specialBox.style.padding = "12px"
-    specialBox.style.setProperty("flex", "0.4")
+    specialBox.style.setProperty("flex", "0 0 220px")
 
     val specialTitle = document.createElement("h3") as HTMLHeadingElement
     specialTitle.textContent = t("playing.specialActions")
@@ -871,32 +872,26 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     } else {
         rechargeables.forEach { feat ->
             val row = document.createElement("div") as HTMLDivElement
+            row.className = "special-row"
             row.setAttribute("data-feature-id", feat.id.toString())
-            row.style.display = "flex"
-            row.style.justifyContent = "space-between"
-            row.style.alignItems = "center"
-            row.style.padding = "6px 0"
-            row.style.borderBottom = "1px solid #eee"
 
             val infoDiv = document.createElement("div") as HTMLDivElement
             val nameSpan = document.createElement("span") as HTMLSpanElement
+            nameSpan.className = "special-row__name"
             nameSpan.textContent = feat.name
-            nameSpan.style.fontWeight = "bold"
-            nameSpan.style.fontSize = "13px"
             infoDiv.appendChild(nameSpan)
 
             val usageSpan = document.createElement("span") as HTMLSpanElement
             val remaining = (feat.maxQuantity ?: 0) - feat.currentUsages
             usageSpan.textContent = " ($remaining / ${feat.maxQuantity ?: 0})"
-            usageSpan.style.fontSize = "12px"
+            usageSpan.className = "special-row__label"
             usageSpan.style.color = if (remaining <= 0) "#c00" else "white"
             infoDiv.appendChild(usageSpan)
 
             row.appendChild(infoDiv)
 
             val btnsDiv = document.createElement("div") as HTMLDivElement
-            btnsDiv.style.display = "flex"
-            btnsDiv.style.setProperty("gap", "4px")
+            btnsDiv.className = "special-row__btns"
 
             val useBtn = document.createElement("button") as HTMLButtonElement
             useBtn.textContent = "\u25BC"
@@ -934,12 +929,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (allPotions.isNotEmpty()) {
         allPotions.forEach { potion ->
             val row = document.createElement("div") as HTMLDivElement
+            row.className = "special-row special-row--sm"
             row.setAttribute("data-consumable-id", potion.id.toString())
-            row.style.display = "flex"
-            row.style.justifyContent = "space-between"
-            row.style.alignItems = "center"
-            row.style.padding = "4px 0"
-            row.style.borderBottom = "1px solid #f5f5f5"
 
             val infoDiv = document.createElement("div") as HTMLDivElement
             val nameSpan = document.createElement("span") as HTMLSpanElement
@@ -948,19 +939,17 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             } else {
                 "${t("playing.drink")} ${potion.name}"
             }
+            nameSpan.className = "special-row__label"
             nameSpan.textContent = displayText
-            nameSpan.style.fontSize = "12px"
             infoDiv.appendChild(nameSpan)
             val qtySpan = document.createElement("span") as HTMLSpanElement
+            qtySpan.className = "special-row__qty"
             qtySpan.textContent = " x${potion.quantity}"
-            qtySpan.style.fontSize = "11px"
-            qtySpan.style.color = "white"
             infoDiv.appendChild(qtySpan)
             row.appendChild(infoDiv)
 
             val btnsDiv = document.createElement("div") as HTMLDivElement
-            btnsDiv.style.display = "flex"
-            btnsDiv.style.setProperty("gap", "4px")
+            btnsDiv.className = "special-row__btns"
 
             val drinkBtn = document.createElement("button") as HTMLButtonElement
             drinkBtn.textContent = "\uD83E\uDDEA"
@@ -995,28 +984,22 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     if (otherItems.isNotEmpty()) {
         otherItems.forEach { item ->
             val row = document.createElement("div") as HTMLDivElement
+            row.className = "special-row"
             row.setAttribute("data-consumable-id", item.id.toString())
-            row.style.display = "flex"
-            row.style.justifyContent = "space-between"
-            row.style.alignItems = "center"
-            row.style.padding = "6px 0"
-            row.style.borderBottom = "1px solid #eee"
 
             val infoDiv = document.createElement("div") as HTMLDivElement
             val nameSpan = document.createElement("span") as HTMLSpanElement
+            nameSpan.className = "special-row__label"
             nameSpan.textContent = "${t("playing.use")} ${item.name}"
-            nameSpan.style.fontSize = "12px"
             infoDiv.appendChild(nameSpan)
             val qtySpan = document.createElement("span") as HTMLSpanElement
+            qtySpan.className = "special-row__qty"
             qtySpan.textContent = " x${item.quantity}"
-            qtySpan.style.fontSize = "11px"
-            qtySpan.style.color = "white"
             infoDiv.appendChild(qtySpan)
             row.appendChild(infoDiv)
 
             val btnsDiv = document.createElement("div") as HTMLDivElement
-            btnsDiv.style.display = "flex"
-            btnsDiv.style.setProperty("gap", "4px")
+            btnsDiv.className = "special-row__btns"
 
             val useBtn = document.createElement("button") as HTMLButtonElement
             useBtn.textContent = "\u25BC"
@@ -1052,10 +1035,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     }
     nonAttackSpells.forEach { spell ->
         val row = document.createElement("div") as HTMLDivElement
+        row.className = "special-row special-row--sm"
         row.setAttribute("data-spell-id", spell.id.toString())
-        row.style.padding = "4px 0"
-        row.style.borderBottom = "1px solid #f5f5f5"
-        row.style.fontSize = "12px"
 
         val text = if (spell.circle == "Cantrip") {
             "\u2728 ${t("playing.cast")} ${spell.name}"
@@ -1067,9 +1048,6 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         row.textContent = text
         specialBox.appendChild(row)
     }
-
-    topRow.appendChild(specialBox)
-    leftPanel.appendChild(topRow)
 
     // === DEFENSE AND STATUS SECTION ===
     val defenseBox = document.createElement("div") as HTMLDivElement
@@ -1218,6 +1196,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
     bottomRow.style.marginBottom = "16px"
 
     bottomRow.appendChild(defenseBox)
+
 
     // Magics box
     val magicsBox = document.createElement("div") as HTMLDivElement
@@ -1385,6 +1364,8 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         magicsBox.appendChild(magicBtns)
     }
 
+    magicsBox.style.setProperty("flex", "0 0 auto")
+    magicsBox.style.setProperty("width", "fit-content")
     bottomRow.appendChild(magicsBox)
 
     // Loot and Notes box
@@ -1544,7 +1525,24 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
 
     lootBox.appendChild(lootBtnSection)
     bottomRow.appendChild(lootBox)
-    leftPanel.appendChild(bottomRow)
+
+    // Content column (topRow + bottomRow) + specialBox sidebar
+    val contentColumns = document.createElement("div") as HTMLDivElement
+    contentColumns.style.display = "flex"
+    contentColumns.style.setProperty("gap", "16px")
+    contentColumns.style.alignItems = "flex-start"
+
+    val contentCol = document.createElement("div") as HTMLDivElement
+    contentCol.style.setProperty("flex", "1")
+    contentCol.style.setProperty("min-width", "0")
+
+    // Move topRow and bottomRow into contentCol
+    contentCol.appendChild(topRow)
+    contentCol.appendChild(bottomRow)
+
+    contentColumns.appendChild(contentCol)
+    contentColumns.appendChild(specialBox)
+    leftPanel.appendChild(contentColumns)
 
     // === RIGHT PANEL (Search) ===
     DndSearch(character, rightPanel)

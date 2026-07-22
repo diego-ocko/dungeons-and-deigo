@@ -1,5 +1,40 @@
 @use '../../../variables' as *;
 
+.playing-special-box > .special-row:last-child {
+  border-bottom: none;
+}
+
+.special-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid $color-border;
+
+  &--sm {
+    padding: 6px 0;
+    font-size: 12px;
+  }
+
+  &__btns {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__name {
+    font-weight: bold;
+    font-size: 13px;
+  }
+
+  &__label {
+    font-size: 12px;
+  }
+
+  &__qty {
+    font-size: 11px;
+  }
+}
+
 [data-feature-id].focused,
 [data-consumable-id].focused,
 div[data-spell-id].focused,
