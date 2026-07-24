@@ -10,6 +10,7 @@ import com.dungeonsanddeigo.web.dnd.tabs.inventory.renderDndInventoryTab
 import com.dungeonsanddeigo.web.dnd.tabs.magic.renderDndMagicTab
 import com.dungeonsanddeigo.web.dnd.tabs.main.renderDndMainTab
 import com.dungeonsanddeigo.web.dnd.tabs.notes.renderDndNotesTab
+import com.dungeonsanddeigo.web.dnd.tabs.export.renderDndExportTab
 import com.dungeonsanddeigo.web.dnd.tabs.playing.renderDndPlayingTab
 import com.dungeonsanddeigo.web.dnd.tabs.stats.renderDndStatsTab
 import com.dungeonsanddeigo.web.home.showListScreen
@@ -76,6 +77,7 @@ fun showCharacterDetail(character: Character) {
             "Inventory" -> t("tab.inventory")
             "Background" -> t("tab.background")
             "Notes" -> t("tab.notes")
+            "Export" -> t("tab.export")
             else -> tabName
         }
         tabBtn.textContent = tabDisplayName
@@ -122,6 +124,7 @@ private fun renderTabContent(tabName: String, character: Character, container: H
             "Playing" -> renderDndPlayingTab(character, container)
             "Background" -> renderDndBackgroundTab(character, container)
             "Notes" -> renderDndNotesTab(character, container)
+            "Export" -> renderDndExportTab(character, container)
             else -> {
                 val placeholder = document.createElement("p")
                 placeholder.textContent = "$tabName content"

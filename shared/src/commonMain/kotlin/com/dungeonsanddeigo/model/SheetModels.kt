@@ -5,7 +5,7 @@ abstract class SheetModels(val name: String) {
 }
 
 class DungeonsAndDragons : SheetModels("Dungeons & Dragons") {
-    override val tabs = listOf("Playing", "Main", "Stats", "Features", "Magic", "Inventory", "Background", "Notes")
+    override val tabs = listOf("Playing", "Main", "Stats", "Features", "Magic", "Inventory", "Background", "Notes", "Export")
 
     companion object {
         val defaultClasses = listOf(
