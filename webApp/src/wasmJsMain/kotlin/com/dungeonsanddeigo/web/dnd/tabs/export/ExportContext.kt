@@ -130,29 +130,58 @@ class ExportContext(val character: Character) {
 
     // ── Attacks table (shared between Page 1 and potentially others) ──────────
 
-    fun buildAttacksTable(modStr: (Int) -> String): HTMLTableElement {
-        val table = (document.createElement("table") as HTMLTableElement).also { it.className = "export-table" }
-        val thead = document.createElement("thead")
-        val hr = document.createElement("tr") as HTMLTableRowElement
-        listOf(t("inv.atkTable.name"), t("inv.atkTable.test"), t("inv.atkTable.damage")).forEach { h ->
-            hr.appendChild((document.createElement("th") as HTMLTableCellElement).also { it.textContent = h })
+    fun buildAttacksTable(modStr: (Int) -> String): HTMLElement {
+        val container = div("export-attacks-list")
+        val headers = div("export-attacks-header")
+        listOf(t("inv.atkTable.test"), t("inv.atkTable.range"), t("inv.atkTable.damage")).forEach { h ->
+            headers.appendChild(span("export-attacks-header__col", h))
         }
-        thead.appendChild(hr); table.appendChild(thead)
-        val tbody = document.createElement("tbody")
+        container.appendChild(headers)
 
-        fun dmgTypeShort(type: String) = when (type) {
-            "Bludgeoning" -> t("inv.dmg.bludgeoning")
-            "Piercing" -> t("inv.dmg.piercing")
-            "Slashing" -> t("inv.dmg.slashing")
+        fun dmgTypeShort(type: String) = when (type.lowercase()) {
+            "bludgeoning" -> t("inv.dmg.bludgeoning")
+            "piercing"    -> t("inv.dmg.piercing")
+            "slashing"    -> t("inv.dmg.slashing")
+            "acid"        -> t("magic.dmg.acid")
+            "cold"        -> t("magic.dmg.cold")
+            "fire"        -> t("magic.dmg.fire")
+            "force"       -> t("magic.dmg.force")
+            "lightning"   -> t("magic.dmg.lightning")
+            "necrotic"    -> t("magic.dmg.necrotic")
+            "poison"      -> t("magic.dmg.poison")
+            "psychic"     -> t("magic.dmg.psychic")
+            "radiant"     -> t("magic.dmg.radiant")
+            "thunder"     -> t("magic.dmg.thunder")
             else -> type
         }
 
-        fun addRow(name: String, atkMod: Int, dmg: String) {
-            val tr = document.createElement("tr") as HTMLTableRowElement
-            tr.appendChild((document.createElement("td") as HTMLTableCellElement).also { it.textContent = name })
-            tr.appendChild((document.createElement("td") as HTMLTableCellElement).also { it.textContent = modStr(atkMod) })
-            tr.appendChild((document.createElement("td") as HTMLTableCellElement).also { it.textContent = dmg })
-            tbody.appendChild(tr)
+        fun circleStr(circle: String) = when (circle) {
+            "Cantrip"  -> t("magic.cantrip")
+            "Circle 1" -> t("magic.circle1")
+            "Circle 2" -> t("magic.circle2")
+            "Circle 3" -> t("magic.circle3")
+            "Circle 4" -> t("magic.circle4")
+            "Circle 5" -> t("magic.circle5")
+            "Circle 6" -> t("magic.circle6")
+            "Circle 7" -> t("magic.circle7")
+            "Circle 8" -> t("magic.circle8")
+            "Circle 9" -> t("magic.circle9")
+            else -> circle
+        }
+
+        val colsDef = "0.9fr 0.5fr 1.5fr"
+
+        fun addRow(name: String, test: String, range: String, dmg: String) {
+            val entry = div("export-attack-entry")
+            entry.appendChild(div("export-attack-entry__name").also { it.textContent = name })
+            val stats = div("export-attack-entry__stats")
+            stats.style.setProperty("grid-template-columns", colsDef)
+            stats.appendChild(span("export-attack-entry__stat", test))
+            stats.appendChild(span("export-attack-entry__stat", range))
+            val dmgCls = if (dmg.length > 13) "export-attack-entry__stat export-attack-entry__stat--small" else "export-attack-entry__stat"
+            stats.appendChild(span(dmgCls, dmg))
+            entry.appendChild(stats)
+            container.appendChild(entry)
         }
 
         weapons.filter { it.isEquipped }.forEach { wpn ->
@@ -162,6 +191,7 @@ class ExportContext(val character: Character) {
             fun weaponRow(useDex: Boolean, twoHanded: Boolean = false, thrown: Boolean = false) {
                 val mod = if (useDex) dexMod else strMod
                 val atkMod = mod + (if (hasProfEq) profBonus else 0)
+                val abilityLabel = tStat(if (useDex) "Dex" else "Str")
                 val dice = if (twoHanded) wpn.versatileDice else wpn.damageDice
                 val dmgMod = if (isRanged && !thrown) "" else (if (mod >= 0) "+$mod" else "$mod")
                 val name = buildString {
@@ -170,7 +200,13 @@ class ExportContext(val character: Character) {
                     if (twoHanded) append(" [2H]")
                     if (thrown) append(" [↑]")
                 }
-                addRow(name, atkMod, "$dice$dmgMod ${dmgTypeShort(wpn.damageType)}")
+                val rangeStr = when {
+                    thrown && wpn.rangeDistance > 0 -> "${wpn.rangeDistance}/${wpn.rangeLongDistance}m"
+                    isRanged && wpn.rangeDistance > 0 -> "${wpn.rangeDistance}/${wpn.rangeLongDistance}m"
+                    wpn.reach -> "3m"
+                    else -> t("export.melee")
+                }
+                addRow(name, "${modStr(atkMod)} ($abilityLabel)", rangeStr, "$dice$dmgMod ${dmgTypeShort(wpn.damageType)}")
             }
 
             when {
@@ -198,7 +234,7 @@ class ExportContext(val character: Character) {
             val s = if (strMod >= 0) "+$strMod" else "$strMod"
             "${stats.disarmedDice}$s ${t("inv.dmg.bludgeoning")}"
         }
-        addRow(t("combat.disarmedAttack"), disAtkMod, disDmg)
+        addRow(t("combat.disarmedAttack"), "${modStr(disAtkMod)} (${tStat("Str")})", t("export.melee"), disDmg)
 
         // Spell attacks
         val attackSpells = spells.filter {
@@ -212,31 +248,28 @@ class ExportContext(val character: Character) {
                 "Str" -> strMod; "Dex" -> dexMod; "Con" -> conMod
                 "Int" -> intMod; "Wis" -> wisMod; "Cha" -> chaMod; else -> 0
             }
-            val circleStr = if (spell.circle == "Cantrip") "" else " (${spell.circle})"
-            val name = "✦ ${spell.name}$circleStr"
+            val circleSuffix = if (spell.circle == "Cantrip") "" else " (${circleStr(spell.circle)})"
+            val name = "✦ ${spell.name}$circleSuffix"
+            val spellRange = spell.range.ifBlank { "—" }
+            val abilityLabel = tStat(spellAbility ?: "Int")
             if (spell.needsSavingThrow) {
                 val saveDC = 8 + profBonus + spellMod
                 val dmgStr = buildString {
                     if (spell.attackDamageDice.isNotEmpty()) append(spell.attackDamageDice)
                     if (spell.attackDamageType.isNotEmpty()) append(" ${dmgTypeShort(spell.attackDamageType)}")
-                    append(" (DC $saveDC)")
+                    if (isEmpty()) append("—")
                 }
-                val tr = document.createElement("tr") as HTMLTableRowElement
-                tr.appendChild((document.createElement("td") as HTMLTableCellElement).also { it.textContent = name })
-                tr.appendChild((document.createElement("td") as HTMLTableCellElement).also { it.textContent = "DC $saveDC" })
-                tr.appendChild((document.createElement("td") as HTMLTableCellElement).also { it.textContent = dmgStr })
-                tbody.appendChild(tr)
+                addRow(name, "DC $saveDC (${tStat(spell.savingThrowAbility.ifBlank { abilityLabel })})", spellRange, dmgStr)
             } else {
                 val dmg = buildString {
                     if (spell.attackDamageDice.isNotEmpty()) append(spell.attackDamageDice)
                     if (spell.attackDamageType.isNotEmpty()) append(" ${dmgTypeShort(spell.attackDamageType)}")
                     if (isEmpty()) append("—")
                 }
-                addRow(name, spellMod + profBonus, dmg)
+                addRow(name, "${modStr(spellMod + profBonus)} ($abilityLabel)", spellRange, dmg)
             }
         }
 
-        table.appendChild(tbody)
-        return table
+        return container
     }
 }

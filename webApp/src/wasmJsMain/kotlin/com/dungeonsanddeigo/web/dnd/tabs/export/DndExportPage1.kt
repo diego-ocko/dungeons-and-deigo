@@ -3,7 +3,10 @@ package com.dungeonsanddeigo.web.dnd.tabs.export
 import com.dungeonsanddeigo.dnd.rules.calcModifier
 import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.t
+import com.dungeonsanddeigo.i18n.tIdiom
 import com.dungeonsanddeigo.i18n.tStat
+import com.dungeonsanddeigo.i18n.tTool
+import com.dungeonsanddeigo.i18n.tWeapon
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
 import kotlinx.browser.document
@@ -117,19 +120,19 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
 
     val combatPanel = ctx.div("export-panel export-panel--combat")
 
-    // Row 1: CA | Iniciativa | Velocidade
-    combatPanel.appendChild(ctx.statBox(t("stats.ac"), totalAC.toString()))
-    combatPanel.appendChild(ctx.statBox(t("stats.initiative"), modStr(dexMod)))
-    combatPanel.appendChild(ctx.statBox(t("stats.speed"), "${stats.speed ?: 0}m"))
+    // Row 1: CA | Iniciativa | Velocidade (each span 2 of 6)
+    combatPanel.appendChild(ctx.statBox(t("stats.ac"), totalAC.toString()).also { it.className += " export-stat-box--2col" })
+    combatPanel.appendChild(ctx.statBox(t("stats.initiative"), modStr(dexMod)).also { it.className += " export-stat-box--2col" })
+    combatPanel.appendChild(ctx.statBox(t("stats.speedShort"), "${stats.speed ?: 0}m").also { it.className += " export-stat-box--2col" })
 
-    // Row 2: HP Atual (2 cols) | Vida Temporária (1 col)
+    // Row 2: HP Atual (4 cols) | Vida Temporária (2 cols)
     combatPanel.appendChild(ctx.hpBox(t("export.hpCurrent"), currentLife.toString()).also { it.className += " export-hp-box--wide" })
-    combatPanel.appendChild(ctx.hpBox(t("export.tempHp"), ""))
+    combatPanel.appendChild(ctx.hpBox(t("export.tempHp"), "").also { it.className += " export-hp-box--2col" })
 
-    // Row 3: HP Máx (2 cols) | Visão (1 col)
+    // Row 3: HP Máx (4 cols) | Visão (2 cols)
     combatPanel.appendChild(ctx.hpBox(t("export.hpMax"), (stats.maxLife ?: 0).toString()).also { it.className += " export-hp-box--wide" })
 
-    val visionBox = ctx.div("export-hp-box")
+    val visionBox = ctx.div("export-hp-box export-hp-box--2col")
     visionBox.appendChild(ctx.div("export-hp-box__label").also { it.textContent = t("stats.vision") })
     val visionVal = ctx.div("export-hp-box__val")
     val v = stats.vision
@@ -141,7 +144,7 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     combatPanel.appendChild(visionBox)
 
     // Row 4: Hit Dice (2 cols) | Death Saves (1 col)
-    val hitDiceBox = ctx.div("export-hp-box export-hp-box--wide export-hit-dice-box")
+    val hitDiceBox = ctx.div("export-hp-box export-hp-box--half export-hit-dice-box")
     hitDiceBox.appendChild(ctx.div("export-hp-box__label").also { it.textContent = t("export.hitDice") })
 
     // Collect hit dice per class (main + secondary)
@@ -162,33 +165,29 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
         }
     }
 
+    val activeDice = hdList.map { it.die }
+    val colsDef = "repeat(${activeDice.size.coerceAtLeast(1)}, 1fr)"
     val hdTable = ctx.div("export-hit-dice-table")
     // Header
     val hdHeader = ctx.div("export-hit-dice-row export-hit-dice-row--header")
-    listOf("d4", "d6", "d8", "d10", "d12").forEach { die ->
-        hdHeader.appendChild(ctx.span("export-hit-dice-cell export-hit-dice-cell--die", die))
-    }
+    hdHeader.style.setProperty("grid-template-columns", colsDef)
+    activeDice.forEach { die -> hdHeader.appendChild(ctx.span("export-hit-dice-cell export-hit-dice-cell--die", die)) }
     hdTable.appendChild(hdHeader)
     // Total row
     val hdTotal = ctx.div("export-hit-dice-row")
-    listOf("d4", "d6", "d8", "d10", "d12").forEach { die ->
-        val info = hdList.firstOrNull { it.die == die }
-        hdTotal.appendChild(ctx.span("export-hit-dice-cell", info?.total?.toString() ?: "—"))
-    }
+    hdTotal.style.setProperty("grid-template-columns", colsDef)
+    hdList.forEach { info -> hdTotal.appendChild(ctx.span("export-hit-dice-cell", info.total.toString())) }
     hdTable.appendChild(hdTotal)
     // Used row
     val hdUsed = ctx.div("export-hit-dice-row")
-    listOf("d4", "d6", "d8", "d10", "d12").forEach { die ->
-        val info = hdList.firstOrNull { it.die == die }
-        val usedText = info?.let { "${it.used}" } ?: "—"
-        hdUsed.appendChild(ctx.span("export-hit-dice-cell export-hit-dice-cell--used", usedText))
-    }
+    hdUsed.style.setProperty("grid-template-columns", colsDef)
+    hdList.forEach { info -> hdUsed.appendChild(ctx.span("export-hit-dice-cell export-hit-dice-cell--used", info.used.toString())) }
     hdTable.appendChild(hdUsed)
 
     hitDiceBox.appendChild(hdTable)
     combatPanel.appendChild(hitDiceBox)
 
-    val deathBox = ctx.div("export-hp-box export-death-saves")
+    val deathBox = ctx.div("export-hp-box export-hp-box--half export-death-saves")
     deathBox.appendChild(ctx.div("export-hp-box__label").also { it.textContent = t("export.deathSaves") })
     val deathGrid = ctx.div("export-death-grid")
     listOf("❤️" to t("export.deathSaves"), "☠️" to t("export.deathSaves")).forEach { (icon, _) ->
@@ -200,7 +199,14 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     deathBox.appendChild(deathGrid)
     combatPanel.appendChild(deathBox)
 
-    body.appendChild(combatPanel)
+    // col 5-8 — Combat + Attacks stacked in a flex wrapper
+    val combatWrapper = ctx.div("export-panel--combat-col")
+    combatWrapper.appendChild(combatPanel)
+    val attacksPanel = ctx.div("export-panel export-panel--attacks")
+    attacksPanel.appendChild(ctx.sectionLabel(t("export.attacks")))
+    attacksPanel.appendChild(ctx.buildAttacksTable(modStr = { v -> modStr(v) }))
+    combatWrapper.appendChild(attacksPanel)
+    body.appendChild(combatWrapper)
 
     // col 9-11 — Features / Backstory
     val featuresPanel = ctx.div("export-panel export-panel--features")
@@ -273,25 +279,40 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
             chip.appendChild(ctx.span("export-prof-chip__label", label))
             weaponRow.appendChild(chip)
         }
-        if (specificWeapons.isNotEmpty()) {
-            val othersChip = ctx.div("export-prof-chip export-prof-chip--others")
-            othersChip.appendChild(ctx.span("export-prof-chip__label", "${t("features.weapon.others")}: ${specificWeapons.joinToString(", ")}"))
-            weaponRow.appendChild(othersChip)
-        }
         wpnProfPanel.appendChild(weaponRow)
+
+        if (specificWeapons.isNotEmpty()) {
+            val othersRow = ctx.div("export-prof-check-row")
+            othersRow.appendChild(ctx.span("export-prof-check-row__title", "${t("export.otherWeapons")}:"))
+            othersRow.appendChild(ctx.span("export-prof-chip__label", specificWeapons.joinToString(", ") { tWeapon(it) }))
+            wpnProfPanel.appendChild(othersRow)
+        }
+
+        val toolFeatures = features.filter { it.type == "Tool Proficiency" }
+        val allTools = toolFeatures.flatMap { f -> f.description.split(",").map { tTool(it.trim()) }.filter { it.isNotEmpty() } }
+        if (allTools.isNotEmpty()) {
+            val toolRow = ctx.div("export-prof-check-row")
+            toolRow.appendChild(ctx.span("export-prof-check-row__title", "${t("export.toolProf")}:"))
+            toolRow.appendChild(ctx.span("export-prof-chip__label", allTools.joinToString(", ")))
+            wpnProfPanel.appendChild(toolRow)
+        }
+
+        val languageFeatures = features.filter { it.type == "Idiom" }
+        val allLangs = languageFeatures.flatMap { f -> f.description.split(",").map { tIdiom(it.trim()) }.filter { it.isNotEmpty() } }
+        if (allLangs.isNotEmpty()) {
+            val langRow = ctx.div("export-prof-check-row")
+            langRow.appendChild(ctx.span("export-prof-check-row__title", "${t("export.languageProf")}:"))
+            langRow.appendChild(ctx.span("export-prof-chip__label", allLangs.joinToString(", ")))
+            wpnProfPanel.appendChild(langRow)
+        }
 
         body.appendChild(wpnProfPanel)
     }
 
     page.appendChild(body)
 
-    // ── Bottom: Attacks | Spells brief | Prof + Inventory ─────────────────────
+    // ── Bottom: Spells brief | Prof + Inventory ───────────────────────────────
     val bottomPanel = ctx.div("export-panel export-panel--bottom")
-
-    val attacksSection = ctx.div("export-bottom__attacks")
-    attacksSection.appendChild(ctx.sectionLabel(t("export.attacks")))
-    attacksSection.appendChild(ctx.buildAttacksTable(modStr = { v -> modStr(v) }))
-    bottomPanel.appendChild(attacksSection)
 
     // Spells brief (circle + name list only)
     if (spells.isNotEmpty()) {
@@ -318,18 +339,6 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
         bottomPanel.appendChild(spellsSection)
     }
 
-    // Proficiencies (languages + tools only — weapons already shown above body)
-    val profSection = ctx.div("export-bottom__prof-inv")
-    val languageFeatures = features.filter { it.type == "Idiom" }
-    val toolFeatures = features.filter { it.type == "Tool Proficiency" }
-    fun profBlock(label: String, items: List<DndFeature>) {
-        if (items.isEmpty()) return
-        profSection.appendChild(ctx.sectionLabel(label))
-        profSection.appendChild(ctx.p("export-prof-text", items.joinToString(" • ") { it.name }))
-    }
-    profBlock(t("export.languageProf"), languageFeatures)
-    profBlock(t("export.toolProf"), toolFeatures)
-    bottomPanel.appendChild(profSection)
 
     page.appendChild(bottomPanel)
     return page
