@@ -339,12 +339,64 @@
   }
 }
 
+// Limited abilities table
+.export-limited-table {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+
+.export-limited-row {
+  display: grid;
+  grid-template-columns: 1fr 0.35fr 0.3fr 0.3fr;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(58, 64, 80, 0.3);
+
+  &--header .export-limited-cell {
+    font-size: 7px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $color-text-muted;
+  }
+}
+
+.export-limited-cell {
+  font-size: 10px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--name   { text-align: left; font-weight: 600; }
+  &--reload { color: $color-accent; font-weight: 700; font-size: 9px; }
+  &--num    { font-weight: 700; }
+}
+
+.export-limited-legend {
+  font-size: 7px;
+  color: $color-text-muted;
+  margin-top: 1px;
+  margin-bottom: 4px;
+}
+
 // Background boxes (features column)
 .export-bg-box {
   border: 1px solid $color-border; border-radius: $radius-sm; padding: 5px 7px;
 
   &__label { font-size: 8px; font-weight: 700; text-transform: uppercase; color: $color-accent; margin-bottom: 2px; }
   &__text  { font-size: 10px; color: $color-text-muted; line-height: 1.4; max-height: 52px; overflow: hidden; }
+}
+
+.export-feature-group-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-text-muted;
+  margin: 5px 0 2px;
 }
 
 .export-feature-card {
@@ -681,6 +733,7 @@
   .export-spell-circle-header { color: #3a006f !important; border-color: #bbb !important; }
   .export-detail-card       { border-left-color: #3a006f !important; }
   .export-detail-card__higher { color: #3a006f !important; }
+  .export-feature-group-label { color: #555 !important; }
   .export-feature-card      { border-left-color: #3a006f !important; }
   .export-spell-circle__label { color: #3a006f !important; }
   .export-spell-slot-box__circle { color: #3a006f !important; }
@@ -733,6 +786,8 @@
   .export-prof-chip--others .export-prof-chip__label { color: #444 !important; }
   .export-prof-check-row__title { color: #444 !important; }
 
+  .export-limited-cell--reload { color: #3a006f !important; }
+  .export-limited-legend       { color: #666 !important; }
   .export-hit-dice-row--header .export-hit-dice-cell { color: #3a006f !important; border-color: #bbb !important; }
   .export-hit-dice-cell--used { color: #555 !important; }
   .export-death-row__box { border-color: #555 !important; }

@@ -3,6 +3,7 @@ package com.dungeonsanddeigo.web.dnd.tabs.export
 import com.dungeonsanddeigo.dnd.rules.calcModifier
 import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.t
+import com.dungeonsanddeigo.i18n.tDnd
 import com.dungeonsanddeigo.i18n.tIdiom
 import com.dungeonsanddeigo.i18n.tStat
 import com.dungeonsanddeigo.i18n.tTool
@@ -210,6 +211,44 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
 
     // col 9-11 — Features / Backstory
     val featuresPanel = ctx.div("export-panel export-panel--features")
+
+    // Limited abilities (Rechargable Feature) — table above features
+    val rechargableFeatures = features.filter { it.type == "Rechargable Feature" }
+    if (rechargableFeatures.isNotEmpty()) {
+        featuresPanel.appendChild(ctx.sectionLabel(t("export.limitedFeatures")))
+
+        val limitedTable = ctx.div("export-limited-table")
+
+        val hdrRow = ctx.div("export-limited-row export-limited-row--header")
+        hdrRow.appendChild(ctx.span("export-limited-cell export-limited-cell--name", ""))
+        hdrRow.appendChild(ctx.span("export-limited-cell export-limited-cell--reload", ""))
+        hdrRow.appendChild(ctx.span("export-limited-cell export-limited-cell--num", t("export.limitedFeatures.max")))
+        hdrRow.appendChild(ctx.span("export-limited-cell export-limited-cell--num", t("export.limitedFeatures.remaining")))
+        limitedTable.appendChild(hdrRow)
+
+        fun rechargeAbbr(rule: String?) = when (rule) {
+            "Short Rest"  -> t("export.recharge.short")
+            "Long Rest"   -> t("export.recharge.long")
+            "Day"         -> t("export.recharge.day")
+            else          -> t("export.recharge.unlimited")
+        }
+
+        rechargableFeatures.forEach { feat ->
+            val remaining = (feat.maxQuantity ?: 0) - feat.currentUsages
+            val row = ctx.div("export-limited-row")
+            row.appendChild(ctx.span("export-limited-cell export-limited-cell--name", feat.name))
+            row.appendChild(ctx.span("export-limited-cell export-limited-cell--reload", rechargeAbbr(feat.reloadRule)))
+            row.appendChild(ctx.span("export-limited-cell export-limited-cell--num", feat.maxQuantity?.toString() ?: "—"))
+            row.appendChild(ctx.span("export-limited-cell export-limited-cell--num", remaining.toString()))
+            limitedTable.appendChild(row)
+        }
+        featuresPanel.appendChild(limitedTable)
+
+        val legend = ctx.div("export-limited-legend")
+        legend.textContent = t("export.recharge.legend")
+        featuresPanel.appendChild(legend)
+    }
+
     val backstory = ctx.backstory
     if (backstory != null) {
         fun bgBox(label: String, text: String) {
@@ -224,16 +263,47 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
         bgBox(t("bg.bonds"), backstory.bonds)
         bgBox(t("bg.defects"), backstory.defects)
     }
-    val classFeatures = features.filter { it.type == "Feature" || it.type == "Rechargable Feature" }
-    if (classFeatures.isNotEmpty()) {
+    val allFeatures = features.filter { it.type == "Feature" || it.type == "Rechargable Feature" }
+    if (allFeatures.isNotEmpty()) {
         featuresPanel.appendChild(ctx.sectionLabel(t("export.features")))
-        classFeatures.forEach { feat ->
+
+        fun addFeatureCard(feat: DndFeature) {
             val card = ctx.div("export-feature-card")
             val rechargeStr = if (feat.maxQuantity != null) " (${feat.maxQuantity})" else ""
             card.appendChild(ctx.div("export-feature-card__name").also { it.textContent = "${feat.name}$rechargeStr" })
             if (feat.description.isNotEmpty())
                 card.appendChild(ctx.div("export-feature-card__desc").also { it.textContent = feat.description })
             featuresPanel.appendChild(card)
+        }
+
+        data class FeatureGroup(val label: String, val items: List<DndFeature>)
+
+        val mainCls = mainInfo.mainClass
+        val secCls = mainInfo.secondaryClass
+
+        val raceGroup  = allFeatures.filter { it.source == "Race" }
+        val originGroup = allFeatures.filter { it.source == "Origin" }
+        val mainClsGroup = allFeatures.filter { it.source == "Class" && it.sourceClass == mainCls }
+            .sortedBy { it.sourceClassLevel ?: 0 }
+        val secClsGroup = allFeatures.filter { it.source == "Class" && it.sourceClass == secCls }
+            .sortedBy { it.sourceClassLevel ?: 0 }
+        val customGroup = allFeatures.filter { it.source == "Custom" }
+
+        val mainClsLabel = if (mainCls != null) "${t("features.source.class")}: ${tDnd("class", mainCls)}" else t("features.source.class")
+        val secClsLabel  = if (secCls != null)  "${t("features.source.class")}: ${tDnd("class", secCls)}"  else ""
+
+        val groups = listOf(
+            FeatureGroup(t("features.source.race"), raceGroup),
+            FeatureGroup(t("features.source.origin"), originGroup),
+            FeatureGroup(mainClsLabel, mainClsGroup),
+            FeatureGroup(secClsLabel, secClsGroup),
+            FeatureGroup(t("features.source.custom"), customGroup)
+        )
+
+        groups.forEach { group ->
+            if (group.items.isEmpty() || group.label.isEmpty()) return@forEach
+            featuresPanel.appendChild(ctx.div("export-feature-group-label").also { it.textContent = group.label })
+            group.items.forEach { addFeatureCard(it) }
         }
     }
     body.appendChild(featuresPanel)
