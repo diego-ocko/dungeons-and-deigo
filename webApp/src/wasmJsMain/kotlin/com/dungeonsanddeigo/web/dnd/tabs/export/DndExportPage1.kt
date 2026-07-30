@@ -76,8 +76,6 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     percBox.appendChild(ctx.span("export-passive-box__val", passivePerc.toString()))
     percBox.appendChild(ctx.span("export-passive-box__label", t("export.passivePerception")))
     abilitiesPanel.appendChild(percBox)
-    body.appendChild(abilitiesPanel)
-
     // col 3-5 — Saves + Skills
     val savesSkillsPanel = ctx.div("export-panel export-panel--saves-skills")
     savesSkillsPanel.appendChild(ctx.sectionLabel(t("export.savingThrows")))
@@ -100,7 +98,6 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
         skillsList.appendChild(row)
     }
     savesSkillsPanel.appendChild(skillsList)
-    body.appendChild(savesSkillsPanel)
 
     // col 4-7 — Combat stats block (3-column × 3-row internal grid)
     val equippedArmor = armors.firstOrNull { it.isEquipped && it.type != "Shield" && it.type != "Clothes" }
@@ -308,7 +305,12 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     }
     body.appendChild(featuresPanel)
 
-    // col 2-5 (below abilities + saves/skills) — Weapon/Armor proficiencies
+    // Left column wrapper: abilities + saves/skills + proficiências (stacked)
+    val leftCol = ctx.div("export-panel--left-col")
+    leftCol.appendChild(abilitiesPanel)
+    leftCol.appendChild(savesSkillsPanel)
+
+    // Weapon/Armor proficiencies — appended to leftCol below
     val weaponArmorFeatures = features.filter { it.type == "Weapon/Armor Proficiency" }
     if (weaponArmorFeatures.isNotEmpty()) {
         // Aggregate all entries across features of this type
@@ -376,8 +378,9 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
             wpnProfPanel.appendChild(langRow)
         }
 
-        body.appendChild(wpnProfPanel)
+        leftCol.appendChild(wpnProfPanel)
     }
+    body.appendChild(leftCol)
 
     page.appendChild(body)
 
