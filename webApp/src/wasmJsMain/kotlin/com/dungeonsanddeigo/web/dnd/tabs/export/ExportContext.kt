@@ -50,6 +50,22 @@ class ExportContext(val character: Character) {
         }
     }
 
+    // ── Spell helpers ─────────────────────────────────────────────────────────
+
+    fun circleStr(circle: String) = when (circle) {
+        "Cantrip"  -> t("magic.cantrip")
+        "Circle 1" -> t("magic.circle1")
+        "Circle 2" -> t("magic.circle2")
+        "Circle 3" -> t("magic.circle3")
+        "Circle 4" -> t("magic.circle4")
+        "Circle 5" -> t("magic.circle5")
+        "Circle 6" -> t("magic.circle6")
+        "Circle 7" -> t("magic.circle7")
+        "Circle 8" -> t("magic.circle8")
+        "Circle 9" -> t("magic.circle9")
+        else -> circle
+    }
+
     // ── DOM helpers ───────────────────────────────────────────────────────────
 
     fun div(cls: String): HTMLDivElement =
@@ -153,20 +169,6 @@ class ExportContext(val character: Character) {
             "radiant"     -> t("magic.dmg.radiant")
             "thunder"     -> t("magic.dmg.thunder")
             else -> type
-        }
-
-        fun circleStr(circle: String) = when (circle) {
-            "Cantrip"  -> t("magic.cantrip")
-            "Circle 1" -> t("magic.circle1")
-            "Circle 2" -> t("magic.circle2")
-            "Circle 3" -> t("magic.circle3")
-            "Circle 4" -> t("magic.circle4")
-            "Circle 5" -> t("magic.circle5")
-            "Circle 6" -> t("magic.circle6")
-            "Circle 7" -> t("magic.circle7")
-            "Circle 8" -> t("magic.circle8")
-            "Circle 9" -> t("magic.circle9")
-            else -> circle
         }
 
         val colsDef = "0.9fr 0.5fr 1.5fr"

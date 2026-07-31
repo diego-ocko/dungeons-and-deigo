@@ -204,6 +204,63 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     attacksPanel.appendChild(ctx.sectionLabel(t("export.attacks")))
     attacksPanel.appendChild(ctx.buildAttacksTable(modStr = { v -> modStr(v) }))
     combatWrapper.appendChild(attacksPanel)
+
+    // Spell slots panel
+    val mainCls = mainInfo.mainClass
+    val mainLvl = mainInfo.mainClassLevel ?: 0
+    val mainSlots = DungeonsAndDragons.spellSlotsFor(mainCls, mainInfo.mainSubClass, mainLvl)
+    val secCls2 = mainInfo.secondaryClass
+    val secLvl = mainInfo.secondaryClassLevel ?: 0
+    val secSlots = DungeonsAndDragons.spellSlotsFor(secCls2, mainInfo.secondarySubClass, secLvl)
+    // Merge slots: take max per circle
+    val maxCircles = maxOf(mainSlots.size, secSlots.size)
+    val mergedSlots = (0 until maxCircles).map { i ->
+        maxOf(mainSlots.getOrElse(i) { 0 }, secSlots.getOrElse(i) { 0 })
+    }.filter { it > 0 }
+
+    if (mergedSlots.isNotEmpty()) {
+        val slotsPanel = ctx.div("export-panel export-panel--spell-slots")
+        slotsPanel.appendChild(ctx.sectionLabel(t("export.spellSlots")))
+        val slotsRow = ctx.div("export-spell-slots-row")
+        mergedSlots.forEachIndexed { idx, total ->
+            val circleNum = idx + 1
+            val usedMain = localStorage.getItem("dnd_spell_slots_${ctx.character.id}_${mainCls}_$circleNum")?.toIntOrNull() ?: 0
+            val usedSec = if (secCls2 != null) localStorage.getItem("dnd_spell_slots_${ctx.character.id}_${secCls2}_$circleNum")?.toIntOrNull() ?: 0 else 0
+            val used = usedMain + usedSec
+            val remaining = (total - used).coerceAtLeast(0)
+            val col = ctx.div("export-slot-col")
+            col.appendChild(ctx.span("export-slot-col__circle", "${circleNum}º"))
+            col.appendChild(ctx.span("export-slot-col__val", "$remaining/$total"))
+            slotsRow.appendChild(col)
+        }
+        slotsPanel.appendChild(slotsRow)
+        combatWrapper.appendChild(slotsPanel)
+    }
+
+    // Spells panel
+    if (spells.isNotEmpty()) {
+        val spellsPanel = ctx.div("export-panel export-panel--spells-list")
+        spellsPanel.appendChild(ctx.sectionLabel(t("export.spells")))
+        val circleOrder = listOf("Cantrip", "Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Circle 6", "Circle 7", "Circle 8", "Circle 9")
+        val spellsByCircle = spells.groupBy { it.circle }
+        circleOrder.forEach { circle ->
+            val circleSpells = spellsByCircle[circle] ?: return@forEach
+            val circleDiv = ctx.div("export-spell-circle")
+            circleDiv.appendChild(ctx.span("export-spell-circle__label", ctx.circleStr(circle)))
+            val isCantrip = circle == "Cantrip"
+            val spellsText = circleSpells.joinToString(", ") { s ->
+                buildString {
+                    if (!isCantrip) append(if (s.isPrepared) "✅ " else "🔲 ")
+                    append(s.name)
+                    if (s.canBeRitual) append(" [R]")
+                }
+            }
+            circleDiv.appendChild(ctx.span("export-spell-circle__spells", spellsText))
+            spellsPanel.appendChild(circleDiv)
+        }
+        combatWrapper.appendChild(spellsPanel)
+    }
+
     body.appendChild(combatWrapper)
 
     // col 9-11 — Features / Backstory
@@ -380,39 +437,81 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
 
         leftCol.appendChild(wpnProfPanel)
     }
+
+    // Equipment panel
+    val equipPanel = ctx.div("export-panel export-panel--equipment")
+    equipPanel.appendChild(ctx.sectionLabel(t("export.equipment")))
+
+    // Row 1: Armadura + checkboxes
+    val equippedArmor2 = armors.firstOrNull { it.isEquipped && it.type != "Shield" && it.type != "Clothes" }
+    val equippedShield2 = armors.firstOrNull { it.isEquipped && it.type == "Shield" }
+    val armorEquipRow = ctx.div("export-equip-row")
+    armorEquipRow.appendChild(ctx.span("export-equip-row__label", "${t("export.equippedArmor")}:"))
+    armorEquipRow.appendChild(ctx.span("export-equip-row__val", equippedArmor2?.name ?: "—"))
+    val stealthCheck = if (equippedArmor2?.hasSneakDisadvantage == true) "[✔]" else "[ ]"
+    armorEquipRow.appendChild(ctx.span("export-equip-row__check", "$stealthCheck ${t("export.stealthDisadv")}"))
+    val shieldCheck = if (equippedShield2 != null) "[✔]" else "[ ]"
+    armorEquipRow.appendChild(ctx.span("export-equip-row__check", "$shieldCheck ${t("export.shield")}"))
+    equipPanel.appendChild(armorEquipRow)
+
+    // Row 2: Arma Equipada
+    val equippedWeapon = weapons.firstOrNull { it.isEquipped }
+    val weaponEquipRow = ctx.div("export-equip-row")
+    weaponEquipRow.appendChild(ctx.span("export-equip-row__label", "${t("export.equippedWeapon")}:"))
+    weaponEquipRow.appendChild(ctx.span("export-equip-row__val", equippedWeapon?.name ?: "—"))
+    equipPanel.appendChild(weaponEquipRow)
+
+    // Row 3: Moedas | Consumíveis (side by side, each as a vertical list)
+    val moneyConsRow = ctx.div("export-equip-money-row")
+
+    val coinsCol = ctx.div("export-equip-col")
+    coinsCol.appendChild(ctx.span("export-equip-col__label", "${t("export.coins")}:"))
+    val money = ctx.money
+    data class CoinInfo(val icon: String, val abbr: String, val qty: Int)
+    listOf(
+        CoinInfo("🟤", t("coin.copper.abbr"), money.copper),
+        CoinInfo("⚪", t("coin.silver.abbr"), money.silver),
+        CoinInfo("🔵", t("coin.electrum.abbr"), money.electrum),
+        CoinInfo("🟡", t("coin.gold.abbr"), money.gold),
+        CoinInfo("⬜", t("coin.platinum.abbr"), money.platinum)
+    ).filter { it.qty > 0 }.forEach { coin ->
+        val row = ctx.div("export-equip-col__row")
+        row.appendChild(ctx.span("export-equip-col__icon", coin.icon))
+        row.appendChild(ctx.span("export-equip-col__item", "${coin.qty} ${coin.abbr}"))
+        coinsCol.appendChild(row)
+    }
+    moneyConsRow.appendChild(coinsCol)
+
+    val consCol = ctx.div("export-equip-col")
+    consCol.appendChild(ctx.span("export-equip-col__label", "${t("export.consumables")}:"))
+    val consumables = ctx.consumables
+    if (consumables.isEmpty()) {
+        consCol.appendChild(ctx.span("export-equip-col__item", "—"))
+    } else {
+        consumables.forEach { c ->
+            val row = ctx.div("export-equip-col__row")
+            row.appendChild(ctx.span("export-equip-col__item", c.name))
+            row.appendChild(ctx.span("export-equip-col__qty", "×${c.quantity}"))
+            consCol.appendChild(row)
+        }
+    }
+    moneyConsRow.appendChild(consCol)
+    equipPanel.appendChild(moneyConsRow)
+
+    // Row 4: Itens Mágicos Sintonizados
+    val attunedItems = ctx.magicItems.filter { it.isSynched }
+    if (attunedItems.isNotEmpty()) {
+        val attunedRow = ctx.div("export-equip-row")
+        attunedRow.appendChild(ctx.span("export-equip-row__label", "${t("export.attunedItems")}:"))
+        attunedRow.appendChild(ctx.span("export-equip-row__val", attunedItems.joinToString(", ") { it.name }))
+        equipPanel.appendChild(attunedRow)
+    }
+
+    leftCol.appendChild(equipPanel)
     body.appendChild(leftCol)
 
     page.appendChild(body)
 
-    // ── Bottom: Spells brief | Prof + Inventory ───────────────────────────────
-    val bottomPanel = ctx.div("export-panel export-panel--bottom")
-
-    // Spells brief (circle + name list only)
-    if (spells.isNotEmpty()) {
-        val spellsSection = ctx.div("export-bottom__spells")
-        spellsSection.appendChild(ctx.sectionLabel(t("export.spells")))
-        val circleOrder = listOf("Cantrip", "Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Circle 6", "Circle 7", "Circle 8", "Circle 9")
-        val spellsByCircle = spells.groupBy { it.circle }
-        circleOrder.forEach { circle ->
-            val circleSpells = spellsByCircle[circle] ?: return@forEach
-            val circleDiv = ctx.div("export-spell-circle")
-            circleDiv.appendChild(ctx.span("export-spell-circle__label", circle))
-            circleDiv.appendChild(ctx.span("export-spell-circle__spells", circleSpells.joinToString(", ") { s ->
-                buildString {
-                    append(s.name)
-                    val flags = mutableListOf<String>()
-                    if (s.isPrepared) flags.add("P")
-                    if (s.needsConcentration) flags.add("C")
-                    if (s.canBeRitual) flags.add("R")
-                    if (flags.isNotEmpty()) append(" [${flags.joinToString("")}]")
-                }
-            }))
-            spellsSection.appendChild(circleDiv)
-        }
-        bottomPanel.appendChild(spellsSection)
-    }
-
-
-    page.appendChild(bottomPanel)
+    page.appendChild(ctx.div("export-panel export-panel--bottom"))
     return page
 }
