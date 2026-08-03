@@ -10,7 +10,7 @@ fun buildExportPage2(ctx: ExportContext): HTMLDivElement? {
     if (appearance == null && backstory == null) return null
 
     val page = ctx.div("export-page")
-    page.appendChild(ctx.buildHeader())
+    page.appendChild(ctx.buildHeader(t("export.page2Title")))
 
     val content = ctx.div("export-page2")
 

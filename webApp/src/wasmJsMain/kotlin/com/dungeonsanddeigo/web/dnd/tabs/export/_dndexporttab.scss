@@ -26,12 +26,28 @@
   padding-bottom: 6px;
 }
 
+.export-sheet__name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .export-sheet__char-name {
   font-family: $font-display;
   font-size: 22px;
   margin: 0 0 3px 0;
   color: $color-accent;
   letter-spacing: 0.03em;
+}
+
+.export-sheet__page-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: $color-text-muted;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .export-sheet__subtitle {
@@ -735,11 +751,6 @@
 // PAGE 5 — Inventory + Magic Items + Spells (detailed)
 // ═════════════════════════════════════════════════════════════════════════
 
-.export-page5 {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
 .export-detail-card {
   border-left: 2px solid $color-accent;
@@ -808,13 +819,14 @@
   .export-panel--combat-col { display: flex !important; }
   .export-panel--combat     { display: grid !important; }
   .export-panel--bottom     { display: grid !important; }
-  .export-page2, .export-page3, .export-page4, .export-page5 { display: flex !important; }
+  .export-page2, .export-page3, .export-page4 { display: flex !important; }
   .export-appearance-grid  { display: grid !important; }
   .export-spell-info-bar   { display: flex !important; }
   .export-spell-slots-row  { display: flex !important; }
 
   // Color overrides for white paper
   .export-sheet__char-name  { color: #3a006f !important; }
+  .export-sheet__page-title { color: #555 !important; }
   .export-section-label     { color: #3a006f !important; border-color: #bbb !important; }
   .export-spell-circle-header { color: #3a006f !important; border-color: #bbb !important; }
   .export-detail-card       { border-left-color: #3a006f !important; }

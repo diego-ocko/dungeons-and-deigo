@@ -31,7 +31,6 @@ fun renderDndExportTab(character: Character, container: HTMLDivElement) {
     buildExportPage2(ctx)?.also { sheet.appendChild(it) }
     buildExportPage3(ctx)?.also { sheet.appendChild(it) }
     buildExportPage4(ctx)?.also { sheet.appendChild(it) }
-    buildExportPage5(ctx)?.also { sheet.appendChild(it) }
 
     wrapper.appendChild(sheet)
     container.appendChild(wrapper)

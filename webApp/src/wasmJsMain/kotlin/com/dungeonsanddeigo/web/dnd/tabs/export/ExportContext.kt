@@ -3,6 +3,7 @@ package com.dungeonsanddeigo.web.dnd.tabs.export
 import com.dungeonsanddeigo.dnd.rules.calcModifier
 import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.t
+import com.dungeonsanddeigo.i18n.tDnd
 import com.dungeonsanddeigo.i18n.tStat
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
@@ -111,34 +112,41 @@ class ExportContext(val character: Character) {
 
     // ── Shared header (character name + subtitle chips) ───────────────────────
 
-    fun buildHeader(): HTMLElement {
+    fun buildHeader(pageTitle: String = ""): HTMLElement {
         val header = div("export-sheet__header")
         val charName = localStorage.getItem("char_name_${character.id}") ?: character.name
-        header.appendChild(
+
+        val nameRow = div("export-sheet__name-row")
+        nameRow.appendChild(
             (document.createElement("h1") as HTMLElement).also {
                 it.textContent = charName
                 it.className = "export-sheet__char-name"
             }
         )
+        if (pageTitle.isNotEmpty()) {
+            nameRow.appendChild(span("export-sheet__page-title", pageTitle))
+        }
+        header.appendChild(nameRow)
+
         val subTitle = div("export-sheet__subtitle")
         fun chip(text: String) { subTitle.appendChild(span("export-sheet__subtitle-chip", text)) }
 
         val classStr = buildString {
             val mc = mainInfo.mainClass; val ml = mainInfo.mainClassLevel
             if (mc != null) {
-                append(mc)
-                if (mainInfo.mainSubClass != null) append(" (${mainInfo.mainSubClass})")
+                append(tDnd("class", mc))
+                if (mainInfo.mainSubClass != null) append(" (${tDnd("subclass", mainInfo.mainSubClass!!)})")
                 if (ml != null && ml > 0) append(" $ml")
             }
             val sc = mainInfo.secondaryClass; val sl = mainInfo.secondaryClassLevel
-            if (sc != null) { append(" / $sc"); if (sl != null && sl > 0) append(" $sl") }
+            if (sc != null) { append(" / ${tDnd("class", sc)}"); if (sl != null && sl > 0) append(" $sl") }
         }
         if (classStr.isNotEmpty()) chip(classStr)
         if (mainInfo.race != null) chip(buildString {
-            append(mainInfo.race!!)
-            if (mainInfo.subRace != null) append(" (${mainInfo.subRace})")
+            append(tDnd("race", mainInfo.race!!))
+            if (mainInfo.subRace != null) append(" (${tDnd("subrace", mainInfo.subRace!!)})")
         })
-        if (mainInfo.alignment != null) chip(mainInfo.alignment!!)
+        if (mainInfo.alignment != null) chip(tDnd("alignment", mainInfo.alignment!!))
         if (mainInfo.origin != null) chip(mainInfo.origin!!)
         header.appendChild(subTitle)
         return header

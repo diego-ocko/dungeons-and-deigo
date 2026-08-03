@@ -38,7 +38,7 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     fun modStr(v: Int) = if (v >= 0) "+$v" else "$v"
 
     // ── Header ────────────────────────────────────────────────────────────────
-    page.appendChild(ctx.buildHeader())
+    page.appendChild(ctx.buildHeader(t("export.page1Title")))
 
     // ── Body grid ─────────────────────────────────────────────────────────────
     val body = ctx.div("export-body")
@@ -442,16 +442,21 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     val equipPanel = ctx.div("export-panel export-panel--equipment")
     equipPanel.appendChild(ctx.sectionLabel(t("export.equipment")))
 
-    // Row 1: Armadura + checkboxes
+    // Row 1: Armadura + Escudo
     val equippedArmor2 = armors.firstOrNull { it.isEquipped && it.type != "Shield" && it.type != "Clothes" }
     val equippedShield2 = armors.firstOrNull { it.isEquipped && it.type == "Shield" }
     val armorEquipRow = ctx.div("export-equip-row")
+    val armorShieldText = buildString {
+        if (equippedArmor2 != null) {
+            append(equippedArmor2.name)
+            if (equippedArmor2.hasSneakDisadvantage) append(" (${t("export.stealthDisadv")})")
+        } else {
+            append(t("export.armorNone"))
+        }
+        if (equippedShield2 != null) append(" + ${equippedShield2.name}")
+    }
     armorEquipRow.appendChild(ctx.span("export-equip-row__label", "${t("export.equippedArmor")}:"))
-    armorEquipRow.appendChild(ctx.span("export-equip-row__val", equippedArmor2?.name ?: "—"))
-    val stealthCheck = if (equippedArmor2?.hasSneakDisadvantage == true) "[✔]" else "[ ]"
-    armorEquipRow.appendChild(ctx.span("export-equip-row__check", "$stealthCheck ${t("export.stealthDisadv")}"))
-    val shieldCheck = if (equippedShield2 != null) "[✔]" else "[ ]"
-    armorEquipRow.appendChild(ctx.span("export-equip-row__check", "$shieldCheck ${t("export.shield")}"))
+    armorEquipRow.appendChild(ctx.span("export-equip-row__val", armorShieldText))
     equipPanel.appendChild(armorEquipRow)
 
     // Row 2: Arma Equipada

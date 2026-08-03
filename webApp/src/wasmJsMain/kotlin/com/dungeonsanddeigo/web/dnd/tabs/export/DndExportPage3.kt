@@ -1,126 +1,164 @@
 package com.dungeonsanddeigo.web.dnd.tabs.export
 
-import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.t
-import com.dungeonsanddeigo.model.DungeonsAndDragons
-import kotlinx.browser.localStorage
+import com.dungeonsanddeigo.model.DndInventoryItem
 import org.w3c.dom.*
 
-// Page 3: Spells — simplified reference sheet (no descriptions)
+// Page 3: Inventory (full) + Magic items (with descriptions) + Spells (with descriptions)
 fun buildExportPage3(ctx: ExportContext): HTMLDivElement? {
+    val items = ctx.items
+    val consumables = ctx.consumables
+    val magicItems = ctx.magicItems
     val spells = ctx.spells
-    if (spells.isEmpty()) return null
+    val money = ctx.money
+
+    val hasContent = items.isNotEmpty() || consumables.isNotEmpty() || magicItems.isNotEmpty() || spells.isNotEmpty()
+    if (!hasContent) return null
 
     val page = ctx.div("export-page")
-    page.appendChild(ctx.buildHeader())
+    page.appendChild(ctx.buildHeader(t("export.page3Title")))
 
     val content = ctx.div("export-page3")
 
-    // Spellcasting info bar
-    val mainInfo = ctx.mainInfo
-    val profBonus = ctx.profBonus
-    val spellAbility = DungeonsAndDragons.spellcastingAbilityFor(mainInfo.mainClass, mainInfo.mainSubClass)
-        ?: localStorage.getItem("dnd_custom_spell_ability_${ctx.character.id}_${mainInfo.mainClass}")
-            ?.takeIf { it != "__none__" }
+    // Money
+    val moneyStr = buildString {
+        if (money.platinum > 0) append("${money.platinum}pp ")
+        if (money.gold > 0) append("${money.gold}po ")
+        if (money.electrum > 0) append("${money.electrum}pe ")
+        if (money.silver > 0) append("${money.silver}ps ")
+        if (money.copper > 0) append("${money.copper}pc")
+    }.trim()
 
-    if (spellAbility != null) {
-        val spellMod = when (spellAbility) {
-            "Str" -> ctx.strMod; "Dex" -> ctx.dexMod; "Con" -> ctx.conMod
-            "Int" -> ctx.intMod; "Wis" -> ctx.wisMod; "Cha" -> ctx.chaMod; else -> 0
-        }
-        val spellDC = 8 + profBonus + spellMod
-        val spellAtk = profBonus + spellMod
-
-        val infoBar = ctx.div("export-spell-info-bar")
-        fun infoBox(label: String, value: String) {
-            val box = ctx.div("export-stat-box")
-            box.appendChild(ctx.div("export-stat-box__val").also { it.textContent = value })
-            box.appendChild(ctx.div("export-stat-box__label").also { it.textContent = label })
-            infoBar.appendChild(box)
-        }
-        infoBox(t("magic.ability"), spellAbility)
-        infoBox(t("magic.spellMod"), if (spellMod >= 0) "+$spellMod" else "$spellMod")
-        infoBox(t("magic.spellDC"), spellDC.toString())
-        infoBox(t("export.attacks"), if (spellAtk >= 0) "+$spellAtk" else "$spellAtk")
-        content.appendChild(infoBar)
+    if (moneyStr.isNotEmpty()) {
+        content.appendChild(ctx.sectionLabel(t("export.inventory")))
+        content.appendChild(ctx.div("export-money").also { it.textContent = moneyStr })
     }
 
-    // Spell slots
-    val totalLevel = ctx.totalLevel
-    val slots = DungeonsAndDragons.spellSlotsFor(mainInfo.mainClass, mainInfo.mainSubClass, totalLevel)
-    if (slots.isNotEmpty()) {
-        content.appendChild(ctx.sectionLabel(t("export.spellSlots")))
-        val slotsRow = ctx.div("export-spell-slots-row")
-        slots.forEachIndexed { idx, count ->
-            val box = ctx.div("export-spell-slot-box")
-            box.appendChild(ctx.div("export-spell-slot-box__circle").also { it.textContent = "${idx + 1}º" })
-            box.appendChild(ctx.div("export-spell-slot-box__count").also { it.textContent = "□".repeat(count) })
-            slotsRow.appendChild(box)
-        }
-        content.appendChild(slotsRow)
-    }
-
-    // Spells by circle — compact table
-    val circleOrder = listOf("Cantrip", "Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Circle 6", "Circle 7", "Circle 8", "Circle 9")
-    val spellsByCircle = spells.groupBy { it.circle }
-
-    circleOrder.forEach { circle ->
-        val circleSpells = spellsByCircle[circle] ?: return@forEach
-
-        val circleSection = ctx.div("export-spell-circle-section")
-        circleSection.appendChild(ctx.sectionLabel(circle))
-
-        val table = document.createElement("table") as HTMLTableElement
-        table.className = "export-table export-table--spells"
+    // General items
+    if (items.isNotEmpty()) {
+        if (moneyStr.isEmpty()) content.appendChild(ctx.sectionLabel(t("export.inventory")))
+        val table = buildItemTable(ctx)
         val thead = document.createElement("thead")
         val hr = document.createElement("tr") as HTMLTableRowElement
-        listOf(t("notes.title"), t("magic.ability"), t("inv.atkTable.range"), t("magic.prepared")).forEach { h ->
-            val th = document.createElement("th") as HTMLTableCellElement
-            th.textContent = h
-            hr.appendChild(th)
+        listOf(t("notes.title"), t("inv.quantity"), t("inv.weight"), t("inv.effect")).forEach { h ->
+            hr.appendChild((document.createElement("th") as HTMLTableCellElement).also { it.textContent = h })
         }
         thead.appendChild(hr); table.appendChild(thead)
         val tbody = document.createElement("tbody")
+        items.sortedBy { it.name }.forEach { item ->
+            val tr = document.createElement("tr") as HTMLTableRowElement
+            tr.appendChild(td(item.name))
+            tr.appendChild(td(item.quantity.toString()))
+            tr.appendChild(td(if (item.weight > 0) "${item.weight}kg" else "—"))
+            tr.appendChild(td(item.description))
+            tbody.appendChild(tr)
+        }
+        table.appendChild(tbody)
+        content.appendChild(table)
+    }
 
-        circleSpells.sortedWith(compareByDescending<com.dungeonsanddeigo.model.DndSpell> { it.isPrepared }.thenBy { it.name })
-            .forEach { spell ->
-                val tr = document.createElement("tr") as HTMLTableRowElement
+    // Consumables
+    if (consumables.isNotEmpty()) {
+        content.appendChild(ctx.sectionLabel(t("inv.consumable.other")))
+        val table = buildItemTable(ctx)
+        val thead = document.createElement("thead")
+        val hr = document.createElement("tr") as HTMLTableRowElement
+        listOf(t("notes.title"), t("inv.type"), t("inv.quantity"), t("inv.effect")).forEach { h ->
+            hr.appendChild((document.createElement("th") as HTMLTableCellElement).also { it.textContent = h })
+        }
+        thead.appendChild(hr); table.appendChild(thead)
+        val tbody = document.createElement("tbody")
+        consumables.sortedBy { it.name }.forEach { c ->
+            val tr = document.createElement("tr") as HTMLTableRowElement
+            tr.appendChild(td(c.name))
+            tr.appendChild(td(c.type))
+            tr.appendChild(td(c.quantity.toString()))
+            tr.appendChild(td(c.effect))
+            tbody.appendChild(tr)
+        }
+        table.appendChild(tbody)
+        content.appendChild(table)
+    }
 
-                val tdName = document.createElement("td") as HTMLTableCellElement
-                val nameFlags = buildString {
+    // Magic items
+    if (magicItems.isNotEmpty()) {
+        content.appendChild(ctx.sectionLabel(t("inv.synchedItems")))
+        magicItems.sortedBy { it.name }.forEach { item ->
+            val card = ctx.div("export-detail-card")
+            val nameRow = ctx.div("export-detail-card__name")
+            nameRow.textContent = buildString {
+                append(item.name)
+                if (item.needSynch) append(" [${t("inv.needSynch")}]")
+                if (item.isSynched) append(" ✔")
+            }
+            card.appendChild(nameRow)
+            if (item.effect.isNotEmpty())
+                card.appendChild(ctx.p("export-detail-card__desc", item.effect))
+            content.appendChild(card)
+        }
+    }
+
+    // Spells with full descriptions
+    if (spells.isNotEmpty()) {
+        content.appendChild(ctx.sectionLabel(t("export.spells")))
+        val circleOrder = listOf("Cantrip", "Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Circle 6", "Circle 7", "Circle 8", "Circle 9")
+        val spellsByCircle = spells.groupBy { it.circle }
+
+        circleOrder.forEach { circle ->
+            val circleSpells = spellsByCircle[circle] ?: return@forEach
+            val circleHeader = ctx.div("export-spell-circle-header")
+            circleHeader.textContent = circle
+            content.appendChild(circleHeader)
+
+            circleSpells.sortedBy { it.name }.forEach { spell ->
+                val card = ctx.div("export-detail-card")
+
+                val nameRow = ctx.div("export-detail-card__name")
+                nameRow.textContent = buildString {
                     append(spell.name)
                     val flags = mutableListOf<String>()
+                    if (spell.isPrepared) flags.add("P")
                     if (spell.needsConcentration) flags.add("C")
                     if (spell.canBeRitual) flags.add("R")
                     if (flags.isNotEmpty()) append(" [${flags.joinToString("")}]")
+                    if (spell.school.isNotEmpty()) append("  ·  ${spell.school}")
                 }
-                tdName.textContent = nameFlags
-                tr.appendChild(tdName)
+                card.appendChild(nameRow)
 
-                val tdCast = document.createElement("td") as HTMLTableCellElement
-                tdCast.textContent = buildString {
-                    if (spell.castingTime.isNotEmpty()) append(spell.castingTime)
-                    if (spell.duration.isNotEmpty()) append(" / ${spell.duration}")
+                val metaRow = ctx.div("export-detail-card__meta")
+                metaRow.textContent = buildString {
+                    if (spell.castingTime.isNotEmpty()) append("${t("magic.spellcasting")}: ${spell.castingTime}")
+                    if (spell.range.isNotEmpty()) append("  ·  ${t("inv.atkTable.range")}: ${spell.range}m")
+                    if (spell.duration.isNotEmpty()) append("  ·  ${spell.duration}")
+                    val components = mutableListOf<String>()
+                    if (spell.hasVerbal) components.add("V")
+                    if (spell.hasSomatic) components.add("S")
+                    if (spell.hasMaterial) components.add("M")
+                    if (components.isNotEmpty()) append("  ·  ${components.joinToString("")}")
                 }
-                tr.appendChild(tdCast)
+                if (metaRow.textContent?.isNotEmpty() == true) card.appendChild(metaRow)
 
-                val tdRange = document.createElement("td") as HTMLTableCellElement
-                tdRange.textContent = if (spell.range.isNotEmpty()) "${spell.range}m" else "—"
-                tr.appendChild(tdRange)
+                if (spell.description.isNotEmpty())
+                    card.appendChild(ctx.p("export-detail-card__desc", spell.description))
 
-                val tdPrep = document.createElement("td") as HTMLTableCellElement
-                tdPrep.textContent = if (circle == "Cantrip") "—" else if (spell.isPrepared) "✔" else "□"
-                tr.appendChild(tdPrep)
+                if (spell.higherCircles.isNotEmpty()) {
+                    val higher = ctx.p("export-detail-card__higher", spell.higherCircles)
+                    card.appendChild(higher)
+                }
 
-                tbody.appendChild(tr)
+                content.appendChild(card)
             }
-        table.appendChild(tbody)
-        circleSection.appendChild(table)
-        content.appendChild(circleSection)
+        }
     }
 
     page.appendChild(content)
     return page
 }
+
+private fun buildItemTable(ctx: ExportContext): HTMLTableElement =
+    (document.createElement("table") as HTMLTableElement).also { it.className = "export-table export-table--items" }
+
+private fun td(text: String): HTMLTableCellElement =
+    (document.createElement("td") as HTMLTableCellElement).also { it.textContent = text }
 
 private val document get() = kotlinx.browser.document

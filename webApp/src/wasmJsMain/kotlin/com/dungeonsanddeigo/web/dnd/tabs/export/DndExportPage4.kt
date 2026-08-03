@@ -9,7 +9,7 @@ fun buildExportPage4(ctx: ExportContext): HTMLDivElement? {
     if (notes.isEmpty()) return null
 
     val page = ctx.div("export-page")
-    page.appendChild(ctx.buildHeader())
+    page.appendChild(ctx.buildHeader(t("export.page4Title")))
 
     val content = ctx.div("export-page4")
     content.appendChild(ctx.sectionLabel(t("tab.notes")))
