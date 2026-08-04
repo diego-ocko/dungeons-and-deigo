@@ -94,14 +94,14 @@ class DndSpellModal(
         row2.className = "spell-modal__row3"
         circleSel = labeledSelect(row2, t("magic.circle"), DndSpell.circles, existing?.circle ?: "Cantrip") { tCircle(it) }
         fun schoolIcon(s: String) = when (s) {
-            "Abjuration"   -> "🛡️"
-            "Conjuration"  -> "✨"
-            "Divination"   -> "🔮"
-            "Enchantment"  -> "💫"
-            "Evocation"    -> "🔥"
-            "Illusion"     -> "🌀"
-            "Necromancy"   -> "☠️"
-            "Transmutation"-> "⚙️"
+            "Abjuration"  -> "🛡️"
+            "Conjuration" -> "🌀"
+            "Divination"  -> "🔮"
+            "Enchantment" -> "💫"
+            "Evocation"   -> "🔥"
+            "Illusion"    -> "🎭"
+            "Necromancy"  -> "💀"
+            "Transmutation" -> "⚗️"
             else -> ""
         }
         schoolSel = labeledSelect(row2, t("magic.school"), DndSpell.schools, existing?.school ?: DndSpell.schools.first()) { "${schoolIcon(it)} ${tSchool(it)}" }

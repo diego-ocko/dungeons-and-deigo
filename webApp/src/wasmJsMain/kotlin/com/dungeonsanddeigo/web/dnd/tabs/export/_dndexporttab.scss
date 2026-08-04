@@ -749,9 +749,16 @@
 // ═════════════════════════════════════════════════════════════════════════
 
 .export-page3 {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  column-count: 3;
+  column-gap: 12px;
+  column-fill: auto;
+
+  .export-spell-circle-header {
+    break-before: avoid;
+    page-break-before: avoid;
+    margin-top: 8px;
+    &:first-child { margin-top: 0; }
+  }
 }
 
 .export-spell-info-bar {
@@ -823,12 +830,17 @@
   border-left: 2px solid $color-accent;
   padding: 4px 8px;
   margin-bottom: 4px;
-  page-break-inside: avoid;
-  break-inside: avoid;
 
-  &__name   { font-weight: 700; font-size: 11px; margin-bottom: 2px; }
+  &__name   { font-weight: 700; font-size: 11px; margin-bottom: 1px; }
+  &__school { display: block; font-size: 7px; color: $color-text-muted; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
   &__meta   { font-size: 9px; color: $color-text-muted; margin-bottom: 2px; }
-  &__desc   { font-size: 10px; color: $color-text-muted; line-height: 1.5; margin: 0; white-space: pre-wrap; }
+  &__meta-row {
+    font-size: 9px;
+    color: $color-text-muted;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  &__desc   { font-size: 9px; color: $color-text-muted; line-height: 1.5; margin: 2px 0 0; white-space: pre-wrap; }
   &__higher { font-size: 9px; color: $color-accent; margin: 2px 0 0; }
 }
 
@@ -887,7 +899,9 @@
   .export-panel--combat     { display: grid !important; }
   .export-panel--bottom     { display: grid !important; }
   .export-page2             { display: grid !important; }
-  .export-page3, .export-page4 { display: flex !important; }
+  .export-page3 { column-count: 3 !important; }
+  .export-page4 { display: flex !important; }
+  .export-detail-card__meta-row { color: #444 !important; }
   .export-p2-phys-grid     { display: grid !important; }
   .export-spell-info-bar   { display: flex !important; }
   .export-spell-slots-row  { display: flex !important; }
@@ -934,7 +948,11 @@
   .export-bg-box__text,
   .export-bg-full-text,
   .export-feature-card__desc,
+  .export-detail-card__school,
   .export-detail-card__meta,
+  .export-detail-card__meta-row,
+  .export-detail-card__meta-val,
+  .export-detail-card__meta-label,
   .export-detail-card__desc,
   .export-note-card__meta,
   .export-note-card__body,
