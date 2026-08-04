@@ -303,20 +303,6 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
         featuresPanel.appendChild(legend)
     }
 
-    val backstory = ctx.backstory
-    if (backstory != null) {
-        fun bgBox(label: String, text: String) {
-            if (text.isEmpty()) return
-            val box = ctx.div("export-bg-box")
-            box.appendChild(ctx.div("export-bg-box__label").also { it.textContent = label })
-            box.appendChild(ctx.div("export-bg-box__text").also { it.textContent = text })
-            featuresPanel.appendChild(box)
-        }
-        bgBox(t("bg.personalityTraits"), backstory.personalityTraits)
-        bgBox(t("bg.ideals"), backstory.ideals)
-        bgBox(t("bg.bonds"), backstory.bonds)
-        bgBox(t("bg.defects"), backstory.defects)
-    }
     val allFeatures = features.filter { it.type == "Feature" || it.type == "Rechargable Feature" }
     if (allFeatures.isNotEmpty()) {
         featuresPanel.appendChild(ctx.sectionLabel(t("export.features")))
