@@ -12,9 +12,7 @@ fun buildExportPage4(ctx: ExportContext): HTMLDivElement? {
     page.appendChild(ctx.buildHeader(t("export.page4Title")))
 
     val content = ctx.div("export-page4")
-    content.appendChild(ctx.sectionLabel(t("tab.notes")))
-
-    notes.sortedWith(compareByDescending<com.dungeonsanddeigo.model.DndNote> { it.session }.thenByDescending { it.timestamp })
+    notes.sortedWith(compareBy<com.dungeonsanddeigo.model.DndNote> { it.session }.thenBy { it.timestamp })
         .forEach { note ->
             val card = ctx.div("export-note-card")
 

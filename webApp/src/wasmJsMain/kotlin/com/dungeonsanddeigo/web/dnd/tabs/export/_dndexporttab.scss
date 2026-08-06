@@ -794,17 +794,16 @@
 // ═════════════════════════════════════════════════════════════════════════
 
 .export-page4 {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  column-count: 4;
+  column-gap: 12px;
+  column-fill: auto;
+  margin-top: 12px;
 }
 
 .export-note-card {
   border: 1px solid $color-border;
   border-radius: $radius-sm;
   padding: 8px 10px;
-  page-break-inside: avoid;
-  break-inside: avoid;
 
   &__header {
     display: flex;
@@ -900,7 +899,7 @@
   .export-panel--bottom     { display: grid !important; }
   .export-page2             { display: grid !important; }
   .export-page3 { column-count: 3 !important; }
-  .export-page4 { display: flex !important; }
+  .export-page4 { column-count: 4 !important; }
   .export-detail-card__meta-row { color: #444 !important; }
   .export-p2-phys-grid     { display: grid !important; }
   .export-spell-info-bar   { display: flex !important; }
