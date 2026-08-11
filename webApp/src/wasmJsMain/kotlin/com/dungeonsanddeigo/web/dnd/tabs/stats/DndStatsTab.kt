@@ -268,9 +268,6 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
         }
     }
 
-    container.addEventListener("input", { autoSave() })
-    container.addEventListener("change", { autoSave() })
-
     // --- Layout: left column (boxes 1-3) + right column (box 4) ---
     val midGrid = document.createElement("div") as HTMLDivElement
     midGrid.className = "stats-mid-grid"
@@ -288,6 +285,9 @@ fun renderDndStatsTab(character: Character, container: HTMLDivElement) {
     outerGrid.className = "stats-outer-grid"
     outerGrid.appendChild(leftColumn)
     outerGrid.appendChild(skillsBox)
+
+    leftColumn.addEventListener("input", { autoSave() })
+    leftColumn.addEventListener("change", { autoSave() })
 
     container.appendChild(outerGrid)
 }
@@ -401,8 +401,6 @@ private fun buildDndSkillsBox(character: Character, container: HTMLDivElement, a
         skillsGrid.appendChild(line)
     }
 
-    container.appendChild(box)
-
     fun autoSave() {
         autoSaveIndicator.schedule {
             var updated = skills.copy(characterId = character.id)
@@ -422,8 +420,8 @@ private fun buildDndSkillsBox(character: Character, container: HTMLDivElement, a
         }
     }
 
-    container.addEventListener("input", { autoSave() })
-    container.addEventListener("change", { autoSave() })
+    box.addEventListener("input", { autoSave() })
+    box.addEventListener("change", { autoSave() })
 
     return box
 }
