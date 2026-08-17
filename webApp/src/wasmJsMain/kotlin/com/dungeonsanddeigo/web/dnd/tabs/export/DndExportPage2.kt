@@ -3,6 +3,7 @@ package com.dungeonsanddeigo.web.dnd.tabs.export
 import com.dungeonsanddeigo.i18n.t
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import org.w3c.dom.*
 
 // Page 2: Appearance (cols 1-3) | History/Faction (cols 4-7) | Personality (cols 8-10)
@@ -216,12 +217,7 @@ fun buildExportPage2(ctx: ExportContext): HTMLDivElement? {
             else -> cat
         }
 
-        fun dmgTypeLabel(dmgType: String) = when (dmgType.lowercase()) {
-            "bludgeoning" -> t("inv.dmg.bludgeoning")
-            "piercing"    -> t("inv.dmg.piercing")
-            "slashing"    -> t("inv.dmg.slashing")
-            else -> dmgType
-        }
+        fun dmgTypeLabel(dmgType: String) = DamageTypes.getEntry(dmgType)
 
         ctx.weapons.forEach { w ->
             val catLabel = weaponCategoryLabel(w.category)

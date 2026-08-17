@@ -6,6 +6,7 @@ import com.dungeonsanddeigo.model.DndSpell
 import com.dungeonsanddeigo.model.DungeonsAndDragons
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.components.modal.Modal
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import kotlinx.browser.document
 import org.w3c.dom.*
@@ -214,7 +215,9 @@ class DndSpellModal(
         val atkDetailsRow = document.createElement("div") as HTMLDivElement
         atkDetailsRow.className = "spell-modal__inline-details"
         diceInput = labeledInput(atkDetailsRow, t("inv.damageDice"), existing?.attackDamageDice ?: "")
-        dmgTypeSel = labeledSelect(atkDetailsRow, t("inv.damageType"), listOf("") + DndSpell.damageTypes, existing?.attackDamageType ?: "") { if (it.isEmpty()) "-" else tSpellDamageType(it) }
+        dmgTypeSel = labeledSelect(atkDetailsRow, t("inv.damageType"), listOf("") + DamageTypes.values, existing?.attackDamageType ?: "") {
+            if (it.isEmpty()) "-" else DamageTypes.getEntry(it)
+        }
         fun setAtkDisabled(disabled: Boolean) { diceInput.disabled = disabled; dmgTypeSel.disabled = disabled; if (disabled) { diceInput.value = ""; dmgTypeSel.value = "" } }
         setAtkDisabled(existing?.isAttack != true)
         attackRow.appendChild(atkDetailsRow)

@@ -6,6 +6,7 @@ import com.dungeonsanddeigo.model.Character
 import com.dungeonsanddeigo.model.DndWeapon
 import com.dungeonsanddeigo.web.Repos
 import com.dungeonsanddeigo.web.components.modal.Modal
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import com.dungeonsanddeigo.web.dnd.components.tagsField.TagsField
 import com.dungeonsanddeigo.web.dnd.components.weightAndPrice.WeightAndPriceField
 import kotlinx.browser.document
@@ -125,16 +126,13 @@ class DndWeaponModal(
         dmgRow.appendChild(col(lbl(t("inv.damageDice")), dmgDiceInput))
 
         dmgTypeSelect = document.createElement("select") as HTMLSelectElement
-        DndWeapon.damageTypes.forEach { d ->
+        DamageTypes.entries().forEach { d ->
             val o = document.createElement("option") as HTMLOptionElement
-            o.value = d; o.textContent = when (d) {
-                "Bludgeoning" -> t("inv.dmg.bludgeoning")
-                "Piercing"    -> t("inv.dmg.piercing")
-                "Slashing"    -> t("inv.dmg.slashing")
-                else -> d
-            }; dmgTypeSelect.appendChild(o)
+            o.value = d.value
+            o.textContent = if (d.emoji.isNotEmpty()) "${d.emoji} ${d.label}" else d.label
+            dmgTypeSelect.appendChild(o)
         }
-        dmgTypeSelect.value = existing?.damageType ?: DndWeapon.damageTypes.first()
+        dmgTypeSelect.value = existing?.damageType ?: DamageTypes.values.first()
         dmgRow.appendChild(col(lbl(t("inv.damageType")), dmgTypeSelect))
 
         form.appendChild(dmgRow)

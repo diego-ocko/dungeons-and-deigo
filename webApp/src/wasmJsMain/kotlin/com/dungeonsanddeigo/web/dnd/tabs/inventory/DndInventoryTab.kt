@@ -5,6 +5,7 @@ import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.*
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import com.dungeonsanddeigo.web.dnd.modals.armor.DndArmorModal
 import com.dungeonsanddeigo.web.dnd.modals.weapon.DndWeaponModal
 import com.dungeonsanddeigo.web.dnd.modals.magicItem.DndMagicItemModal
@@ -449,10 +450,10 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         val tdDmg = document.createElement("td") as HTMLTableCellElement
                         val dice = if (twoHanded) equippedWeapon.versatileDice else equippedWeapon.damageDice
                         val dmgStr = if (isRanged || thrown) {
-                            "$dice ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
+                            "$dice ${DamageTypes.getEntry(equippedWeapon.damageType)}"
                         } else {
                             val modSign = if (mod >= 0) "+" else ""
-                            "$dice$modSign$mod ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
+                            "$dice$modSign$mod ${DamageTypes.getEntry(equippedWeapon.damageType)}"
                         }
                         tdDmg.textContent = dmgStr
                         tr.appendChild(tdDmg)
@@ -549,7 +550,7 @@ fun renderDndInventoryTab(character: Character, container: HTMLDivElement) {
                         line2.className = "inv-row-line2"
                         val props = mutableListOf<String>()
                         props.add(when(weapon.category) { "Simple" -> t("features.weapon.simple"); "Martial" -> t("features.weapon.martial"); else -> weapon.category })
-                        props.add("${weapon.damageDice} ${when(weapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> weapon.damageType }}")
+                        props.add("${weapon.damageDice} ${DamageTypes.getEntry(weapon.damageType)}")
                         if (weapon.versatile) props.add("${t("inv.versatile")} (${weapon.versatileDice})")
                         if (weapon.range) props.add("${t("inv.range")} ${weapon.rangeDistance}/${weapon.rangeLongDistance}m")
                         props.add("${weapon.weight}kg")

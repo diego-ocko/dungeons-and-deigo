@@ -7,6 +7,7 @@ import com.dungeonsanddeigo.i18n.tDnd
 import com.dungeonsanddeigo.i18n.tStat
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.w3c.dom.*
@@ -162,22 +163,7 @@ class ExportContext(val character: Character) {
         }
         container.appendChild(headers)
 
-        fun dmgTypeShort(type: String) = when (type.lowercase()) {
-            "bludgeoning" -> t("inv.dmg.bludgeoning")
-            "piercing"    -> t("inv.dmg.piercing")
-            "slashing"    -> t("inv.dmg.slashing")
-            "acid"        -> t("magic.dmg.acid")
-            "cold"        -> t("magic.dmg.cold")
-            "fire"        -> t("magic.dmg.fire")
-            "force"       -> t("magic.dmg.force")
-            "lightning"   -> t("magic.dmg.lightning")
-            "necrotic"    -> t("magic.dmg.necrotic")
-            "poison"      -> t("magic.dmg.poison")
-            "psychic"     -> t("magic.dmg.psychic")
-            "radiant"     -> t("magic.dmg.radiant")
-            "thunder"     -> t("magic.dmg.thunder")
-            else -> type
-        }
+        fun dmgTypeShort(type: String) = DamageTypes.getEntry(type)
 
         val colsDef = "0.9fr 0.5fr 1.5fr"
 
@@ -239,10 +225,10 @@ class ExportContext(val character: Character) {
         // Disarmed
         val disAtkMod = strMod + profBonus
         val disDmg = if (stats.disarmedDice == "Normal") {
-            "${maxOf(1, 1 + strMod)} ${t("inv.dmg.bludgeoning")}"
+            "${maxOf(1, 1 + strMod)} ${DamageTypes.getEntry("Bludgeoning")}"
         } else {
             val s = if (strMod >= 0) "+$strMod" else "$strMod"
-            "${stats.disarmedDice}$s ${t("inv.dmg.bludgeoning")}"
+            "${stats.disarmedDice}$s ${DamageTypes.getEntry("Bludgeoning")}"
         }
         addRow(t("combat.disarmedAttack"), "${modStr(disAtkMod)} (${tStat("Str")})", t("export.melee"), disDmg)
 

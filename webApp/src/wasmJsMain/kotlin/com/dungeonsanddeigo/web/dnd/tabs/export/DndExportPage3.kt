@@ -3,6 +3,7 @@ package com.dungeonsanddeigo.web.dnd.tabs.export
 import com.dungeonsanddeigo.i18n.t
 import com.dungeonsanddeigo.i18n.tStat
 import com.dungeonsanddeigo.model.DndInventoryItem
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import org.w3c.dom.*
 
 fun buildExportPage3(ctx: ExportContext): HTMLDivElement? {
@@ -119,12 +120,7 @@ fun buildExportPage3(ctx: ExportContext): HTMLDivElement? {
         header.textContent = t("inventory.weapons")
         content.appendChild(header)
 
-        fun dmgTypeLabel(type: String) = when (type.lowercase()) {
-            "bludgeoning" -> t("inv.dmg.bludgeoning")
-            "piercing"    -> t("inv.dmg.piercing")
-            "slashing"    -> t("inv.dmg.slashing")
-            else -> type
-        }
+        fun dmgTypeLabel(type: String) = DamageTypes.getEntry(type)
 
         fun weaponTypeLabel(wt: String) = when (wt) {
             "Club"            -> t("inv.wt.club")

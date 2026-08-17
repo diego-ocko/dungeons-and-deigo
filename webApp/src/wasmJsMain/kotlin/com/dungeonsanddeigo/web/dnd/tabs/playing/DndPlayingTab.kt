@@ -5,6 +5,7 @@ import com.dungeonsanddeigo.dnd.rules.calcProficiency
 import com.dungeonsanddeigo.i18n.*
 import com.dungeonsanddeigo.model.*
 import com.dungeonsanddeigo.web.Repos
+import com.dungeonsanddeigo.web.dnd.components.damageTypes.DamageTypes
 import com.dungeonsanddeigo.web.dnd.modals.changeWeapon.DndChangeWeaponModal
 import com.dungeonsanddeigo.web.dnd.modals.changeArmor.DndChangeArmorModal
 import com.dungeonsanddeigo.web.dnd.modals.addConsumableLoot.DndAddConsumableLootModal
@@ -516,10 +517,10 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             tdDmg.style.padding = "3px 4px"
             val dice = if (twoHanded) equippedWeapon.versatileDice else equippedWeapon.damageDice
             val dmgStr = if (isRanged || thrown) {
-                "$dice ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
+                "$dice ${DamageTypes.getEntry(equippedWeapon.damageType)}"
             } else {
                 val modSign = if (mod >= 0) "+" else ""
-                "$dice$modSign$mod ${when(equippedWeapon.damageType) { "Bludgeoning" -> t("inv.dmg.bludgeoning"); "Piercing" -> t("inv.dmg.piercing"); "Slashing" -> t("inv.dmg.slashing"); else -> equippedWeapon.damageType }}"
+                "$dice$modSign$mod ${DamageTypes.getEntry(equippedWeapon.damageType)}"
             }
             tdDmg.textContent = dmgStr
             tr.appendChild(tdDmg)
@@ -582,10 +583,10 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         val disDmg = document.createElement("td") as HTMLTableCellElement
         disDmg.style.padding = "3px 4px"
         val disDmgStr = if (stats.disarmedDice == "Normal") {
-            "${maxOf(1, 1 + strMod)} ${t("inv.dmg.bludgeoning")}"
+            "${maxOf(1, 1 + strMod)} ${DamageTypes.getEntry("Bludgeoning")}"
         } else {
             val modSign = if (strMod >= 0) "+" else ""
-            "${stats.disarmedDice}$modSign$strMod ${t("inv.dmg.bludgeoning")}"
+            "${stats.disarmedDice}$modSign$strMod ${DamageTypes.getEntry("Bludgeoning")}"
         }
         disDmg.textContent = disDmgStr
         disarmedTr.appendChild(disDmg)
@@ -639,7 +640,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             tr.appendChild(tdTest)
             val tdDmg = document.createElement("td") as HTMLTableCellElement
             tdDmg.style.padding = "3px 4px"
-            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${tSpellDamageType(spell.attackDamageType)}" else "\u2014"
+            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${DamageTypes.getEntry(spell.attackDamageType)}" else "\u2014"
             tr.appendChild(tdDmg)
             val tdNotes = document.createElement("td") as HTMLTableCellElement
             tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "white"
@@ -705,10 +706,10 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
         val disDmg = document.createElement("td") as HTMLTableCellElement
         disDmg.style.padding = "3px 4px"
         val disDmgStr2 = if (stats.disarmedDice == "Normal") {
-            "${maxOf(1, 1 + strMod)} ${t("inv.dmg.bludgeoning")}"
+            "${maxOf(1, 1 + strMod)} ${DamageTypes.getEntry("Bludgeoning")}"
         } else {
             val modSign = if (strMod >= 0) "+" else ""
-            "${stats.disarmedDice}$modSign$strMod ${t("inv.dmg.bludgeoning")}"
+            "${stats.disarmedDice}$modSign$strMod ${DamageTypes.getEntry("Bludgeoning")}"
         }
         disDmg.textContent = disDmgStr2
         disarmedTr.appendChild(disDmg)
@@ -760,7 +761,7 @@ fun renderDndPlayingTab(character: Character, container: HTMLDivElement) {
             tr.appendChild(tdTest)
             val tdDmg = document.createElement("td") as HTMLTableCellElement
             tdDmg.style.padding = "3px 4px"
-            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${tSpellDamageType(spell.attackDamageType)}" else "\u2014"
+            tdDmg.textContent = if (spell.attackDamageDice.isNotEmpty()) "${spell.attackDamageDice} ${DamageTypes.getEntry(spell.attackDamageType)}" else "\u2014"
             tr.appendChild(tdDmg)
             val tdNotes = document.createElement("td") as HTMLTableCellElement
             tdNotes.style.padding = "3px 4px"; tdNotes.style.fontSize = "10px"; tdNotes.style.color = "white"
