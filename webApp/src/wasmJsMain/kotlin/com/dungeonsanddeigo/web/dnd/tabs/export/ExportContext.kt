@@ -12,7 +12,16 @@ import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.w3c.dom.*
 
-class ExportContext(val character: Character) {
+class ExportContext(
+    val character: Character,
+    val playerName: String? = null,
+    val showHp: Boolean = true,
+    val showLimitedUsage: Boolean = true,
+    val showHitDiceUsed: Boolean = true,
+    val showDeathSaveResults: Boolean = true,
+    val showSpellSlotsUsed: Boolean = true,
+    val showPreparedSpells: Boolean = true,
+) {
 
     val mainInfo  = Repos.mainInfo.getByCharacterId(character.id) ?: DndMainInfo(characterId = character.id)
     val stats     = Repos.baseStats.getByCharacterId(character.id) ?: DndBaseStats(characterId = character.id)
@@ -149,6 +158,11 @@ class ExportContext(val character: Character) {
         })
         if (mainInfo.alignment != null) chip(tDnd("alignment", mainInfo.alignment!!))
         if (mainInfo.origin != null) chip(mainInfo.origin!!)
+        if (playerName != null) {
+            val playerSpan = span("export-sheet__player-name", t("export.playerName") + ": " + playerName.ifBlank { "________________________" })
+            subTitle.appendChild(playerSpan)
+        }
+
         header.appendChild(subTitle)
         return header
     }

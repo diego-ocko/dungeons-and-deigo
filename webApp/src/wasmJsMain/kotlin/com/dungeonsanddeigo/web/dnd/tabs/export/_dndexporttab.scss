@@ -8,6 +8,39 @@
   &__pdf-btn { font-size: 14px; padding: 8px 24px; }
 }
 
+// ── Export options panel (screen only) ────────────────────────────────────
+.export-options {
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: fit-content;
+
+  &__check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  &__checkbox { cursor: pointer; width: 15px; height: 15px; accent-color: $color-accent; }
+
+  &__check-label { font-size: 13px; user-select: none; }
+
+  &__text-input {
+    font-size: 13px;
+    padding: 5px 10px;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    background: $color-cards;
+    color: $color-text;
+    width: 240px;
+  }
+}
+
 // Sheet hidden on screen, printed only
 .export-sheet { display: none; }
 
@@ -63,6 +96,11 @@
   border: 1px solid $color-border;
   border-radius: $radius-sm;
   padding: 1px 6px;
+}
+
+.export-sheet__player-name {
+  margin-left: auto;
+  font-weight: 700;
 }
 
 // ── Section label ─────────────────────────────────────────────────────────
@@ -958,6 +996,7 @@
   .export-appearance-item__label,
   .export-prof-text,
   .export-sheet__subtitle { color: #444 !important; }
+  .export-options { display: none !important; }
 
   .export-prof-chip__box        { border-color: #555 !important; }
   .export-prof-chip--checked .export-prof-chip__box {

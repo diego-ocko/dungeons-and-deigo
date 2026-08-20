@@ -124,11 +124,11 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     combatPanel.appendChild(ctx.statBox(t("stats.speedShort"), "${stats.speed ?: 0}m").also { it.className += " export-stat-box--2col" })
 
     // Row 2: HP Atual (4 cols) | Vida Temporária (2 cols)
-    combatPanel.appendChild(ctx.hpBox(t("export.hpCurrent"), currentLife.toString()).also { it.className += " export-hp-box--wide" })
+    combatPanel.appendChild(ctx.hpBox(t("export.hpCurrent"), if (ctx.showHp) currentLife.toString() else "").also { it.className += " export-hp-box--wide" })
     combatPanel.appendChild(ctx.hpBox(t("export.tempHp"), "").also { it.className += " export-hp-box--2col" })
 
     // Row 3: HP Máx (4 cols) | Visão (2 cols)
-    combatPanel.appendChild(ctx.hpBox(t("export.hpMax"), (stats.maxLife ?: 0).toString()).also { it.className += " export-hp-box--wide" })
+    combatPanel.appendChild(ctx.hpBox(t("export.hpMax"), if (ctx.showHp) (stats.maxLife ?: 0).toString() else "").also { it.className += " export-hp-box--wide" })
 
     val visionBox = ctx.div("export-hp-box export-hp-box--2col")
     visionBox.appendChild(ctx.div("export-hp-box__label").also { it.textContent = t("stats.vision") })
@@ -179,7 +179,7 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     // Used row
     val hdUsed = ctx.div("export-hit-dice-row")
     hdUsed.style.setProperty("grid-template-columns", colsDef)
-    hdList.forEach { info -> hdUsed.appendChild(ctx.span("export-hit-dice-cell export-hit-dice-cell--used", info.used.toString())) }
+    hdList.forEach { info -> hdUsed.appendChild(ctx.span("export-hit-dice-cell export-hit-dice-cell--used", if (ctx.showHitDiceUsed) info.used.toString() else "")) }
     hdTable.appendChild(hdUsed)
 
     hitDiceBox.appendChild(hdTable)
@@ -188,10 +188,16 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
     val deathBox = ctx.div("export-hp-box export-hp-box--half export-death-saves")
     deathBox.appendChild(ctx.div("export-hp-box__label").also { it.textContent = t("export.deathSaves") })
     val deathGrid = ctx.div("export-death-grid")
-    listOf("❤️" to t("export.deathSaves"), "☠️" to t("export.deathSaves")).forEach { (icon, _) ->
+    val deathSuccesses = if (ctx.showDeathSaveResults) localStorage.getItem("dnd_playing_deathsuccess_${ctx.character.id}")?.toIntOrNull() ?: 0 else 0
+    val deathFails     = if (ctx.showDeathSaveResults) localStorage.getItem("dnd_playing_deathfail_${ctx.character.id}")?.toIntOrNull() ?: 0 else 0
+    listOf("❤️" to deathSuccesses, "☠️" to deathFails).forEach { (icon, filled) ->
         val row = ctx.div("export-death-row")
         row.appendChild(ctx.span("export-death-row__icon", icon))
-        repeat(3) { row.appendChild(ctx.div("export-death-row__box")) }
+        repeat(3) { i ->
+            val box = ctx.div("export-death-row__box")
+            if (i < filled) box.textContent = "✕"
+            row.appendChild(box)
+        }
         deathGrid.appendChild(row)
     }
     deathBox.appendChild(deathGrid)
@@ -230,7 +236,8 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
             val remaining = (total - used).coerceAtLeast(0)
             val col = ctx.div("export-slot-col")
             col.appendChild(ctx.span("export-slot-col__circle", "${circleNum}º"))
-            col.appendChild(ctx.span("export-slot-col__val", "$remaining/$total"))
+            val slotVal = if (ctx.showSpellSlotsUsed) "$remaining/$total" else "$total"
+            col.appendChild(ctx.span("export-slot-col__val", slotVal))
             slotsRow.appendChild(col)
         }
         slotsPanel.appendChild(slotsRow)
@@ -250,7 +257,7 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
             val isCantrip = circle == "Cantrip"
             val spellsText = circleSpells.joinToString(", ") { s ->
                 buildString {
-                    if (!isCantrip) append(if (s.isPrepared) "✅ " else "🔲 ")
+                    if (!isCantrip) append(if (ctx.showPreparedSpells && s.isPrepared) "✅ " else "🔲 ")
                     append(s.name)
                     if (s.canBeRitual) append(" [R]")
                 }
@@ -293,7 +300,7 @@ fun buildExportPage1(ctx: ExportContext): HTMLDivElement {
             row.appendChild(ctx.span("export-limited-cell export-limited-cell--name", feat.name))
             row.appendChild(ctx.span("export-limited-cell export-limited-cell--reload", rechargeAbbr(feat.reloadRule)))
             row.appendChild(ctx.span("export-limited-cell export-limited-cell--num", feat.maxQuantity?.toString() ?: "—"))
-            row.appendChild(ctx.span("export-limited-cell export-limited-cell--num", remaining.toString()))
+            row.appendChild(ctx.span("export-limited-cell export-limited-cell--num", if (ctx.showLimitedUsage) remaining.toString() else ""))
             limitedTable.appendChild(row)
         }
         featuresPanel.appendChild(limitedTable)
