@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Dungeons And Deigo"
+        android:label="Keep My Chars"
         android:theme="@style/Theme.AppCompat.Light">
         <activity
             android:name=".MainActivity"

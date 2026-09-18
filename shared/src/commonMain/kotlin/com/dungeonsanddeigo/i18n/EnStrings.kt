@@ -3,7 +3,7 @@ package com.dungeonsanddeigo.i18n
 object EnStrings {
     private val strings = mapOf(
         // General
-        "app.title" to "Dungeons And Deigo",
+        "app.title" to "Keep My Chars",
         "btn.save" to "Save",
         "btn.cancel" to "Cancel",
         "btn.edit" to "Edit",

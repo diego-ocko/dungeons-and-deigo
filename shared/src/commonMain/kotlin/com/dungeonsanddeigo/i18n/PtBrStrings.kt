@@ -3,7 +3,7 @@ package com.dungeonsanddeigo.i18n
 object PtBrStrings {
     private val strings = mapOf(
         // General
-        "app.title" to "Dungeons And Deigo",
+        "app.title" to "Keep My Chars",
         "btn.save" to "Salvar",
         "btn.cancel" to "Cancelar",
         "btn.edit" to "Editar",
